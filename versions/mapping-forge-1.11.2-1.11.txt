@@ -1,2 +1,0 @@
-net.minecraft.item.ItemStack EMPTY field_190927_a
-net.minecraft.util.NonNullList withSize() func_191197_a()

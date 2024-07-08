@@ -1,15 +1,3 @@
 net.minecraft.client.util.math.MatrixStack de.johni0702.minecraft.gui.versions.MatrixStack
-net.minecraft.client.render.entity.EntityRenderer shouldRender() isVisible()
 net.minecraft.client.render.GameRenderer renderWorld() renderCenter()
-net.minecraft.entity.LivingEntity serverX field_6224
-net.minecraft.entity.LivingEntity serverY field_6245
-net.minecraft.entity.LivingEntity serverZ field_6263
-net.minecraft.entity.LivingEntity serverYaw field_6284
-net.minecraft.entity.LivingEntity serverPitch field_6221
 net.minecraft.client.render.WorldRenderer drawBlockOutline() drawHighlightedBlockOutline()
-net.minecraft.client.render.GameRenderer method_22973() applyCameraTransformations()
-net.minecraft.client.util.math.Matrix4f viewboxMatrix() method_4929()
-net.minecraft.client.util.ScreenshotUtils takeScreenshot() method_1663()
-net.minecraft.client.util.ScreenshotUtils saveScreenshot() method_1659()
-net.minecraft.client.render.WorldRenderer setupTerrain() setUpTerrain()
-net.minecraft.client.gui.hud.SpectatorHud cycleSlot() method_1976()

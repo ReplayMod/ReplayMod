@@ -1,357 +1,54 @@
-net.minecraft.entity.player.PlayerInventory net.minecraft.entity.player.InventoryPlayer
-net.minecraft.potion.EffectInstance net.minecraft.potion.PotionEffect
-net.minecraft.client.gui.screen.AddServerScreen net.minecraft.client.gui.GuiScreenAddServer
-net.minecraft.resources.AbstractResourcePack net.minecraft.client.resources.AbstractResourcePack
 net.minecraft.resources.FolderPack net.minecraft.client.resources.FolderResourcePack
 net.minecraft.resources.IResource net.minecraft.client.resources.IResource
 net.minecraft.resources.IResourceManager net.minecraft.client.resources.IResourceManager
 net.minecraft.client.resources.DownloadingPackFinder net.minecraft.client.resources.ResourcePackRepository
-net.minecraft.client.renderer.chunk.ChunkRenderTask net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator
 net.minecraft.client.settings.AbstractOption net.minecraft.client.settings.GameSettings.Options
 net.minecraft.client.settings.SliderPercentageOption func_216728_a() net.minecraft.client.settings.GameSettings.Options setValueMax()
 net.minecraftforge.eventbus.api.SubscribeEvent net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 net.minecraftforge.eventbus.api.EventPriority net.minecraftforge.fml.common.eventhandler.EventPriority
 net.minecraftforge.eventbus.api.Cancelable net.minecraftforge.fml.common.eventhandler.Cancelable
 net.minecraftforge.eventbus.api.Event net.minecraftforge.fml.common.eventhandler.Event
-net.minecraft.crash.ReportedException net.minecraft.util.ReportedException
-net.minecraftforge.eventbus.api.IEventBus net.minecraftforge.fml.common.eventhandler.EventBus
-net.minecraft.network.play.server.SPacketEntity.Move net.minecraft.network.play.server.SPacketEntity.S17PacketEntityLookMove
 net.minecraftforge.fml.network.NetworkRegistry net.minecraftforge.fml.common.network.NetworkRegistry
-net.minecraft.client.particle.ParticleManager queue queueEntityFX
 org.apache.maven.artifact.versioning.ComparableVersion net.minecraftforge.fml.common.versioning.ComparableVersion
 org.lwjgl.glfw.GLFW com.replaymod.core.versions.GLFW
 net.minecraft.client.MainWindow com.replaymod.core.versions.Window
-net.minecraft.client.audio.SimpleSound net.minecraft.client.audio.PositionedSoundRecord
-net.minecraft.client.gui.IngameGui net.minecraft.client.gui.GuiIngame
-net.minecraft.util.HandSide net.minecraft.util.EnumHandSide
 
 net.minecraft.resources.ResourcePack getInputStream() net.minecraft.client.resources.AbstractResourcePack getInputStreamByName()
 net.minecraft.util.text.ITextComponent getString() getUnformattedText()
 net.minecraft.client.Minecraft getPackFinder() getResourcePackRepository()
 net.minecraft.entity.Entity getPositionVec() net.minecraft.command.ICommandSender getPositionVector()
 
-net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent
-net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent addWidget() addButton()
-net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent removeWidget() removeButton()
-net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent getWidgetList() getButtonList()
-net.minecraftforge.event.TickEvent net.minecraftforge.fml.common.gameevent.TickEvent
-net.minecraft.potion.Effects net.minecraft.init.MobEffects
 net.minecraftforge.event.entity.player.PlayerEvent net.minecraftforge.fml.common.gameevent.PlayerEvent
-net.minecraftforge.event.entity.player.PlayerEvent.ItemPickupEvent net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent
 
-#
-# Note: These were in large part written before the preprocessor got smart, a good deal of them can probably be removed
-#       by now. Just gotta find someone to do it. Or automate it. Probably the latter, later.
-#       They're also in some parts outdated since they used to be 1.14.4-fabric to 1.13.2-forge but are now used for
-#       1.14.4-forge to 1.12.2-forge (since the preprocessor handles the fabric-forge jump on 1.14.4).
-#
-net.minecraft.client.particle.Particle x posX
-net.minecraft.client.particle.Particle y posY
-net.minecraft.client.particle.Particle z posZ
-net.minecraft.client.particle.Particle cameraX interpPosX
-net.minecraft.client.particle.Particle cameraY interpPosY
-net.minecraft.client.particle.Particle cameraZ interpPosZ
-net.minecraft.entity.player.PlayerModelPart net.minecraft.entity.player.EnumPlayerModelParts
-net.minecraft.util.Direction net.minecraft.util.EnumFacing
-net.minecraft.client.render.model.BakedQuad net.minecraft.client.renderer.model.BakedQuad
-net.minecraft.client.render.model.BakedQuad hasColor() hasTintIndex()
-net.minecraft.client.render.model.BakedQuad getColorIndex() getTintIndex()
-net.minecraft.client.renderer.tileentity.EndPortalTileEntityRenderer net.minecraft.client.renderer.tileentity.TileEntityEndPortalRenderer
-net.minecraft.client.render.model.BakedModel net.minecraft.client.renderer.model.IBakedModel
-net.minecraft.client.util.math.Matrix4f net.minecraft.client.renderer.Matrix4f
-net.minecraft.client.util.math.Matrix4f method_4929() perspective()
-net.minecraft.client.render.Frustum net.minecraft.client.renderer.culling.Frustum
-net.minecraft.client.render.Frustum intersects() isBoxInFrustum()
-net.minecraft.client.texture.NativeImage net.minecraft.client.renderer.texture.NativeImage
-net.minecraft.client.particle.ParticleManager newParticles queue
-net.minecraft.client.particle.ParticleManager setWorld() clearEffects()
-net.minecraft.client.util.Session net.minecraft.util.Session
-net.minecraft.server.integrated.IntegratedServer field_5524 isGamePaused
-net.minecraft.client.render.block.entity.EndPortalBlockEntityRenderer net.minecraft.client.renderer.tileentity.TileEntityEndPortalRenderer
-# Note: method actually part of super class but Remap doesn't support those for @Redirect
-net.minecraft.client.render.block.entity.EndPortalBlockEntityRenderer method_3591() render()
-net.minecraft.client.render.block.entity.BlockEntityRenderer net.minecraft.client.renderer.tileentity.TileEntityRenderer
-net.minecraft.client.render.block.entity.BlockEntityRenderer method_3591() render()
-net.minecraft.client.gui.SpectatorGui net.minecraft.client.gui.GuiSpectator
-net.minecraft.client.gui.SpectatorGui method_1976() onHotbarSelected()
-net.minecraft.entity.passive.AnimalEntity net.minecraft.entity.passive.EntityAnimal
-net.minecraft.item.ItemStack getName() getDisplayName()
-net.minecraft.client.gui.Element net.minecraft.client.gui.IGuiEventListener
-net.minecraft.util.text.StringTextComponent net.minecraft.util.text.TextComponentString
-net.minecraft.util.text.TranslationTextComponent net.minecraft.util.text.TextComponentTranslation
-net.minecraft.client.renderer.entity.LivingRenderer net.minecraft.client.renderer.entity.RenderLivingBase
-net.minecraft.client.renderer.entity.LivingRenderer method_4055() canRenderName()
-net.minecraft.client.renderer.entity.LivingRenderer render() renderModel()
-net.minecraft.client.renderer.entity.LivingRenderer scaleAndTranslate() prepareScale()
-net.minecraft.client.renderer.entity.LivingRenderer method_4054() doRender()
 net.minecraft.client.renderer.entity.TippedArrowRenderer net.minecraft.client.renderer.entity.RenderArrow
-net.minecraft.client.renderer.entity.EntityRenderer net.minecraft.client.renderer.entity.Render
-net.minecraft.client.renderer.entity.EntityRenderer render() doRender()
-net.minecraft.client.renderer.entity.EntityRenderer renderLabel() renderLivingLabel()
-net.minecraft.client.multiplayer.PlayerController net.minecraft.client.multiplayer.PlayerControllerMP
-net.minecraft.client.multiplayer.PlayerController client mc
-net.minecraft.client.multiplayer.PlayerController networkHandler connection
-net.minecraft.client.multiplayer.PlayerController isFlyingLocked() isSpectatorMode()
-net.minecraft.client.multiplayer.PlayerController getCurrentGameMode() getCurrentGameType()
 com.mojang.blaze3d.platform.GLX net.minecraft.client.renderer.OpenGlHelper
-com.mojang.blaze3d.platform.GLX isUsingFBOs() isFramebufferEnabled()
-net.minecraft.client.renderer.chunk.ChunkRender net.minecraft.client.renderer.chunk.RenderChunk
-net.minecraft.client.renderer.chunk.ChunkRender unscheduleRebuild() clearNeedsUpdate()
-net.minecraft.nbt.CompoundNBT net.minecraft.nbt.NBTTagCompound
-net.minecraft.client.render.BackgroundRenderer net.minecraft.client.renderer.FogRenderer
-net.minecraft.client.render.BackgroundRenderer applyFog() setupFog()
-net.minecraft.resource.Resource net.minecraft.resources.IResource
 net.minecraft.client.renderer.ItemRenderer net.minecraft.client.renderer.RenderItem
 net.minecraft.client.renderer.FirstPersonRenderer net.minecraft.client.renderer.ItemRenderer
 net.minecraft.client.gui.screen.IngameMenuScreen net.minecraft.client.gui.GuiIngameMenu
-net.minecraft.client.gui.screen.MultiplayerScreen net.minecraft.client.gui.GuiMultiplayer
-net.minecraft.client.gui.screen.WorldSelectionScreen net.minecraft.client.gui.GuiWorldSelection
 # Note: GuiButton has been split into Button and Widget (now shared with e.g. checkboxes),
 #       most members are actually on the latter (there's also AbstractButton in the middle, but it isn't interesting)
 net.minecraft.client.gui.widget.Widget net.minecraft.client.gui.GuiButton
 net.minecraft.client.gui.widget.Widget active net.minecraft.client.gui.GuiButton enabled
-net.minecraft.client.gui.screen.MainMenuScreen net.minecraft.client.gui.GuiMainMenu
-net.minecraft.client.gui.screen.MainMenuScreen realmsNotificationGui realmsNotification
-net.minecraft.realms.RealmsScreenProxy net.minecraft.client.gui.GuiScreenRealmsProxy
-net.minecraft.resource.ResourceNotFoundException net.minecraft.resources.ResourcePackFileNotFoundException
-net.minecraft.resource.ResourcePack net.minecraft.resources.IResourcePack
-net.minecraft.resource.ResourcePack findResources() getAllResourceLocations()
-net.minecraft.resource.ResourcePack getNamespaces() getResourceNamespaces()
-net.minecraft.resource.ResourceType net.minecraft.resources.ResourcePackType
 net.minecraft.network.PacketDirection net.minecraft.network.EnumPacketDirection
-net.minecraft.network.ProtocolType net.minecraft.network.EnumConnectionState
-net.minecraft.network.IPacket net.minecraft.network.Packet
 net.minecraft.client.gui.screen.DownloadTerrainScreen net.minecraft.client.gui.GuiDownloadTerrain
 net.minecraft.client.gui.screen.AlertScreen net.minecraft.client.gui.GuiErrorScreen
 net.minecraft.client.entity.player.RemoteClientPlayerEntity net.minecraft.client.entity.EntityOtherPlayerMP
-net.minecraft.world.Difficulty net.minecraft.world.EnumDifficulty
-net.minecraft.world.chunk.IChunkLightProvider net.minecraft.world.chunk.IChunkProvider
-net.minecraft.profiler.IProfiler net.minecraft.profiler.Profiler
-net.minecraft.client.renderer.GameRenderer net.minecraft.client.renderer.EntityRenderer
-net.minecraft.client.renderer.GameRenderer firstPersonRenderer itemRenderer
-net.minecraft.client.renderer.GameRenderer client mc
-net.minecraft.client.renderer.GameRenderer render() updateCameraAndRender()
-net.minecraft.client.renderer.GameRenderer applyCameraTransformations() setupCameraTransform()
-net.minecraft.client.renderer.GameRenderer renderAboveClouds() renderCloudsCheck()
-net.minecraft.client.renderer.GameRenderer func_215308_a() renderHand()
-net.minecraft.client.renderer.WorldRenderer net.minecraft.client.renderer.RenderGlobal
-net.minecraft.client.renderer.WorldRenderer setBlockBreakingProgress() sendBlockBreakProgress()
-net.minecraft.client.renderer.WorldRenderer drawHighlightedBlockOutline() drawSelectionBox()
-net.minecraft.client.renderer.WorldRenderer chunkBatcher renderDispatcher
-net.minecraft.client.renderer.WorldRenderer chunkInfos renderInfos
-net.minecraft.client.renderer.WorldRenderer chunkRenderers chunksToUpdate
-net.minecraft.client.renderer.WorldRenderer terrainUpdateNecessary displayListEntitiesDirty
-net.minecraft.client.renderer.WorldRenderer field_4076 renderEntitiesStartupCounter
-net.minecraft.client.renderer.WorldRenderer setUpTerrain() setupTerrain()
-net.minecraft.client.renderer.WorldRenderer setWorld() setWorldAndLoadRenderers()
-net.minecraft.client.renderer.WorldRenderer reload() loadRenderers()
-com.mojang.blaze3d.platform.GlStateManager popAttributes() popAttrib()
-com.mojang.blaze3d.platform.GlStateManager disableColorLogicOp() disableColorLogic()
 com.mojang.blaze3d.platform.GlStateManager disableTexture() disableTexture2D()
-com.mojang.blaze3d.platform.GlStateManager enableColorLogicOp() enableColorLogic()
 com.mojang.blaze3d.platform.GlStateManager enableTexture() enableTexture2D()
 com.mojang.blaze3d.platform.GlStateManager enableAlphaTest() enableAlpha()
 com.mojang.blaze3d.platform.GlStateManager activeTexture activeTextureUnit
 com.mojang.blaze3d.platform.GlStateManager net.minecraft.client.renderer.GlStateManager
-com.mojang.blaze3d.platform.GlStateManager.CapabilityTracker net.minecraft.client.renderer.GlStateManager.BooleanState
-com.mojang.blaze3d.platform.GlStateManager.FogState net.minecraft.client.renderer.GlStateManager.FogState
-com.mojang.blaze3d.platform.GlStateManager.FogState capState fog
-com.mojang.blaze3d.platform.GlStateManager.Texture2DState net.minecraft.client.renderer.GlStateManager.Texture2DState
-com.mojang.blaze3d.platform.GlStateManager.Texture2DState capState texture2DState
-net.minecraft.SharedConstants isValidChar() isAllowedCharacter()
-net.minecraft.SharedConstants net.minecraft.util.SharedConstants
-net.minecraft.server.MinecraftServer getLevelName() getWorldName()
-net.minecraft.client.gui.screen.ConfirmScreen net.minecraft.client.gui.GuiYesNo
-net.minecraft.client.Mouse getX() getMouseX()
-net.minecraft.client.Mouse getY() getMouseY()
-net.minecraft.client.Mouse net.minecraft.client.MouseHelper
-net.minecraft.client.Mouse isCursorLocked mouseGrabbed
-net.minecraft.client.Mouse lockCursor() grabMouse()
-net.minecraft.client.Mouse unlockCursor() ungrabMouse()
-net.minecraft.client.Mouse isCursorLocked() isMouseGrabbed()
-net.minecraft.client.Mouse onMouseScroll() scrollCallback()
-net.minecraft.client.audio.PositionedSoundInstance master() getMasterRecord()
-net.minecraft.client.audio.PositionedSoundInstance net.minecraft.client.audio.SimpleSound
-net.minecraft.client.gui.DrawableHelper fill() drawRect()
-net.minecraft.client.gui.DrawableHelper net.minecraft.client.gui.Gui
 net.minecraft.client.gui.screen.Screen hasControlDown() isCtrlKeyDown()
 net.minecraft.client.gui.screen.Screen hasShiftDown() isShiftKeyDown()
 net.minecraft.client.gui.screen.Screen init(Lnet/minecraft/client/Minecraft;II)V setWorldAndResolution()
-net.minecraft.client.gui.screen.Screen minecraft mc
 net.minecraft.client.gui.screen.Screen net.minecraft.client.gui.GuiScreen
 net.minecraft.client.gui.screen.Screen resize() onResize()
-net.minecraft.client.gui.screen.Screen passEvents allowUserInput
 net.minecraft.client.gui.screen.Screen removed() onGuiClosed()
-net.minecraft.client.gui.screen.Screen renderBackground() drawDefaultBackground()
-net.minecraft.client.gui.screen.Screen renderDirtBackground() drawBackground()
-net.minecraft.client.gui.hud.ChatHud net.minecraft.client.gui.GuiNewChat
-net.minecraft.client.GameSettings net.minecraft.client.settings.GameSettings
-net.minecraft.client.GameSettings debugEnabled showDebugInfo
-net.minecraft.client.GameSettings viewDistance renderDistanceChunks
-net.minecraft.client.GameSettings hudHidden hideGUI
-net.minecraft.client.GameSettings gamma gammaSetting
-net.minecraft.client.GameSettings keysAll keyBindings
-net.minecraft.client.GameSettings keyChat keyBindChat
-net.minecraft.client.GameSettings keyCommand keyBindCommand
-net.minecraft.client.GameSettings keyAttack keyBindAttack
-net.minecraft.client.GameSettings keyUse keyBindUseItem
-net.minecraft.client.GameSettings keySneak keyBindSneak
-net.minecraft.client.GameSettings keyForward keyBindForward
-net.minecraft.client.GameSettings keyBack keyBindBack
-net.minecraft.client.GameSettings keyLeft keyBindLeft
-net.minecraft.client.GameSettings keyRight keyBindRight
-net.minecraft.client.GameSettings keyJump keyBindJump
-net.minecraft.client.util.Window getScaleFactor() getGuiScaleFactor()
-net.minecraft.client.util.Window setFullscreen() update()
-net.minecraft.client.util.Window method_4493() setupOverlayRendering()
-net.minecraft.client.util.Window net.minecraft.client.MainWindow
-net.minecraft.resources.AbstractResourcePack net.minecraft.resources.AbstractResourcePack
-net.minecraft.resources.AbstractResourcePack containsFile() resourceExists()
-net.minecraft.resources.AbstractResourcePack base file
-net.minecraft.resource.ResourcePackContainer net.minecraft.resources.ResourcePackInfo
-net.minecraft.resource.ResourcePackContainer.Factory net.minecraft.resources.ResourcePackInfo.IFactory
-net.minecraft.resource.ResourcePackContainer.InsertionPosition net.minecraft.resources.ResourcePackInfo.Priority
-net.minecraft.resource.ResourcePackContainer of() func_195793_a()
-net.minecraft.resource.ResourcePackContainerManager net.minecraft.resources.ResourcePackList
-net.minecraft.resource.ResourcePackContainerManager addCreator() addPackFinder()
-net.minecraft.resource.ResourcePackCreator net.minecraft.resources.IPackFinder
-net.minecraft.resource.ResourcePackCreator registerContainer() addPackInfosToMap()
-net.minecraft.world.World getGeneratorType() getWorldType()
 net.minecraft.world.IEntityReader getPlayerByUuid() net.minecraft.world.World getPlayerEntityByUUID()
-net.minecraft.client.renderer.entity.EntityRendererManager net.minecraft.client.renderer.entity.RenderManager
-net.minecraft.client.renderer.entity.EntityRendererManager cameraYaw playerViewY
-net.minecraft.client.renderer.entity.EntityRendererManager cameraPitch playerViewX
-net.minecraft.client.renderer.entity.EntityRendererManager configure() cacheActiveRenderInfo()
-net.minecraft.client.renderer.entity.EntityRendererManager render() renderEntityStatic()
-net.minecraft.client.util.InputUtil net.minecraft.client.util.InputMappings
-net.minecraft.client.util.InputUtil isKeyPressed() isKeyDown()
-net.minecraft.client.util.InputUtil$KeyCode net.minecraft.client.util.InputMappings$Input
 net.minecraft.client.resources.DownloadingPackFinder func_217818_a() downloadResourcePack()
 net.minecraft.client.resources.DownloadingPackFinder func_217816_a() setServerResourcePack()
-net.minecraft.client.entity.player.ClientPlayerEntity net.minecraft.client.entity.EntityPlayerSP
-net.minecraft.client.entity.player.ClientPlayerEntity client mc
-net.minecraft.client.entity.player.ClientPlayerEntity renderYaw renderArmYaw
-net.minecraft.client.entity.player.ClientPlayerEntity renderPitch renderArmPitch
-net.minecraft.client.entity.player.ClientPlayerEntity lastRenderYaw prevRenderArmYaw
-net.minecraft.client.entity.player.ClientPlayerEntity lastRenderPitch prevRenderArmPitch
-net.minecraft.client.entity.player.AbstractClientPlayerEntity net.minecraft.client.entity.AbstractClientPlayer
-net.minecraft.client.network.login.ClientLoginNetHandler net.minecraft.client.network.NetHandlerLoginClient
-net.minecraft.client.network.login.ClientLoginNetHandler connection networkManager
-net.minecraft.client.network.login.ClientLoginNetHandler onQueryRequest() func_209521_a()
-net.minecraft.client.network.login.ClientLoginNetHandler onLoginSuccess() handleLoginSuccess()
-net.minecraft.client.network.play.ClientPlayNetHandler net.minecraft.client.network.NetHandlerPlayClient
-net.minecraft.client.network.play.ClientPlayNetHandler playerListEntries playerInfoMap
-net.minecraft.client.network.play.ClientPlayNetHandler onPlayerList() handlePlayerListItem()
-net.minecraft.client.network.play.ClientPlayNetHandler onPlayerRespawn() handleRespawn()
-net.minecraft.client.network.play.NetworkPlayerInfo net.minecraft.client.network.NetworkPlayerInfo
-net.minecraft.entity.item.ItemFrameEntity net.minecraft.entity.item.EntityItemFrame
-net.minecraft.entity.player.PlayerEntity net.minecraft.entity.player.EntityPlayer
-net.minecraft.entity.player.PlayerEntity selectedItem itemStackMainHand
-net.minecraft.entity.player.PlayerEntity isSleeping() isPlayerSleeping()
-net.minecraft.entity.MobEntity net.minecraft.entity.EntityLiving
-net.minecraft.entity.LivingEntity net.minecraft.entity.EntityLivingBase
-net.minecraft.entity.LivingEntity headYaw rotationYawHead
-net.minecraft.entity.LivingEntity prevHeadYaw prevRotationYawHead
-net.minecraft.entity.LivingEntity isHandSwinging isSwingInProgress
-net.minecraft.entity.LivingEntity handSwingTicks swingProgressInt
-net.minecraft.entity.LivingEntity preferredHand swingingHand
-net.minecraft.entity.LivingEntity itemUseTimeLeft activeItemStackUseCount
-net.minecraft.entity.LivingEntity field_6224 interpTargetX
-net.minecraft.entity.LivingEntity field_6245 interpTargetY
-net.minecraft.entity.LivingEntity field_6263 interpTargetZ
-net.minecraft.entity.LivingEntity field_6284 interpTargetYaw
-net.minecraft.entity.LivingEntity field_6221 interpTargetPitch
-net.minecraft.entity.LivingEntity isSleeping() isPlayerSleeping()
-net.minecraft.entity.LivingEntity tickMovement() livingTick()
-net.minecraft.entity.Entity afterSpawn() preparePlayerToSpawn()
-net.minecraft.entity.Entity spawnSprintingParticles() createRunningParticles()
-net.minecraft.entity.Entity isRowingBoat() isRiding()
-net.minecraft.entity.Entity updateNeeded addedToChunk
-net.minecraft.entity.Entity chunkX chunkCoordX
-net.minecraft.entity.Entity chunkY chunkCoordY
-net.minecraft.entity.Entity chunkZ chunkCoordZ
-net.minecraft.entity.Entity x posX
-net.minecraft.entity.Entity y posY
-net.minecraft.entity.Entity z posZ
-net.minecraft.entity.Entity yaw rotationYaw
-net.minecraft.entity.Entity pitch rotationPitch
-net.minecraft.entity.Entity prevX prevPosX
-net.minecraft.entity.Entity prevY prevPosY
-net.minecraft.entity.Entity prevZ prevPosZ
-net.minecraft.entity.Entity prevYaw prevRotationYaw
-net.minecraft.entity.Entity prevPitch prevRotationPitch
-net.minecraft.entity.Entity prevRenderX lastTickPosX
-net.minecraft.entity.Entity prevRenderY lastTickPosY
-net.minecraft.entity.Entity prevRenderZ lastTickPosZ
-net.minecraft.util.math.RayTraceContext net.minecraft.util.math.RayTraceResult
-net.minecraft.inventory.EquipmentSlotType net.minecraft.inventory.EntityEquipmentSlot
-net.minecraft.client.recipe.book.ClientRecipeBook net.minecraft.client.util.RecipeBookClient
 net.minecraft.util.Hand net.minecraft.util.EnumHand
-net.minecraft.client.renderer.model.ModelBox net.minecraft.client.model.ModelBox
-net.minecraft.client.renderer.entity.model.RendererModel net.minecraft.client.model.ModelRenderer
-net.minecraft.client.renderer.entity.model.RendererModel boxes cubeList
-net.minecraft.client.renderer.entity.model.RendererModel name boxName
-net.minecraft.client.renderer.entity.model.RendererModel method_2852() renderWithRotation()
-net.minecraft.client.renderer.texture.AtlasTexture net.minecraft.client.renderer.texture.TextureMap
-net.minecraft.client.renderer.texture.AtlasTexture BLOCK_ATLAS_TEX LOCATION_BLOCKS_TEXTURE
-net.minecraft.client.world.ClientWorld net.minecraft.client.multiplayer.WorldClient
-net.minecraft.client.world.ClientWorld client mc
-net.minecraft.client.world.ClientWorld disconnect() sendQuittingDisconnectingPacket()
 
-#net.minecraft.client.network.packet net.minecraft.network.play.server
-net.minecraft.network.login.server.SCustomPayloadLoginPacket net.minecraft.network.login.server.SPacketCustomPayloadLogin
-net.minecraft.network.login.server.SEnableCompressionPacket net.minecraft.network.login.server.SPacketEnableCompression
-net.minecraft.network.login.server.SLoginSuccessPacket net.minecraft.network.login.server.SPacketLoginSuccess
-net.minecraft.network.play.server.SJoinGamePacket net.minecraft.network.play.server.SPacketJoinGame
-net.minecraft.network.play.server.SChatPacket net.minecraft.network.play.server.SPacketChat
-net.minecraft.network.play.server.SSpawnParticlePacket net.minecraft.network.play.server.SPacketParticles
-net.minecraft.network.play.server.SChangeGameStatePacket net.minecraft.network.play.server.SPacketChangeGameState
-net.minecraft.network.play.server.SPlayerPositionLookPacket net.minecraft.network.play.server.SPacketPlayerPosLook
-net.minecraft.network.play.server.SPlayerPositionLookPacket.Flag net.minecraft.network.play.server.SPacketPlayerPosLook.EnumFlags
-net.minecraft.network.play.server.SPlayerListItemPacket net.minecraft.network.play.server.SPacketPlayerListItem
-net.minecraft.network.play.server.SPlayerListItemPacket.Action net.minecraft.network.play.server.SPacketPlayerListItem.Action
-net.minecraft.network.play.server.SPlayerListItemPacket.Entry net.minecraft.network.play.server.SPacketPlayerListItem.AddPlayerData
-net.minecraft.network.play.server.SRespawnPacket net.minecraft.network.play.server.SPacketRespawn
-net.minecraft.network.play.server.SSpawnPlayerPacket net.minecraft.network.play.server.SPacketSpawnPlayer
-net.minecraft.network.play.server.SSpawnObjectPacket net.minecraft.network.play.server.SPacketSpawnObject
-net.minecraft.network.play.server.SSpawnMobPacket net.minecraft.network.play.server.SPacketSpawnMob
-net.minecraft.network.play.server.SSpawnGlobalEntityPacket net.minecraft.network.play.server.SPacketSpawnGlobalEntity
-net.minecraft.network.play.server.SSpawnPaintingPacket net.minecraft.network.play.server.SPacketSpawnPainting
-net.minecraft.network.play.server.SSpawnExperienceOrbPacket net.minecraft.network.play.server.SPacketSpawnExperienceOrb
-net.minecraft.network.play.server.SDestroyEntitiesPacket net.minecraft.network.play.server.SPacketDestroyEntities
-net.minecraft.network.play.server.SEntityTeleportPacket net.minecraft.network.play.server.SPacketEntityTeleport
-net.minecraft.network.play.server.SEntityHeadLookPacket net.minecraft.network.play.server.SPacketEntityHeadLook
-net.minecraft.network.play.server.SEntityVelocityPacket net.minecraft.network.play.server.SPacketEntityVelocity
-net.minecraft.network.play.server.SMountEntityPacket net.minecraft.network.play.server.SPacketEntityAttach
-net.minecraft.network.play.server.SAnimateHandPacket net.minecraft.network.play.server.SPacketAnimation
-net.minecraft.network.play.server.SCollectItemPacket net.minecraft.network.play.server.SPacketCollectItem
-net.minecraft.network.play.server.SAnimateBlockBreakPacket net.minecraft.network.play.server.SPacketBlockBreakAnim
-net.minecraft.network.play.client.CResourcePackStatusPacket net.minecraft.network.play.client.CPacketResourcePackStatus
-net.minecraft.network.play.client.CResourcePackStatusPacket.Status net.minecraft.network.play.client.CPacketResourcePackStatus.Action
-net.minecraft.network.play.server.SSendResourcePackPacket net.minecraft.network.play.server.SPacketResourcePackSend
-net.minecraft.network.play.server.SCustomPayloadPlayPacket net.minecraft.network.play.server.SPacketCustomPayload
-net.minecraft.network.play.server.SDisconnectPacket net.minecraft.network.play.server.SPacketDisconnect
-net.minecraft.network.login.server.SLoginSuccessPacket net.minecraft.network.login.server.SPacketLoginSuccess
 net.minecraft.network.play.server.SUpdateRecipesPacket net.minecraft.network.play.server.SPacketRecipeBook
-net.minecraft.network.play.server.SAdvancementInfoPacket net.minecraft.network.play.server.SPacketAdvancementInfo
-net.minecraft.network.play.server.SSelectAdvancementsTabPacket net.minecraft.network.play.server.SPacketSelectAdvancementsTab
-net.minecraft.network.play.server.SUpdateHealthPacket net.minecraft.network.play.server.SPacketUpdateHealth
 net.minecraft.network.play.server.SOpenHorseWindowPacket net.minecraft.network.play.server.SPacketOpenWindow
-net.minecraft.network.play.server.SCloseWindowPacket net.minecraft.network.play.server.SPacketCloseWindow
-net.minecraft.network.play.server.SSetSlotPacket net.minecraft.network.play.server.SPacketSetSlot
 net.minecraft.network.play.server.SWindowPropertyPacket net.minecraft.network.play.server.SPacketWindowItems
-net.minecraft.network.play.server.SOpenSignMenuPacket net.minecraft.network.play.server.SPacketSignEditorOpen
-net.minecraft.network.play.server.SStatisticsPacket net.minecraft.network.play.server.SPacketStatistics
-net.minecraft.network.play.server.SSetExperiencePacket net.minecraft.network.play.server.SPacketSetExperience
-net.minecraft.network.play.server.SCameraPacket net.minecraft.network.play.server.SPacketCamera
-net.minecraft.network.play.server.SPlayerAbilitiesPacket net.minecraft.network.play.server.SPacketPlayerAbilities
-net.minecraft.network.play.server.STitlePacket net.minecraft.network.play.server.SPacketTitle
-net.minecraft.network.play.server.SUnloadChunkPacket net.minecraft.network.play.server.SPacketUnloadChunk
-net.minecraft.network.play.server.SPlaySoundEffectPacket net.minecraft.network.play.server.SPacketSoundEffect
-net.minecraft.network.play.server.SPlaySoundEventPacket net.minecraft.network.play.server.SPacketEffect
-net.minecraft.network.play.server.SEntityMetadataPacket net.minecraft.network.play.server.SPacketEntityMetadata
-net.minecraft.network.play.server.SEntityEquipmentPacket net.minecraft.network.play.server.SPacketEntityEquipment
-net.minecraft.network.play.server.SEntityPacket net.minecraft.network.play.server.SPacketEntity
-net.minecraft.network.play.server.SEntityPacket.Rotate net.minecraft.network.play.server.SPacketEntity.Look
-net.minecraft.network.play.server.SEntityPacket.MoveRelative net.minecraft.network.play.server.SPacketEntity.RelMove
-net.minecraft.network.play.server.SEntityPacket.MovePacket net.minecraft.network.play.server.SPacketEntity.Move
