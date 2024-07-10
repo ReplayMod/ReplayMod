@@ -303,7 +303,7 @@ val configureRelocation by tasks.registering {
 }
 
 val bundleJar by tasks.registering(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
-    from(tasks.remapJar.flatMap { it.archiveFile }.map { zipTree(it) })
+    from(tasks.remapJar.flatMap { it.archiveFile })
 
     from(jGui.tasks.remapJar.flatMap { it.archiveFile }.map { zipTree(it) }) {
         filesMatching("mixins.jgui.json") {
