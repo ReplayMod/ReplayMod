@@ -73,7 +73,12 @@ public class RecordingEventHandler extends EventRegistrations {
     private final PacketListener packetListener;
 
     private Double lastX, lastY, lastZ;
-    private final List<ItemStack> playerItems = DefaultedList.ofSize(6, ItemStack.EMPTY);
+    //#if MC>=10904
+    private static final int EQUIPMENT_SLOTS = EquipmentSlot.values().length;
+    //#else
+    //$$ private static final int EQUIPMENT_SLOTS = 5;
+    //#endif
+    private final List<ItemStack> playerItems = DefaultedList.ofSize(EQUIPMENT_SLOTS, ItemStack.EMPTY);
     private int ticksSinceLastCorrection;
     private boolean wasSleeping;
     private int lastRiding = -1;
@@ -108,7 +113,21 @@ public class RecordingEventHandler extends EventRegistrations {
         try {
             ClientPlayerEntity player = mc.player;
             assert player != null;
-            //#if MC>=12002
+            //#if MC>=12100
+            //$$ packetListener.save(new EntitySpawnS2CPacket(
+            //$$         player.getId(),
+            //$$         player.getUuid(),
+            //$$         player.getX(),
+            //$$         player.getY(),
+            //$$         player.getZ(),
+            //$$         player.getPitch(),
+            //$$         player.getYaw(),
+            //$$         player.getType(),
+            //$$         0,
+            //$$         player.getVelocity(),
+            //$$         player.getHeadYaw()
+            //$$ ));
+            //#elseif MC>=12002
             //$$ packetListener.save(new EntitySpawnS2CPacket(player));
             //#else
             packetListener.save(new PlayerSpawnS2CPacket(player));
@@ -279,7 +298,7 @@ public class RecordingEventHandler extends EventRegistrations {
                 ItemStack stack = player.getEquippedStack(slot);
                 int index = slot.ordinal();
             //#else
-            //$$ for (int slot = 0; slot < 5; slot++) {
+            //$$ for (int slot = 0; slot < EQUIPMENT_SLOTS; slot++) {
             //$$     ItemStack stack = player.getEquipmentInSlot(slot);
             //$$     int index = slot;
             //#endif

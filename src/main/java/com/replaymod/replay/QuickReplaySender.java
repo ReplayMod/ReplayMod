@@ -14,24 +14,17 @@ import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerAdapter;
-import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.network.NetworkState;
-import net.minecraft.network.NetworkSide;
-import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.function.Consumer;
 
-//#if MC>=11200
-import com.replaymod.core.utils.WrappedTimer;
-//#endif
-
-import static com.replaymod.core.versions.MCVer.asMc;
+import static com.replaymod.core.utils.Utils.DEFAULT_MS_PER_TICK;
 import static com.replaymod.core.versions.MCVer.getMinecraft;
 import static com.replaymod.core.versions.MCVer.getPacketTypeRegistry;
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
@@ -49,7 +42,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     private final ReplayModReplay mod;
     private final RandomAccessReplay replay;
     private final EventHandler eventHandler = new EventHandler();
-    private ChannelHandlerContext ctx;
+    private Channel channel;
 
     private int currentTimeStamp;
     private double replaySpeed = 1;
@@ -70,6 +63,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
             @Override
             protected void dispatch(com.replaymod.replaystudio.protocol.Packet packet) {
+                // Convert ReplayStudio-Netty buffer into MC-Netty buffer
                 com.github.steveice10.netty.buffer.ByteBuf byteBuf = packet.getBuf();
                 int size = byteBuf.readableBytes();
                 if (buf.length < size) {
@@ -78,40 +72,14 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 byteBuf.getBytes(byteBuf.readerIndex(), buf, 0, size);
                 ByteBuf wrappedBuf = Unpooled.wrappedBuffer(buf);
                 wrappedBuf.writerIndex(size);
-                PacketByteBuf packetByteBuf = new PacketByteBuf(wrappedBuf);
+                packet.release();
 
-                NetworkState state = asMc(packet.getRegistry().getState());
-                //#if MC>=10809
-                Packet<?> mcPacket;
-                //#else
-                //$$ Packet mcPacket;
-                //#endif
-                //#if MC>=12002
-                //$$ mcPacket = state.getHandler(NetworkSide.CLIENTBOUND).createPacket(packet.getId(), packetByteBuf);
-                //#elseif MC>=11700
-                //$$ mcPacket = state.getPacketHandler(NetworkSide.CLIENTBOUND, packet.getId(), packetByteBuf);
-                //#elseif MC>=11500
-                mcPacket = state.getPacketHandler(NetworkSide.CLIENTBOUND, packet.getId());
-                //#else
-                //$$ try {
-                //$$     mcPacket = state.getPacketHandler(NetworkSide.CLIENTBOUND, packet.getId());
-                //$$ } catch (IllegalAccessException | InstantiationException e) {
-                //$$     e.printStackTrace();
-                //$$     return;
-                //$$ }
-                //#endif
-                if (mcPacket != null) {
-                    //#if MC<11700
-                    try {
-                        mcPacket.read(packetByteBuf);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        return;
-                    }
-                    //#endif
+                // Combine id + payload
+                ByteBuf bufWithId = channel.alloc().heapBuffer(2 + wrappedBuf.readableBytes());
+                new PacketByteBuf(bufWithId).writeVarInt(packet.getId());
+                bufWithId.writeBytes(wrappedBuf);
 
-                    ctx.fireChannelRead(mcPacket);
-                }
+                channel.pipeline().fireChannelRead(bufWithId);
             }
         };
     }
@@ -124,9 +92,8 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         eventHandler.unregister();
     }
 
-    @Override
-    public void handlerAdded(ChannelHandlerContext ctx) {
-        this.ctx = ctx;
+    public void setChannel(Channel channel) {
+        this.channel = channel;
     }
 
     public ListenableFuture<Void> getInitializationPromise() {
@@ -194,7 +161,7 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         }
         TimerAccessor timer = (TimerAccessor) ((MinecraftAccessor) mc).getTimer();
         //#if MC>=11200
-        timer.setTickLength(WrappedTimer.DEFAULT_MS_PER_TICK / (float) factor);
+        timer.setTickLength(DEFAULT_MS_PER_TICK / (float) factor);
         //#else
         //$$ timer.setTimerSpeed((float) factor);
         //#endif

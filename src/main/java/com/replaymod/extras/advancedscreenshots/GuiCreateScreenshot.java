@@ -6,6 +6,7 @@ import com.replaymod.render.gui.GuiRenderSettings;
 import com.replaymod.replay.ReplayModReplay;
 import de.johni0702.minecraft.gui.container.GuiContainer;
 import de.johni0702.minecraft.gui.container.GuiPanel;
+import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.function.Loadable;
 import de.johni0702.minecraft.gui.layout.GridLayout;
@@ -58,8 +59,9 @@ public class GuiCreateScreenshot extends GuiRenderSettings implements Loadable {
 
                     boolean success = new ScreenshotRenderer(settings).renderScreenshot();
                     if (success) {
-                        new GuiUploadScreenshot(ReplayModReplay.instance.getReplayHandler().getOverlay(), mod,
-                                settings).open();
+                        GuiScreen screen = createBaseScreen();
+                        new GuiUploadScreenshot(screen, mod, settings).open();
+                        screen.display();
                     }
 
                 } catch (Throwable t) {

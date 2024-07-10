@@ -19,9 +19,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static de.johni0702.minecraft.gui.versions.MCVer.identifier;
+
 public class ODSFrameCapturer implements FrameCapturer<ODSOpenGlFrame> {
-    private static final Identifier vertexResource = new Identifier("replaymod", "shader/ods.vert");
-    private static final Identifier fragmentResource = new Identifier("replaymod", "shader/ods.frag");
+    private static final Identifier vertexResource = identifier("replaymod", "shader/ods.vert");
+    private static final Identifier fragmentResource = identifier("replaymod", "shader/ods.frag");
 
     private final CubicPboOpenGlFrameCapturer left, right;
     private final Program shaderProgram;

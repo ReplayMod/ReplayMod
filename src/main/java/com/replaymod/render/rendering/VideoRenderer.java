@@ -3,9 +3,9 @@ package com.replaymod.render.rendering;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.mixin.TimerAccessor;
-import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.pathing.player.AbstractTimelinePlayer;
+import com.replaymod.pathing.player.ReplayTimer;
 import com.replaymod.pathing.properties.TimestampProperty;
 import com.replaymod.render.CameraPathExporter;
 import com.replaymod.render.EXRWriter;
@@ -38,7 +38,6 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.client.render.RenderTickCounter;
 import org.lwjgl.glfw.GLFW;
 
 //#if MC>=12000
@@ -85,13 +84,15 @@ import java.util.concurrent.FutureTask;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.Iterables.getLast;
+import static com.replaymod.core.utils.Utils.DEFAULT_MS_PER_TICK;
 import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.render.ReplayModRender.LOGGER;
+import static de.johni0702.minecraft.gui.versions.MCVer.identifier;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
 public class VideoRenderer implements RenderInfo {
-    private static final Identifier SOUND_RENDER_SUCCESS = new Identifier("replaymod", "render_success");
+    private static final Identifier SOUND_RENDER_SUCCESS = identifier("replaymod", "render_success");
     private final MinecraftClient mc = MCVer.getMinecraft();
     private final RenderSettings settings;
     private final ReplayHandler replayHandler;
@@ -191,7 +192,7 @@ public class VideoRenderer implements RenderInfo {
         // Because this might take some time to prepare we'll render the GUI at least once to not confuse the user
         drawGui();
 
-        RenderTickCounter timer = ((MinecraftAccessor) mc).getTimer();
+        ReplayTimer timer = (ReplayTimer) ((MinecraftAccessor) mc).getTimer();
 
         // Play up to one second before starting to render
         // This is necessary in order to ensure that all entities have at least two position packets
@@ -207,7 +208,7 @@ public class VideoRenderer implements RenderInfo {
                 int replayTime = videoStart - 1000;
                 //#if MC>=11200
                 timer.tickDelta = 0;
-                ((TimerAccessor) timer).setTickLength(WrappedTimer.DEFAULT_MS_PER_TICK);
+                ((TimerAccessor) timer).setTickLength(DEFAULT_MS_PER_TICK);
                 //#else
                 //$$ timer.elapsedPartialTicks = timer.renderPartialTicks = 0;
                 //$$ timer.timerSpeed = 1;
@@ -268,13 +269,16 @@ public class VideoRenderer implements RenderInfo {
         }
 
         // Updating the timer will cause the timeline player to update the game state
-        RenderTickCounter timer = ((MinecraftAccessor) mc).getTimer();
+        ReplayTimer timer = (ReplayTimer) ((MinecraftAccessor) mc).getTimer();
         //#if MC>=11600
         int elapsedTicks =
         //#endif
         timer.beginRenderTick(
                 //#if MC>=11400
                 MCVer.milliTime()
+                //#endif
+                //#if MC>=12100
+                //$$ , true
                 //#endif
         );
         //#if MC<11600
@@ -512,9 +516,14 @@ public class VideoRenderer implements RenderInfo {
                     //$$ , VertexSorter.BY_Z
                     //#endif
             //$$ );
+            //#if MC>=12006
+            //$$ org.joml.Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
+            //$$ matrixStack.translation(0, 0, -2000);
+            //#else
             //$$ MatrixStack matrixStack = RenderSystem.getModelViewStack();
             //$$ matrixStack.loadIdentity();
             //$$ matrixStack.translate(0, 0, -2000);
+            //#endif
             //$$ RenderSystem.applyModelViewMatrix();
             //$$ DiffuseLighting.enableGuiDepthLighting();
             //#else
@@ -558,13 +567,17 @@ public class VideoRenderer implements RenderInfo {
             int mouseX = (int) mc.mouse.getX() * window.getScaledWidth() / Math.max(window.getWidth(), 1);
             int mouseY = (int) mc.mouse.getY() * window.getScaledHeight() / Math.max(window.getHeight(), 1);
 
+            //#if MC>=12000
+            //$$ DrawContext drawContext = new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers());
+            //#endif
+
             if (mc.getOverlay() != null) {
                 Screen orgScreen = mc.currentScreen;
                 try {
                     mc.currentScreen = gui.toMinecraft();
                     mc.getOverlay().render(
                             //#if MC>=12000
-                            //$$ new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers()),
+                            //$$ drawContext,
                             //#elseif MC>=11600
                             new MatrixStack(),
                             //#endif
@@ -582,6 +595,9 @@ public class VideoRenderer implements RenderInfo {
                         //#endif
                         mouseX, mouseY, 0);
             }
+            //#if MC>=12000
+            //$$ drawContext.draw();
+            //#endif
             //#else
             //$$ int mouseX = Mouse.getX() * window.getScaledWidth() / mc.displayWidth;
             //$$ int mouseY = window.getScaledHeight() - Mouse.getY() * window.getScaledHeight() / mc.displayHeight - 1;

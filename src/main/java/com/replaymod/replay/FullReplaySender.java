@@ -11,16 +11,16 @@ import com.replaymod.core.utils.Restrictions;
 import com.replaymod.replay.camera.CameraEntity;
 import com.replaymod.replaystudio.io.ReplayInputStream;
 import com.replaymod.replaystudio.lib.viaversion.api.protocol.packet.State;
+import com.replaymod.replaystudio.protocol.PacketType;
 import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
 import com.replaymod.replaystudio.replay.ReplayFile;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.versions.callbacks.PreTickCallback;
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
@@ -28,9 +28,7 @@ import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.NetworkState;
 import net.minecraft.network.Packet;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
@@ -119,7 +117,6 @@ import net.minecraft.util.Identifier;
 //#endif
 
 //#if MC>=11200
-import com.replaymod.core.utils.WrappedTimer;
 import net.minecraft.network.packet.s2c.play.AdvancementUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.SelectAdvancementTabS2CPacket;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
@@ -140,7 +137,6 @@ import net.minecraft.network.packet.s2c.play.UnloadChunkS2CPacket;
 import net.minecraft.network.packet.s2c.play.ResourcePackSendS2CPacket;
 import net.minecraft.network.packet.s2c.play.SetCameraEntityS2CPacket;
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket;
-import net.minecraft.network.NetworkSide;
 //#else
 //$$ import org.apache.commons.io.Charsets;
 //#endif
@@ -155,6 +151,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.replaymod.core.utils.Utils.DEFAULT_MS_PER_TICK;
 import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.replaystudio.util.Utils.readInt;
 
@@ -164,7 +161,7 @@ import static com.replaymod.replaystudio.util.Utils.readInt;
  * the replay restart from the beginning.
  */
 @Sharable
-public class FullReplaySender extends ChannelDuplexHandler implements ReplaySender {
+public class FullReplaySender extends ChannelInboundHandlerAdapter implements ReplaySender {
     /**
      * These packets are ignored completely during replay.
      */
@@ -230,9 +227,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     protected ReplayFile replayFile;
 
     /**
-     * The channel handler context used to send packets to minecraft.
+     * The channel used to send packets to minecraft.
      */
-    protected ChannelHandlerContext ctx;
+    protected Channel channel;
 
     /**
      * The replay input stream from which new packets are read.
@@ -272,6 +269,11 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     protected boolean hasWorldLoaded;
 
     /**
+     * Whether we are currently in the middle of a bundle packet.
+     */
+    protected boolean inBundle;
+
+    /**
      * The minecraft instance.
      */
     protected MinecraftClient mc = getMinecraft();
@@ -303,20 +305,17 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     /**
      * Create a new replay sender.
      * @param file The replay file
-     * @param asyncMode {@code true} for async mode, {@code false} otherwise
-     * @see #asyncMode
      */
-    public FullReplaySender(ReplayHandler replayHandler, ReplayFile file, boolean asyncMode) throws IOException {
+    public FullReplaySender(ReplayHandler replayHandler, ReplayFile file) throws IOException {
         this.replayHandler = replayHandler;
         this.replayFile = file;
-        this.asyncMode = asyncMode;
         this.replayLength = file.getMetaData().getDuration();
 
         events.register();
+    }
 
-        if (asyncMode) {
-            new Thread(asyncSender, "replaymod-async-sender").start();
-        }
+    public void setChannel(Channel channel) {
+        this.channel = channel;
     }
 
     /**
@@ -383,8 +382,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         syncSender.shutdown();
         events.unregister();
         try {
-            channelInactive(ctx);
-            ctx.channel().pipeline().close();
+            channel.pipeline().fireChannelInactive();
+            channel.pipeline().close();
             FileUtils.deleteDirectory(tempResourcePackFolder);
         } catch(Exception e) {
             e.printStackTrace();
@@ -404,7 +403,12 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             if (mc.world != null) {
                 for (PlayerEntity playerEntity : mc.world.getPlayers()) {
                     if (!playerEntity.updateNeeded && playerEntity instanceof OtherClientPlayerEntity) {
+                        // FIXME preprocessor should (and used to) be able to map this
+                        //#if MC>=11400
                         playerEntity.tickMovement();
+                        //#else
+                        //$$ playerEntity.onLivingUpdate();
+                        //#endif
                     }
                 }
             }
@@ -420,14 +424,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             return;
         }
 
-        // When a packet is sent directly, perform no filtering
-        if(msg instanceof Packet) {
-            super.channelRead(ctx, msg);
-        }
-
-        if (msg instanceof byte[]) {
+        if (msg instanceof Packet) {
             try {
-                Packet p = deserializePacket((byte[]) msg);
+                Packet p = (Packet) msg;
 
                 if (p != null) {
                     p = processPacket(p);
@@ -471,29 +470,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
             }
         }
 
-    }
-
-    private Packet deserializePacket(byte[] bytes) throws IOException, IllegalAccessException, InstantiationException {
-        ByteBuf bb = Unpooled.wrappedBuffer(bytes);
-        PacketByteBuf pb = new PacketByteBuf(bb);
-
-        int i = pb.readVarInt();
-
-        NetworkState state = asMc(registry.getState());
-        //#if MC>=12002
-        //$$ Packet p = state.getHandler(NetworkSide.CLIENTBOUND).createPacket(i, pb);
-        //#elseif MC>=11700
-        //$$ Packet p = state.getPacketHandler(NetworkSide.CLIENTBOUND, i, pb);
-        //#else
-        //#if MC>=10800
-        Packet p = state.getPacketHandler(NetworkSide.CLIENTBOUND, i);
-        //#else
-        //$$ Packet p = Packet.generatePacket(state.func_150755_b(), i);
-        //#endif
-        p.read(pb);
-        //#endif
-
-        return p;
     }
 
     // If we do not give minecraft time to tick, there will be dead entity artifacts left in the world
@@ -705,6 +681,9 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                     //$$ packet.showDeathScreen(),
                     //$$ packet.doLimitedCrafting(),
                     //$$ withSpectatorMode(packet.commonPlayerSpawnInfo())
+                    //#if MC>=12006
+                    //$$ , packet.enforcesSecureChat()
+                    //#endif
                     //#else
                     //#if MC>=11800
                     //$$ packet.hardcore(),
@@ -981,32 +960,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     //$$ }
     //#endif
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        this.ctx = ctx;
-        super.channelActive(ctx);
-    }
-
-    @Override
-    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        // The embedded channel's event loop will consider every thread to be in it and as such provides no
-        // guarantees that only one thread is using the pipeline at any one time.
-        // For reading the replay sender (either sync or async) is the only thread ever writing.
-        // For writing it may very well happen that multiple threads want to use the pipline at the same time.
-        // It's unclear whether the EmbeddedChannel is supposed to be thread-safe (the behavior of the event loop
-        // does suggest that). However it seems like it either isn't (likely) or there is a race condition.
-        // See: https://www.replaymod.com/forum/thread/1752#post8045 (https://paste.replaymod.com/lotacatuwo)
-        // To work around this issue, we just outright drop all write/flush requests (they aren't needed anyway).
-        // This still leaves channel handlers upstream with the threading issue but they all seem to cope well with it.
-        promise.setSuccess();
-    }
-
-    @Override
-    public void flush(ChannelHandlerContext ctx) throws Exception {
-        // See write method above
-    }
-
     /**
      * Returns the speed of the replay. 1 being normal speed, 0.5 half and 2 twice as fast.
      * If 0 is returned, the replay is paused.
@@ -1032,7 +985,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
         }
         TimerAccessor timer = (TimerAccessor) ((MinecraftAccessor) mc).getTimer();
         //#if MC>=11200
-        timer.setTickLength(WrappedTimer.DEFAULT_MS_PER_TICK / (float) d);
+        timer.setTickLength(DEFAULT_MS_PER_TICK / (float) d);
         //#else
         //$$ timer.setTimerSpeed((float) d);
         //#endif
@@ -1068,9 +1021,6 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
     private Runnable asyncSender = new Runnable() {
         public void run() {
             try {
-                while (ctx == null && !terminate) {
-                    Thread.sleep(10);
-                }
                 REPLAY_LOOP:
                 while (!terminate) {
                     synchronized (FullReplaySender.this) {
@@ -1081,7 +1031,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         while (true) {
                             try {
                                 // When playback is paused and the world has loaded (we don't want any dirt-screens) we sleep
-                                while (paused() && hasWorldLoaded) {
+                                while (paused() && hasWorldLoaded && !inBundle) {
                                     // Unless we are going to terminate, restart or jump
                                     if (terminate || startFromBeginning || desiredTimeStamp != -1) {
                                         break;
@@ -1089,7 +1039,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                     Thread.sleep(10);
                                 }
 
-                                if (terminate) {
+                                if (terminate && !inBundle) {
                                     break REPLAY_LOOP;
                                 }
 
@@ -1109,7 +1059,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
                                 // If we aren't jumping and the world has already been loaded (no dirt-screens) then wait
                                 // the required amount to get proper packet timing
-                                if (!isHurrying() && hasWorldLoaded) {
+                                if (!isHurrying() && hasWorldLoaded && !inBundle) {
                                     // Timestamp of when the next packet should be sent
                                     long expectedTime = realTimeStart + (long) (nextTimeStamp / replaySpeed);
                                     long now = System.currentTimeMillis();
@@ -1120,7 +1070,8 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                 }
 
                                 // Process packet
-                                channelRead(ctx, nextPacket.bytes);
+                                if (nextPacket.type == PacketType.Bundle) inBundle = !inBundle;
+                                channel.pipeline().fireChannelRead(Unpooled.wrappedBuffer(nextPacket.bytes));
                                 nextPacket = null;
 
                                 lastTimeStamp = nextTimeStamp;
@@ -1131,7 +1082,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                                 // Might be safe to do the same on older versions too, but I'd rather not poke the
                                 // monster that is Forge networking.
                                 //#if MC>=12002
-                                //$$ while (!ctx.channel().config().isAutoRead()) {
+                                //$$ while (!channel.config().isAutoRead()) {
                                 //$$     Thread.sleep(0, 100_000);
                                 //$$ }
                                 //#endif
@@ -1167,6 +1118,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
                         // Restart the replay.
                         hasWorldLoaded = false;
+                        inBundle = false;
                         lastTimeStamp = 0;
                         registry = getPacketTypeRegistry(State.LOGIN);
                         startFromBeginning = false;
@@ -1293,16 +1245,13 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
     private void doSendPacketsTill(int timestamp) {
         try {
-            while (ctx == null && !terminate) { // Make sure channel is ready
-                Thread.sleep(10);
-            }
-
             synchronized (this) {
                 if (timestamp == lastTimeStamp) { // Do nothing if we're already there
                     return;
                 }
                 if (timestamp < lastTimeStamp) { // Restart the replay if we need to go backwards in time
                     hasWorldLoaded = false;
+                    inBundle = false;
                     lastTimeStamp = 0;
                     if (replayIn != null) {
                         replayIn.close();
@@ -1331,14 +1280,15 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         }
 
                         int nextTimeStamp = pd.timestamp;
-                        if (nextTimeStamp > timestamp) {
+                        if (nextTimeStamp > timestamp && !inBundle) {
                             // We are done sending all packets
                             nextPacket = pd;
                             break;
                         }
 
                         // Process packet
-                        channelRead(ctx, pd.bytes);
+                        if (pd.type == PacketType.Bundle) inBundle = !inBundle;
+                        channel.pipeline().fireChannelRead(Unpooled.wrappedBuffer(pd.bytes));
 
                         // MC as of 1.20.2 relies on autoRead, so it can update the connection state on the main
                         // thread before the next packet is read. As such, we need to stall if that was just
@@ -1346,7 +1296,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                         // Might be safe to do the same on older versions too, but I'd rather not poke the
                         // monster that is Forge networking.
                         //#if MC>=12002
-                        //$$ while (!ctx.channel().config().isAutoRead()) {
+                        //$$ while (!channel.config().isAutoRead()) {
                         //$$     Thread.sleep(0, 100_000);
                         //$$ }
                         //#endif
@@ -1557,6 +1507,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
 
         private final int timestamp;
         private final byte[] bytes;
+        private final PacketType type;
 
         PacketData(ReplayInputStream in) throws IOException {
             if (ReplayMod.isMinimalMode()) {
@@ -1568,6 +1519,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                 }
                 bytes = new byte[length];
                 IOUtils.readFully(in, bytes);
+                type = PacketType.UnknownLogin;
             } else {
                 com.replaymod.replaystudio.PacketData data = in.readPacket();
                 if (data == null) {
@@ -1575,6 +1527,7 @@ public class FullReplaySender extends ChannelDuplexHandler implements ReplaySend
                 }
                 timestamp = (int) data.getTime();
                 com.replaymod.replaystudio.protocol.Packet packet = data.getPacket();
+                type = packet.getType();
                 // We need to re-encode ReplayStudio packets, so we can later decode them as NMS packets
                 // The main reason we aren't reading them as NMS packets is that we want ReplayStudio to be able
                 // to apply ViaVersion (and potentially other magic) to it.

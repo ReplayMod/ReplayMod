@@ -10,6 +10,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.NetworkState;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
@@ -397,7 +398,9 @@ public class MCVer {
     }
 
     public static void pushMatrix() {
-        //#if MC>=11700
+        //#if MC>=12006
+        //$$ RenderSystem.getModelViewStack().pushMatrix();
+        //#elseif MC>=11700
         //$$ RenderSystem.getModelViewStack().push();
         //#else
         GlStateManager.pushMatrix();
@@ -406,7 +409,11 @@ public class MCVer {
 
     public static void popMatrix() {
         //#if MC>=11700
+        //#if MC>=12006
+        //$$ RenderSystem.getModelViewStack().popMatrix();
+        //#else
         //$$ RenderSystem.getModelViewStack().pop();
+        //#endif
         //$$ RenderSystem.applyModelViewMatrix();
         //#else
         GlStateManager.popMatrix();
@@ -431,11 +438,11 @@ public class MCVer {
     //$$ }
     //#endif
 
-    public static void emitLine(BufferBuilder buffer, Vector2f p1, Vector2f p2, int color) {
-        emitLine(buffer, new Vector3f(p1.x, p1.y, 0), new Vector3f(p2.x, p2.y, 0), color);
+    public static void emitLine(MatrixStack matrixStack, BufferBuilder buffer, Vector2f p1, Vector2f p2, int color) {
+        emitLine(matrixStack, buffer, new Vector3f(p1.x, p1.y, 0), new Vector3f(p2.x, p2.y, 0), color);
     }
 
-    public static void emitLine(BufferBuilder buffer, Vector3f p1, Vector3f p2, int color) {
+    public static void emitLine(MatrixStack matrixStack, BufferBuilder buffer, Vector3f p1, Vector3f p2, int color) {
         int r = color >> 24 & 0xff;
         int g = color >> 16 & 0xff;
         int b = color >> 8 & 0xff;
@@ -443,18 +450,28 @@ public class MCVer {
         //#if MC>=11700
         //$$ Vector3f n = Vector3f.sub(p2, p1, null);
         //#endif
-        buffer.vertex(p1.x, p1.y, p1.z)
+        //#if MC>=11600
+        buffer.vertex(matrixStack.peek().getModel(), p1.x, p1.y, p1.z)
+        //#else
+        //$$ buffer.vertex(p1.x, p1.y, p1.z)
+        //#endif
                 .color(r, g, b, a)
                 //#if MC>=11700
                 //$$ .normal(n.x, n.y, n.z)
                 //#endif
-                .next();
-        buffer.vertex(p2.x, p2.y, p2.z)
+                ;
+        buffer.next();
+        //#if MC>=11600
+        buffer.vertex(matrixStack.peek().getModel(), p2.x, p2.y, p2.z)
+        //#else
+        //$$ buffer.vertex(p2.x, p2.y, p2.z)
+        //#endif
                 .color(r, g, b, a)
                 //#if MC>=11700
                 //$$ .normal(n.x, n.y, n.z)
                 //#endif
-                .next();
+                ;
+        buffer.next();
     }
 
     public static void bindTexture(Identifier id) {

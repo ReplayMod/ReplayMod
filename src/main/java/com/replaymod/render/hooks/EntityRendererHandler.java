@@ -41,6 +41,8 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
 
     private final long startTime;
 
+    private long fakeFinishTimeNano;
+
     public EntityRendererHandler(RenderSettings settings, RenderInfo renderInfo) {
         this.settings = settings;
         this.renderInfo = renderInfo;
@@ -71,6 +73,7 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
     }
 
     public void renderWorld(float partialTicks, long finishTimeNano) {
+        fakeFinishTimeNano = finishTimeNano;
         //#if MC>=11400
         PreRenderCallback.EVENT.invoker().preRender();
         //#else
@@ -93,7 +96,9 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
                     gameRenderer.setRenderHand(false); // makes no sense, we wouldn't even know where to put it
                 }
 
-                //#if MC>=11400
+                //#if MC>=12100
+                //$$ mc.gameRenderer.render(mc.getRenderTickCounter(), true);
+                //#elseif MC>=11400
                 mc.gameRenderer.render(partialTicks, finishTimeNano, true);
                 //#else
                 //$$ mc.setIngameNotInFocus(); // this should already be the case but it somehow still sometimes is not
@@ -138,6 +143,10 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
 
     public RenderInfo getRenderInfo() {
         return this.renderInfo;
+    }
+
+    public long getFakeFinishTimeNano() {
+        return fakeFinishTimeNano;
     }
 
     public interface IEntityRenderer {

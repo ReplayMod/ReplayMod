@@ -28,10 +28,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static de.johni0702.minecraft.gui.versions.MCVer.identifier;
+
 //#if FABRIC>=1
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 //#else
+//#endif
+
+//#if MC>=12006
+//$$ import net.minecraft.resource.ResourcePackInfo;
+//$$ import net.minecraft.resource.ResourcePackSource;
+//$$ import net.minecraft.text.Text;
+//$$ import java.util.Optional;
 //#endif
 
 //#if MC>=11903
@@ -64,7 +73,9 @@ public class LangResourcePack extends AbstractFileResourcePack {
 
     private final Path basePath;
     public LangResourcePack() {
-        //#if MC>=11903
+        //#if MC>=12006
+        //$$ super(new ResourcePackInfo(NAME, Text.literal("ReplayMod Translations"), ResourcePackSource.NONE, Optional.empty()));
+        //#elseif MC>=11903
         //$$ super(NAME, true);
         //#else
         super(new File(NAME));
@@ -244,7 +255,7 @@ public class LangResourcePack extends AbstractFileResourcePack {
                     .map(LANG_FILE_NAME_PATTERN::matcher)
                     .filter(Matcher::matches)
                     .map(matcher -> String.format("%s_%s.json", matcher.group(1), matcher.group(1)))
-                    .map(name -> new Identifier(ReplayMod.MOD_ID, "lang/" + name))
+                    .map(name -> identifier(ReplayMod.MOD_ID, "lang/" + name))
                     .forEach(consumer);
         } catch (IOException e) {
             e.printStackTrace();

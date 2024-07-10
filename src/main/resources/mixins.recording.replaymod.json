@@ -6,6 +6,9 @@
   "client": [
     "AddServerScreenAccessor",
     "ClientLoginNetworkHandlerAccessor",
+    //#if MC>=12006
+    //$$ "DecoderHandlerAccessor",
+    //#endif
     "EntityLivingBaseAccessor",
     "IntegratedServerAccessor",
     "NetworkManagerAccessor",
@@ -30,6 +33,9 @@
     //#if MC<=10710
     //$$ "MixinGuiScreen",
     //$$ "MixinS26PacketMapChunkBulk",
+    //#endif
+    //#if MC>=12006
+    //$$ "MixinNetHandlerConfigClient",
     //#endif
     "MixinNetHandlerLoginClient",
     "MixinNetHandlerPlayClient",

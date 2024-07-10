@@ -1,13 +1,11 @@
 package com.replaymod.replay;
 
 import com.replaymod.core.ReplayMod;
-import com.replaymod.core.utils.WrappedTimer;
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.replay.camera.CameraController;
 import com.replaymod.replay.camera.CameraEntity;
 import de.johni0702.minecraft.gui.versions.ScreenExt;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.RenderTickCounter;
 
 //#if MC>=11802
 //$$ import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
@@ -33,36 +31,10 @@ import org.lwjgl.glfw.GLFW;
 //$$ import net.minecraft.client.multiplayer.WorldClient;
 //#endif
 
-public class InputReplayTimer extends WrappedTimer {
-    private final ReplayModReplay mod;
-    private final MinecraftClient mc;
-    
-    public InputReplayTimer(RenderTickCounter wrapped, ReplayModReplay mod) {
-        super(wrapped);
-        this.mod = mod;
-        this.mc = mod.getCore().getMinecraft();
-    }
-
-    @Override
-    public
-    //#if MC>=11600
-    int
-    //#else
-    //$$ void
-    //#endif
-    beginRenderTick(
-            //#if MC>=11400
-            long sysClock
-            //#endif
-    ) {
-        //#if MC>=11600
-        int ticksThisFrame =
-        //#endif
-        super.beginRenderTick(
-                //#if MC>=11400
-                sysClock
-                //#endif
-        );
+public class InputReplayTimer {
+    public static void updateInReplay() {
+        ReplayModReplay mod = ReplayModReplay.instance;
+        MinecraftClient mc = mod.getCore().getMinecraft();
 
         ReplayMod.instance.runTasks();
 
@@ -126,9 +98,6 @@ public class InputReplayTimer extends WrappedTimer {
             //#endif
 
         }
-        //#if MC>=11600
-        return ticksThisFrame;
-        //#endif
     }
 
     public static void handleScroll(int wheel) {

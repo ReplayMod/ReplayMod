@@ -29,6 +29,13 @@ import java.util.concurrent.CompletableFuture;
 
 @Mixin(MinecraftClient.class)
 public interface MinecraftAccessor {
+    //#if MC>=12100
+    //$$ @Accessor("renderTickCounter")
+    //$$ RenderTickCounter.Dynamic getTimer();
+    //$$ @Accessor("renderTickCounter")
+    //$$ @Mutable
+    //$$ void setTimer(RenderTickCounter.Dynamic value);
+    //#else
     @Accessor("renderTickCounter")
     RenderTickCounter getTimer();
     @Accessor("renderTickCounter")
@@ -36,6 +43,7 @@ public interface MinecraftAccessor {
     @Mutable
     //#endif
     void setTimer(RenderTickCounter value);
+    //#endif
 
     //#if MC>=11400
     @Accessor

@@ -14,6 +14,9 @@
     "Mixin_ChromaKeyColorSky",
     "Mixin_ChromaKeyDisableFog",
     "Mixin_ChromaKeyForceSky",
+    //#if MC>=12100
+    //$$ "Mixin_FakeSystemTimeUniforms_Iris",
+    //#endif
     "Mixin_ForceChunkLoading",
     "Mixin_HideNameTags",
     "Mixin_HideNameTags_LivingEntity",

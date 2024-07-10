@@ -9,11 +9,16 @@ import com.replaymod.recording.handler.ConnectionEventHandler;
 import com.replaymod.recording.handler.GuiHandler;
 import com.replaymod.recording.mixin.NetworkManagerAccessor;
 import com.replaymod.recording.packet.PacketListener;
+import com.replaymod.replay.ReplayHandler;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 import net.minecraft.network.ClientConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+//#if MC>=12006
+//$$ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+//#endif
 
 //#if FABRIC>=1
 //#if MC>=11700
@@ -72,7 +77,11 @@ public class ReplayModRecording implements Module {
         new GuiHandler(core).register();
 
         //#if FABRIC>=1
-        //#if MC>=11700
+        //#if MC>=12006
+        //$$ PayloadTypeRegistry.configurationS2C().register(Restrictions.ID, Restrictions.CODEC);
+        //$$ PayloadTypeRegistry.playS2C().register(Restrictions.ID, Restrictions.CODEC);
+        //$$ ClientPlayNetworking.registerGlobalReceiver(Restrictions.ID, (payload, context) -> {});
+        //#elseif MC>=11700
         //$$ ClientPlayNetworking.registerGlobalReceiver(Restrictions.PLUGIN_CHANNEL, (client, handler, buf, resp) -> {});
         //#else
         ClientSidePacketRegistry.INSTANCE.register(Restrictions.PLUGIN_CHANNEL, (packetContext, packetByteBuf) -> {});
@@ -93,7 +102,7 @@ public class ReplayModRecording implements Module {
 
     public void initiateRecording(ClientConnection networkManager) {
         Channel channel = ((NetworkManagerAccessor) networkManager).getChannel();
-        if (channel.pipeline().get("ReplayModReplay_replaySender") != null) return;
+        if (channel.pipeline().get(ReplayHandler.PACKET_HANDLER_NAME) != null) return;
         //#if MC>=11400
         if (channel.hasAttr(ATTR_CHECKED)) return;
         channel.attr(ATTR_CHECKED).set(null);

@@ -48,16 +48,22 @@ public abstract class MixinMinecraft
     }
     //#endif
 
+    //#if MC>=12100
+    //$$ private static final String GAME_RENDERER_RENDER = "Lnet/minecraft/client/render/GameRenderer;render(Lnet/minecraft/client/render/RenderTickCounter;Z)V";
+    //#else
+    private static final String GAME_RENDERER_RENDER = "Lnet/minecraft/client/render/GameRenderer;render(FJZ)V";
+    //#endif
+
     @Inject(method = "render",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/render/GameRenderer;render(FJZ)V"))
+                    target = GAME_RENDERER_RENDER))
     private void preRender(boolean unused, CallbackInfo ci) {
         PreRenderCallback.EVENT.invoker().preRender();
     }
 
     @Inject(method = "render",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/render/GameRenderer;render(FJZ)V",
+                    target = GAME_RENDERER_RENDER,
                     shift = At.Shift.AFTER))
     private void postRender(boolean unused, CallbackInfo ci) {
         PostRenderCallback.EVENT.invoker().postRender();

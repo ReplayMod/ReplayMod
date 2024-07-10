@@ -6,8 +6,10 @@ import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.util.Identifier;
 
+import static de.johni0702.minecraft.gui.versions.MCVer.identifier;
+
 public class GuiReplayButton extends GuiButton {
-    public static final Identifier ICON = new Identifier("replaymod", "logo_button.png");
+    public static final Identifier ICON = identifier("replaymod", "logo_button.png");
 
     @Override
     public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {

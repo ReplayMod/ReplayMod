@@ -25,6 +25,8 @@ net.minecraft.network.play.server.SPacketSpawnPlayer getDataManagerEntries() fun
 net.minecraft.client.multiplayer.ServerList saveSingleServer() func_147414_b()
 net.minecraft.util.SoundEvent com.replaymod.core.versions.MCVer.SoundEvent
 
+net.minecraft.network.NettyPacketDecoder net.minecraft.util.MessageDeserializer
+net.minecraft.network.NettyPacketEncoder net.minecraft.util.MessageSerializer
 net.minecraft.network.play.server.SPacketJoinGame net.minecraft.network.play.server.S01PacketJoinGame
 net.minecraft.network.play.server.SPacketChat net.minecraft.network.play.server.S02PacketChat
 net.minecraft.network.play.server.SPacketParticles net.minecraft.network.play.server.S2APacketParticles

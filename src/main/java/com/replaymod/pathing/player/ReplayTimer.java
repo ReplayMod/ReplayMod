@@ -1,27 +1,28 @@
 package com.replaymod.pathing.player;
 
-import com.replaymod.core.utils.WrappedTimer;
 import de.johni0702.minecraft.gui.utils.Event;
 import net.minecraft.client.render.RenderTickCounter;
 
 /**
- * Wrapper around the current timer that prevents the timer from advancing by itself.
+ * A timer that does not advance by itself.
  */
-public class ReplayTimer extends WrappedTimer {
-    //#if MC>=12003
-    //$$ private final RenderTickCounter state = new RenderTickCounter(0, 0, f -> f);
-    //#elseif MC>=11400
-    private final RenderTickCounter state = new RenderTickCounter(0, 0);
-    //#else
-    //$$ private final Timer state = new Timer(0);
-    //#endif
-
+//#if MC>=12100
+//$$ public class ReplayTimer extends RenderTickCounter.Dynamic {
+//#else
+public class ReplayTimer extends RenderTickCounter {
+//#endif
     //#if MC>=11600
     public int ticksThisFrame;
     //#endif
 
-    public ReplayTimer(RenderTickCounter wrapped) {
-        super(wrapped);
+    public ReplayTimer() {
+        //#if MC>=12003
+        //$$ super(0, 0, f -> f);
+        //#elseif MC>=11400
+        super(0, 0);
+        //#else
+        //$$ super(0);
+        //#endif
     }
 
     @Override
@@ -40,29 +41,27 @@ public class ReplayTimer extends WrappedTimer {
             //#if MC>=11400
             long sysClock
             //#endif
-    ) {
-        copy(this, state); // Save our current state
-        try {
-            //#if MC>=11600
-            ticksThisFrame =
+            //#if MC>=12100
+            //$$ , boolean tick
             //#endif
-            wrapped.beginRenderTick(
-                    //#if MC>=11400
-                    sysClock
-                    //#endif
-            ); // Update current state
-        } finally {
-            copy(state, this); // Restore our old state
-            UpdatedCallback.EVENT.invoker().onUpdate();
-        }
+    ) {
+        //#if MC>=12100
+        //$$ if (!tick) return 0;
+        //#endif
+        UpdatedCallback.EVENT.invoker().onUpdate();
         //#if MC>=11600
         return ticksThisFrame;
         //#endif
     }
 
-    public RenderTickCounter getWrapped() {
-        return wrapped;
-    }
+    //#if MC>=12100
+    //$$ public float tickDelta;
+    //$$
+    //$$ @Override
+    //$$ public float getTickDelta(boolean bl) {
+    //$$     return tickDelta;
+    //$$ }
+    //#endif
 
     public interface UpdatedCallback {
         Event<UpdatedCallback> EVENT = Event.create((listeners) ->

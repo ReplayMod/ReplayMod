@@ -2,8 +2,7 @@ import groovy.json.JsonOutput
 import java.io.ByteArrayOutputStream
 
 plugins {
-    id("fabric-loom") version "0.11-SNAPSHOT" apply false
-    id("com.replaymod.preprocess") version "48e02ad"
+    id("gg.essential.multi-version.root")
     id("com.github.hierynomus.license") version "0.15.0"
 }
 
@@ -35,6 +34,12 @@ subprojects {
             maven("https://jitpack.io")
         }
     }
+    if (name == "jGui" || name == "ReplayStudio") {
+        return@subprojects
+    }
+    val (_, minor) = name.split("-")[0].split(".")
+    val fabric = minor.toInt() >= 14 && !name.endsWith("-forge")
+    extra.set("loom.platform", if (fabric) "fabric" else "forge")
 
     afterEvaluate {
         val projectBundleJar = project.tasks.findByName("bundleJar")
@@ -91,8 +96,11 @@ fun generateVersionsJson(): Map<String, Any> {
                 .filter { it != "core" }
                 // Internal project used to automatically remap from Forge 1.12.2 to Fabric 1.14.4
                 .filter { it != "1.14.4-forge" }
+                // We dropped 1.8 with the switch to archloom but still kept its source in case someone
+                // volunteers to make it build again
+                .filterNot { it == "1.8" && versionComparator.compare(version, "2.6.16") >= 0 }
                 // We dropped 1.7.10 with the Gradle 7 update but still kept its source in case someone
-                // volunteers to update FG 1.2 to Gradle 7.
+                // volunteers to ~~update FG 1.2 to Gradle 7~~ make it work with archloom.
                 .filterNot { it == "1.7.10" && versionComparator.compare(version, "2.6.0") >= 0 }
         val versions = mcVersions.map { "$it-$version" }.toMutableList()
         when (version) {
@@ -193,6 +201,8 @@ val doRelease by tasks.registering {
 defaultTasks("bundleJar")
 
 preprocess {
+    val mc12100 = createNode("1.21", 12100, "yarn")
+    val mc12006 = createNode("1.20.6", 12006, "yarn")
     val mc12004 = createNode("1.20.4", 12004, "yarn")
     val mc12002 = createNode("1.20.2", 12002, "yarn")
     val mc12001 = createNode("1.20.1", 12001, "yarn")
@@ -220,9 +230,11 @@ preprocess {
     val mc10800 = createNode("1.8", 10800, "srg")
     val mc10710 = createNode("1.7.10", 10710, "srg")
 
+    mc12100.link(mc12006)
+    mc12006.link(mc12004)
     mc12004.link(mc12002, file("versions/mapping-fabric-1.20.4-1.20.2.txt"))
     mc12002.link(mc12001)
-    mc12001.link(mc11904)
+    mc12001.link(mc11904, file("versions/mapping-fabric-1.20.1-1.19.4.txt"))
     mc11904.link(mc11903)
     mc11903.link(mc11902, file("versions/mapping-fabric-1.19.3-1.19.2.txt"))
     mc11902.link(mc11901)
@@ -235,14 +247,14 @@ preprocess {
     mc11601.link(mc11502, file("versions/mapping-fabric-1.16.1-1.15.2.txt"))
     mc11502.link(mc11404, file("versions/mapping-fabric-1.15.2-1.14.4.txt"))
     mc11404.link(mc11404Forge, file("versions/mapping-1.14.4-fabric-forge.txt"))
-    mc11404Forge.link(mc11202, file("versions/1.14.4-forge/mapping.txt"))
+    mc11404Forge.link(mc11202, file("versions/mapping-forge-1.14.4-1.12.2.txt"))
     mc11202.link(mc11201)
     mc11201.link(mc11200)
-    mc11200.link(mc11102, file("versions/1.12/mapping.txt"))
-    mc11102.link(mc11100, file("versions/1.11.2/mapping.txt"))
-    mc11100.link(mc11002, file("versions/1.11/mapping.txt"))
+    mc11200.link(mc11102, file("versions/mapping-forge-1.12-1.11.2.txt"))
+    mc11102.link(mc11100, file("versions/mapping-forge-1.11.2-1.11.txt"))
+    mc11100.link(mc11002, file("versions/mapping-forge-1.11-1.10.2.txt"))
     mc11002.link(mc10904)
-    mc10904.link(mc10809, file("versions/1.9.4/mapping.txt"))
-    mc10809.link(mc10800, file("versions/1.8.9/mapping.txt"))
-    mc10800.link(mc10710, file("versions/1.8/mapping.txt"))
+    mc10904.link(mc10809, file("versions/mapping-forge-1.9.4-1.8.9.txt"))
+    mc10809.link(mc10800, file("versions/mapping-forge-1.8.9-1.8.txt"))
+    mc10800.link(mc10710, file("versions/mapping-forge-1.8-1.7.10.txt"))
 }

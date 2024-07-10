@@ -5,13 +5,13 @@ import de.johni0702.minecraft.gui.utils.lwjgl.vector.Matrix4f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Quaternion;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.GlAllocationUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.block.entity.BlockEntity;
 import org.blender.dna.Link;
 import org.blender.dna.ListBase;
 import org.blender.utils.BlenderFactory;
 import org.cakelab.blender.nio.CPointer;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ public class Util {
         }
     }
 
-    private static FloatBuffer floatBuffer = GlAllocationUtils.allocateByteBuffer(16 * 4).asFloatBuffer();
+    private static FloatBuffer floatBuffer = BufferUtils.createByteBuffer(16 * 4).asFloatBuffer();
     public static Matrix4f getGlMatrix(int matrix) {
         floatBuffer.clear();
         //#if MC>=11400
@@ -183,6 +183,9 @@ public class Util {
     }
 
     public static String getTileEntityId(BlockEntity tileEntity) {
+        //#if MC>=12006
+        //$$ return net.minecraft.block.entity.BlockEntityType.getId(tileEntity.getType()).toString();
+        //#else
         //#if MC>=11800
         //$$ NbtCompound nbt = tileEntity.createNbt();
         //#else
@@ -194,6 +197,7 @@ public class Util {
         //#endif
         //#endif
         return nbt.getString("id");
+        //#endif
     }
 
     public interface IOCallable<R> {

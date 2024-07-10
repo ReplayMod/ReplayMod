@@ -11,7 +11,11 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 public abstract class Mixin_Omnidirectional_Camera implements EntityRendererHandler.IEntityRenderer {
     private static final String METHOD = "getBasicProjectionMatrix";
     //#if MC>=11903
+    //#if MC>=12005
+    //$$ private static final String TARGET = "Lorg/joml/Matrix4f;perspective(FFFF)Lorg/joml/Matrix4f;";
+    //#else
     //$$ private static final String TARGET = "Lorg/joml/Matrix4f;setPerspective(FFFF)Lorg/joml/Matrix4f;";
+    //#endif
     //$$ private static final boolean TARGET_REMAP = false;
     //$$ private static final float OMNIDIRECTIONAL_FOV = (float) Math.PI / 2;
     //#else
