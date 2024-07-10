@@ -234,7 +234,7 @@ preprocess {
     mc12006.link(mc12004)
     mc12004.link(mc12002, file("versions/mapping-fabric-1.20.4-1.20.2.txt"))
     mc12002.link(mc12001)
-    mc12001.link(mc11904)
+    mc12001.link(mc11904, file("versions/mapping-fabric-1.20.1-1.19.4.txt"))
     mc11904.link(mc11903)
     mc11903.link(mc11902, file("versions/mapping-fabric-1.19.3-1.19.2.txt"))
     mc11902.link(mc11901)

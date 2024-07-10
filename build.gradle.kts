@@ -194,8 +194,13 @@ dependencies {
         }
     }
 
-    if (mcVersion >= 11600) {
-        modCompileOnly("maven.modrinth:iris:1.18.x-v1.2.0")
+    val irisVersion = when {
+        mcVersion >= 12000 -> "1.7.2+1.20.1"
+        mcVersion >= 11600 -> "1.18.x-v1.2.0"
+        else -> null
+    }
+    if (irisVersion != null) {
+        modCompileOnly("maven.modrinth:iris:$irisVersion")
     }
 
     testImplementation("junit:junit:4.11")
