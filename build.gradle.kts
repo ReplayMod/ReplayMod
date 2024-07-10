@@ -195,9 +195,7 @@ dependencies {
     }
 
     if (mcVersion >= 11600) {
-        modCompileOnly("maven.modrinth:iris:1.18.x-v1.2.0") {
-            isTransitive = false // we do not want to upgrade our libs, we only need this to compile our mixins
-        }
+        modCompileOnly("maven.modrinth:iris:1.18.x-v1.2.0")
     }
 
     testImplementation("junit:junit:4.11")
