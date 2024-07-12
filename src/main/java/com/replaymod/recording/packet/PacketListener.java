@@ -50,6 +50,10 @@ import org.apache.logging.log4j.Logger;
 //$$ import net.minecraft.network.handler.NetworkStateTransitions;
 //$$ import net.minecraft.network.packet.s2c.config.ReadyS2CPacket;
 //$$ import net.minecraft.network.state.LoginStates;
+//#else
+//#if MC>=12002
+//$$ import net.minecraft.network.packet.s2c.login.LoginSuccessS2CPacket;
+//#endif
 //#endif
 
 //#if MC>=12002
@@ -394,6 +398,13 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         //$$ }
         //#else
         //#if MC>=10800
+        //#if MC>=12002
+        //$$ // Special case for our initial LoginSuccess packet which we only save after the pipeline has already
+        //$$ // started to transition to the next phase
+        //$$ if (packet instanceof LoginSuccessS2CPacket) {
+        //$$     connectionState = NetworkState.LOGIN;
+        //$$ }
+        //#endif
         Integer packetId = connectionState.getPacketId(NetworkSide.CLIENTBOUND, packet);
         //#else
         //$$ Integer packetId = (Integer) connectionState.func_150755_b().inverse().get(packet.getClass());

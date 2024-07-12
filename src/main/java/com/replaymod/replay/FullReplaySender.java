@@ -1528,6 +1528,12 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                 timestamp = (int) data.getTime();
                 com.replaymod.replaystudio.protocol.Packet packet = data.getPacket();
                 type = packet.getType();
+                // Workaround for ReplayMod 2.7.16-17 saving the LoginSuccess packet with an incorrect packet id
+                // A fake one will have been sythesized by ReplayStudo, so we can simply drop the broken one.
+                if (packet.getId() == -1) {
+                    bytes = new byte[0];
+                    return;
+                }
                 // We need to re-encode ReplayStudio packets, so we can later decode them as NMS packets
                 // The main reason we aren't reading them as NMS packets is that we want ReplayStudio to be able
                 // to apply ViaVersion (and potentially other magic) to it.
