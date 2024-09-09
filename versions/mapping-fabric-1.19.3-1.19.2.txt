@@ -1,4 +1,3 @@
-org.joml.Matrix3 net.minecraft.util.math.Matrix3f
 org.joml.Matrix4f net.minecraft.util.math.Matrix4f
 org.joml.Quaternionf net.minecraft.util.math.Quaternion
 org.joml.Vector3f net.minecraft.util.math.Vec3f

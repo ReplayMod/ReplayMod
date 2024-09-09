@@ -403,12 +403,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
             if (mc.world != null) {
                 for (PlayerEntity playerEntity : mc.world.getPlayers()) {
                     if (!playerEntity.updateNeeded && playerEntity instanceof OtherClientPlayerEntity) {
-                        // FIXME preprocessor should (and used to) be able to map this
-                        //#if MC>=11400
                         playerEntity.tickMovement();
-                        //#else
-                        //$$ playerEntity.onLivingUpdate();
-                        //#endif
                     }
                 }
             }
@@ -1383,11 +1378,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
             //#if MC>=11400
             ClientWorld world = mc.world;
             ChunkManager chunkProvider = world.getChunkManager();
-            WorldChunk chunk = chunkProvider.getWorldChunk(x, z
-                    //#if MC<11500
-                    //$$ , false
-                    //#endif
-            );
+            WorldChunk chunk = chunkProvider.getWorldChunk(x, z);
             if (chunk != null) {
             //#else
             //$$ World world = mc.world;
@@ -1425,11 +1416,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                             // Entity has left the chunk
                             chunk.remove(entity, entity.chunkY);
                         }
-                        WorldChunk newChunk = chunkProvider.getWorldChunk(chunkX, chunkZ
-                                //#if MC<11500
-                                //$$ , false
-                                //#endif
-                        );
+                        WorldChunk newChunk = chunkProvider.getWorldChunk(chunkX, chunkZ);
                         if (newChunk != null) {
                             newChunk.addEntity(entity);
                         } else {

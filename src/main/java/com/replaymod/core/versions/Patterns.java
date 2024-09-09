@@ -47,7 +47,6 @@ import org.lwjgl.opengl.GL11;
 
 //#if MC>=11600
 import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Quaternion;
@@ -605,20 +604,6 @@ class Patterns {
         GL11.glRotatef(angle, x, y, z);
         //#endif
     }
-
-    // FIXME preprocessor bug: there are mappings for this, not sure why it doesn't remap by itself
-    //#if MC>=11600
-    @Pattern
-    private static Matrix4f getPositionMatrix(MatrixStack.Entry stack) {
-        //#if MC>=11800
-        //$$ return stack.getPositionMatrix();
-        //#else
-        return stack.getModel();
-        //#endif
-    }
-    //#else
-    //$$ private static void getPositionMatrix() {}
-    //#endif
 
     @SuppressWarnings("rawtypes") // preprocessor bug: doesn't work with generics
     @Pattern

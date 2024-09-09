@@ -1,1 +1,0 @@
-net.minecraft.client.renderer.BufferBuilder net.minecraft.client.renderer.VertexBuffer
