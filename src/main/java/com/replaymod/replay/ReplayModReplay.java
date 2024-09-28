@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class ReplayModReplay implements Module {
-
     { instance = this; }
     public static ReplayModReplay instance;
 
@@ -44,10 +43,15 @@ public class ReplayModReplay implements Module {
 
     public static Logger LOGGER = LogManager.getLogger();
 
+    private String replayName;
     private ReplayHandler replayHandler;
 
     public ReplayHandler getReplayHandler() {
         return replayHandler;
+    }
+
+    public String getReplayName() {
+        return replayName;
     }
 
     public ReplayModReplay(ReplayMod core) {
@@ -159,14 +163,14 @@ public class ReplayModReplay implements Module {
     }
 
     public void startReplay(File file) throws IOException {
-        startReplay(core.files.open(file.toPath()));
+        startReplay(core.files.open(file.toPath()), file.getName());
     }
 
-    public void startReplay(ReplayFile replayFile) throws IOException {
-        startReplay(replayFile, true, true);
+    public void startReplay(ReplayFile replayFile, String replayName) throws IOException {
+        startReplay(replayFile, true, true, replayName);
     }
 
-    public ReplayHandler startReplay(ReplayFile replayFile, boolean checkModCompat, boolean asyncMode) throws IOException {
+    public ReplayHandler startReplay(ReplayFile replayFile, boolean checkModCompat, boolean asyncMode, String replayName) throws IOException {
         if (replayHandler != null) {
             replayHandler.endReplay();
         }
@@ -176,7 +180,7 @@ public class ReplayModReplay implements Module {
                 GuiModCompatWarning screen = new GuiModCompatWarning(modDifference);
                 screen.loadButton.onClick(() -> {
                     try {
-                        startReplay(replayFile, false, asyncMode);
+                        startReplay(replayFile, false, asyncMode, replayName);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -186,6 +190,7 @@ public class ReplayModReplay implements Module {
             }
         }
         replayHandler = new ReplayHandler(replayFile, asyncMode);
+        this.replayName = replayName;
         KeyBinding.updateKeysByCode(); // see Mixin_ContextualKeyBindings
 
         return replayHandler;

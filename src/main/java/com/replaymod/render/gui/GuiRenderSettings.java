@@ -582,6 +582,15 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
 
     protected File generateOutputFile(RenderSettings.EncodingPreset encodingPreset) {
         String fileName = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date());
+        if (com.replaymod.replay.ReplayModReplay.instance.getReplayName() != null) {
+            String prefix = com.replaymod.replay.ReplayModReplay.instance.getReplayName();
+            int dotIndex = prefix.lastIndexOf('.');
+            if (dotIndex > 0)
+                prefix = prefix.substring(0, dotIndex);
+            prefix = prefix.replace(' ', '_');
+
+            fileName = prefix + "_" + fileName;
+        }
         File folder = ReplayModRender.instance.getVideoFolder();
         return new File(folder, fileName + "." + encodingPreset.getFileExtension());
     }
