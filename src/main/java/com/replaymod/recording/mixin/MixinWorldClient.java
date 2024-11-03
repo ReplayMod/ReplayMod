@@ -28,7 +28,9 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
 
     @SuppressWarnings("ConstantConditions")
     protected MixinWorldClient() {
-        //#if MC>=11904
+        //#if MC>=12102
+        //$$ super(null, null, null, null, false, false, 0, 0);
+        //#elseif MC>=11904
         //$$ super(null, null, null, null, null, false, false, 0, 0);
         //#elseif MC>=11900
         //$$ super(null, null, null, null, false, false, 0, 0);

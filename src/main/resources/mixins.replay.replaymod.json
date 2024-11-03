@@ -46,7 +46,9 @@
     //#if MC<11400
     //$$ "MixinRenderManager",
     //#endif
+    //#if MC<12102
     "MixinViewFrustum",
+    //#endif
     //#else
     //$$ "MixinEntityRenderer",
     //$$ "MixinFMLClientHandler",

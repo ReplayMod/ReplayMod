@@ -83,6 +83,10 @@ import net.minecraft.network.packet.s2c.play.MobSpawnS2CPacket;
 import net.minecraft.network.packet.s2c.play.PaintingSpawnS2CPacket;
 //#endif
 
+//#if MC>=11800
+//$$ import org.apache.commons.lang3.mutable.MutableBoolean;
+//#endif
+
 //#if MC>=11600
 //#else
 //$$ import net.minecraft.network.packet.s2c.play.EntitySpawnGlobalS2CPacket;
@@ -437,7 +441,9 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                             ClientWorld world = mc.world;
                             if (world != null) {
                                 //#if MC>=11800
-                                //$$ while (!world.hasNoChunkUpdaters()) {
+                                //$$ MutableBoolean done = new MutableBoolean();
+                                //$$ world.enqueueChunkUpdate(done::setTrue);
+                                //$$ while (!done.booleanValue()) {
                                 //$$     world.runQueuedChunkUpdates();
                                 //$$ }
                                 //#endif
@@ -842,7 +848,11 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
 
             //#if MC>=10800
             //#if MC>=11904
+            //#if MC>=12102
+            //$$ for (PositionFlag relative : ppl.relatives()) {
+            //#else
             //$$ for (PositionFlag relative : ppl.getFlags()) {
+            //#endif
             //$$     if (relative == PositionFlag.X || relative == PositionFlag.Y || relative == PositionFlag.Z) {
             //#elseif MC>=11400
             for (PlayerPositionLookS2CPacket.Flag relative : ppl.getFlags()) {
@@ -876,14 +886,24 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                     }
 
                     CameraEntity cent = replayHandler.getCameraEntity();
+                    //#if MC>=12102
+                    //$$ if (!allowMovement && !((Math.abs(cent.getX() - ppl.change().position().x) > TP_DISTANCE_LIMIT) ||
+                    //$$         (Math.abs(cent.getZ() - ppl.change().position().z) > TP_DISTANCE_LIMIT))) {
+                    //#else
                     if (!allowMovement && !((Math.abs(cent.getX() - ppl.getX()) > TP_DISTANCE_LIMIT) ||
                             (Math.abs(cent.getZ() - ppl.getZ()) > TP_DISTANCE_LIMIT))) {
+                    //#endif
                         return;
                     } else {
                         allowMovement = false;
                     }
+                    //#if MC>=12102
+                    //$$ cent.setCameraPosition(ppl.change().position().x, ppl.change().position().y, ppl.change().position().z);
+                    //$$ cent.setCameraRotation(ppl.change().yaw(), ppl.change().pitch(), cent.roll);
+                    //#else
                     cent.setCameraPosition(ppl.getX(), ppl.getY(), ppl.getZ());
                     cent.setCameraRotation(ppl.getYaw(), ppl.getPitch(), cent.roll);
+                    //#endif
                 }
             });
 
@@ -951,6 +971,9 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
     //$$             org.isFlat(),
     //$$             org.lastDeathLocation(),
     //$$             org.portalCooldown()
+                //#if MC>=12102
+                //$$ , org.seaLevel()
+                //#endif
     //$$     );
     //$$ }
     //#endif

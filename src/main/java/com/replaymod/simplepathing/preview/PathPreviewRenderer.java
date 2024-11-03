@@ -30,6 +30,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.opengl.GL11;
 
+//#if MC>=12102
+//$$ import net.minecraft.client.gl.ShaderProgramKeys;
+//#endif
+
 //#if MC>=11700
 //$$ import net.minecraft.client.render.GameRenderer;
 //#endif
@@ -114,7 +118,9 @@ public class PathPreviewRenderer extends EventRegistrations {
             //#else
             //$$ RenderSystem.getModelViewStack().method_34425(matrixStack.peek().getModel());
             //#endif
+            //#if MC<12102
             //$$ RenderSystem.applyModelViewMatrix();
+            //#endif
             //#elseif MC>=11500
             RenderSystem.multMatrix(matrixStack.peek().getModel());
             //#endif
@@ -257,7 +263,11 @@ public class PathPreviewRenderer extends EventRegistrations {
         emitLine(new MatrixStack(), buffer, Vector3f.sub(pos1, view, null), Vector3f.sub(pos2, view, null), color);
 
         //#if MC>=11700
+        //#if MC>=12102
+        //$$ RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
+        //#else
         //$$ RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
+        //#endif
         //$$ RenderSystem.disableCull();
         //#endif
         GL11.glLineWidth(3);
@@ -314,7 +324,9 @@ public class PathPreviewRenderer extends EventRegistrations {
         GL11.glRotatef(-mc.getEntityRenderDispatcher().camera.getYaw(), 0, 1, 0);
         GL11.glRotatef(mc.getEntityRenderDispatcher().camera.getPitch(), 1, 0, 0);
 
-        //#if MC>=11700
+        //#if MC>=12102
+        //$$ RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
+        //#elseif MC>=11700
         //$$ RenderSystem.applyModelViewMatrix();
         //$$ RenderSystem.setShader(GameRenderer::getPositionTexShader);
         //#endif
@@ -352,7 +364,9 @@ public class PathPreviewRenderer extends EventRegistrations {
 
         emitLine(new MatrixStack(), buffer, new Vector3f(0, 0, 0), new Vector3f(0, 0, 2), 0x00ff00aa);
 
-        //#if MC>=11700
+        //#if MC>=12102
+        //$$ RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
+        //#elseif MC>=11700
         //$$ RenderSystem.applyModelViewMatrix();
         //$$ RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
         //#else
@@ -423,7 +437,9 @@ public class PathPreviewRenderer extends EventRegistrations {
         buffer.vertex(r + cubeSize, r + cubeSize, r + cubeSize).texture(2*8/64f, 8/64f).color(255, 255, 255, 200).next();
         buffer.vertex(r + cubeSize, r + cubeSize, r).texture(2 * 8 / 64f, 0).color(255, 255, 255, 200).next();
 
-        //#if MC>=11700
+        //#if MC>=12102
+        //$$ RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
+        //#elseif MC>=11700
         //$$ RenderSystem.applyModelViewMatrix();
         //$$ RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         //#endif

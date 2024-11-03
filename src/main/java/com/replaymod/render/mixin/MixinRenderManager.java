@@ -9,6 +9,10 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 
+//#if MC>=12102
+//$$ import net.minecraft.client.render.entity.EntityRenderer;
+//#endif
+
 //#if MC>=11500
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
@@ -31,7 +35,9 @@ public abstract class MixinRenderManager {
     //$$ @Shadow private float cameraYaw;
     //#endif
 
-    //#if MC>=11500
+    //#if MC>=12102
+    //$$ @Inject(method = "render(Lnet/minecraft/entity/Entity;DDDFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/client/render/entity/EntityRenderer;)V", at = @At("HEAD"))
+    //#elseif MC>=11500
     @Inject(method = "render", at = @At("HEAD"))
     //#else
     //#if MC>=11400 && FABRIC>=1
@@ -45,13 +51,20 @@ public abstract class MixinRenderManager {
     //#endif
     //#endif
     //#if MC>=10904
-    private void replayModRender_reorientForCubicRendering(Entity entity, double dx, double dy, double dz, float iDoNotKnow, float partialTicks,
+    private void replayModRender_reorientForCubicRendering(Entity entity, double dx, double dy, double dz,
+                                                           //#if MC<12102
+                                                           float iDoNotKnow,
+                                                           //#endif
+                                                           float partialTicks,
                                                            //#if MC>=11500
                                                            MatrixStack matrixStack,
                                                            VertexConsumerProvider vertexConsumerProvider,
                                                            int int_1,
                                                            //#else
                                                            //$$ boolean iDoNotCare,
+                                                           //#endif
+                                                           //#if MC>=12102
+                                                           //$$ EntityRenderer<?, ?> renderer,
                                                            //#endif
                                                            CallbackInfo ci) {
     //#else

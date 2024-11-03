@@ -21,6 +21,10 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+//#if MC>=12102
+//$$ import net.minecraft.util.thread.SimpleConsecutiveExecutor;
+//#endif
+
 //#if MC>=12003
 //$$ import net.minecraft.client.render.chunk.BlockBufferBuilderPool;
 //#endif
@@ -56,7 +60,11 @@ public abstract class Mixin_BlockOnChunkRebuilds implements ForceChunkLoadingHoo
     @Shadow public abstract boolean upload();
     //#endif
 
+    //#if MC>=12102
+    //$$ @Shadow @Final private SimpleConsecutiveExecutor consecutiveExecutor;
+    //#else
     @Shadow @Final private TaskExecutor<Runnable> mailbox;
+    //#endif
 
     @Shadow protected abstract void scheduleRunTasks();
 
@@ -99,10 +107,17 @@ public abstract class Mixin_BlockOnChunkRebuilds implements ForceChunkLoadingHoo
     }
 
     private boolean waitForMainThreadWork() {
+        //#if MC>=12102
+        //$$ this.consecutiveExecutor.executeAsync(future -> {
+        //$$     scheduleRunTasks();
+        //$$     future.complete(getAvailableBufferCount() == this.totalBufferCount);
+        //$$ }).join();
+        //#else
         boolean allDone = this.mailbox.<Boolean>ask(reply -> () -> {
             scheduleRunTasks();
             reply.send(getAvailableBufferCount() == this.totalBufferCount);
         }).join();
+        //#endif
 
         if (allDone) {
             return true;

@@ -68,7 +68,7 @@ public class NoGuiScreenshot {
                     pushMatrix();
                     GlStateManager.clear(
                             16640
-                            //#if MC>=11400
+                            //#if MC>=11400 && MC<12102
                             , true
                             //#endif
                     );

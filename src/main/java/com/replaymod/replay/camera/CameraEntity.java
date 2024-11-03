@@ -454,7 +454,16 @@ public class CameraEntity
     //$$ }
     //#endif
 
-    //#if MC>=10800
+    //#if MC>=12102
+    //$$ @Override
+    //$$ public float getFovMultiplier(boolean firstPerson, float fovEffectScale) {
+    //$$     Entity view = this.client.getCameraEntity();
+    //$$     if (view != this && view instanceof AbstractClientPlayerEntity) {
+    //$$         return ((AbstractClientPlayerEntity) view).getFovMultiplier(firstPerson, fovEffectScale);
+    //$$     }
+    //$$     return 1;
+    //$$ }
+    //#elseif MC>=10800
     @Override
     public float getSpeed() {
         Entity view = this.client.getCameraEntity();

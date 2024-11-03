@@ -62,8 +62,7 @@ public class SchedulerImpl implements  Scheduler {
             super(string_1);
         }
 
-        @Override
-        protected Runnable createTask(Runnable runnable) {
+        @Override public Runnable createTask(Runnable runnable) {
             return runnable;
         }
 

@@ -40,6 +40,10 @@ import net.minecraft.util.crash.CrashException;
 import net.minecraft.sound.SoundCategory;
 import org.lwjgl.glfw.GLFW;
 
+//#if MC>=12102
+//$$ import com.mojang.blaze3d.systems.ProjectionType;
+//#endif
+
 //#if MC>=12000
 //$$ import com.mojang.blaze3d.systems.VertexSorter;
 //$$ import net.minecraft.client.gui.DrawContext;
@@ -492,7 +496,7 @@ public class VideoRenderer implements RenderInfo {
 
             pushMatrix();
             GlStateManager.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
-                    //#if MC>=11400
+                    //#if MC>=11400 && MC<12102
                     , false
                     //#endif
             );
@@ -502,7 +506,11 @@ public class VideoRenderer implements RenderInfo {
             guiWindow.beginWrite();
 
             //#if MC>=11500
+            //#if MC>=12102
+            //$$ RenderSystem.clear(256);
+            //#else
             RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
+            //#endif
             //#if MC>=11700
             //$$ RenderSystem.setProjectionMatrix(Matrix4f.projectionMatrix(
             //$$         0,
@@ -512,7 +520,9 @@ public class VideoRenderer implements RenderInfo {
             //$$         1000,
             //$$         3000
             //$$     )
-                    //#if MC>=12000
+                    //#if MC>=12102
+                    //$$ , ProjectionType.ORTHOGRAPHIC
+                    //#elseif MC>=12000
                     //$$ , VertexSorter.BY_Z
                     //#endif
             //$$ );
@@ -524,7 +534,9 @@ public class VideoRenderer implements RenderInfo {
             //$$ matrixStack.loadIdentity();
             //$$ matrixStack.translate(0, 0, -2000);
             //#endif
+            //#if MC<12102
             //$$ RenderSystem.applyModelViewMatrix();
+            //#endif
             //$$ DiffuseLighting.enableGuiDepthLighting();
             //#else
             RenderSystem.matrixMode(GL11.GL_PROJECTION);

@@ -45,6 +45,10 @@ import net.minecraft.network.ClientConnection;
 import java.io.IOException;
 import java.util.*;
 
+//#if MC>=12102
+//$$ import com.mojang.blaze3d.systems.ProjectionType;
+//#endif
+
 //#if MC>=12006
 //$$ import net.minecraft.network.handler.NetworkStateTransitions;
 //$$ import net.minecraft.network.state.LoginStates;
@@ -710,7 +714,7 @@ public class ReplayHandler {
                 // Perform the rendering using OpenGL
                 pushMatrix();
                 GlStateManager.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
-                        //#if MC>=11400
+                        //#if MC>=11400 && MC<12102
                         , true
                         //#endif
                 );
@@ -720,7 +724,11 @@ public class ReplayHandler {
                 mc.getFramebuffer().beginWrite(true);
                 Window window = mc.getWindow();
                 //#if MC>=11500
+                //#if MC>=12102
+                //$$ RenderSystem.clear(256);
+                //#else
                 RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
+                //#endif
                 //#if MC>=11700
                 //$$ RenderSystem.setProjectionMatrix(Matrix4f.projectionMatrix(
                 //$$         0,
@@ -730,7 +738,9 @@ public class ReplayHandler {
                 //$$         1000,
                 //$$         3000
                 //$$     )
-                        //#if MC>=12000
+                        //#if MC>=12102
+                        //$$ , ProjectionType.ORTHOGRAPHIC
+                        //#elseif MC>=12000
                         //$$ , VertexSorter.BY_Z
                         //#endif
                 //$$ );
@@ -742,7 +752,9 @@ public class ReplayHandler {
                 //$$ matrixStack.loadIdentity();
                 //$$ matrixStack.translate(0, 0, -2000);
                 //#endif
+                //#if MC<12102
                 //$$ RenderSystem.applyModelViewMatrix();
+                //#endif
                 //$$ DiffuseLighting.enableGuiDepthLighting();
                 //#else
                 RenderSystem.matrixMode(GL11.GL_PROJECTION);
@@ -782,7 +794,9 @@ public class ReplayHandler {
                 mc.getFramebuffer().draw(mc.getWindow().getFramebufferWidth(), mc.getWindow().getFramebufferHeight());
                 popMatrix();
 
-                //#if MC>=11500
+                //#if MC>=12102
+                //$$ mc.getWindow().swapBuffers(null);
+                //#elseif MC>=11500
                 mc.getWindow().swapBuffers();
                 //#else
                 //#if MC>=11400

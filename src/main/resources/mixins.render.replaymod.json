@@ -30,6 +30,7 @@
     "Mixin_Stereoscopic_Camera",
     "Mixin_Stereoscopic_HandRenderPass",
     "Mixin_SuppressFramebufferResizeDuringRender",
+    "Mixin_UseGuiFramebufferDuringGuiRendering",
     //#if MC>=11600
     "Mixin_AddIrisOdsShaderUniforms",
     "Mixin_LoadIrisOdsShaderPack",
