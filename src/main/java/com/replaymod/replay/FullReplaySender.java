@@ -57,6 +57,10 @@ import net.minecraft.util.math.Vec3d;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
+//#if MC>=12005
+//$$ import net.minecraft.network.packet.s2c.common.ServerTransferS2CPacket;
+//#endif
+
 //#if MC>=12002
 //$$ import net.minecraft.network.packet.s2c.config.ReadyS2CPacket;
 //$$ import net.minecraft.network.packet.s2c.play.CommonPlayerSpawnInfo;
@@ -172,6 +176,9 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
      */
     private static final List<Class> BAD_PACKETS = Arrays.<Class>asList(
             LoginHelloS2CPacket.class, // workaround for an issue where ReplayMod prior to 2.6.20 would record these
+            //#if MC>=12005
+            //$$ ServerTransferS2CPacket.class,
+            //#endif
             //#if MC>=11404
             PlayerActionResponseS2CPacket.class,
             //#endif
