@@ -29,6 +29,7 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.Packet;
+import net.minecraft.network.packet.s2c.login.LoginHelloS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
@@ -170,6 +171,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
      * These packets are ignored completely during replay.
      */
     private static final List<Class> BAD_PACKETS = Arrays.<Class>asList(
+            LoginHelloS2CPacket.class, // workaround for an issue where ReplayMod prior to 2.6.20 would record these
             //#if MC>=11404
             PlayerActionResponseS2CPacket.class,
             //#endif

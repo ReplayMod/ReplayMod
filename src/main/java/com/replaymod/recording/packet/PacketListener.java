@@ -31,6 +31,7 @@ import io.netty.channel.ChannelPromise;
 import io.netty.util.AttributeKey;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.ClientConnection;
+import net.minecraft.network.packet.s2c.login.LoginHelloS2CPacket;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
 import net.minecraft.entity.Entity;
@@ -489,6 +490,10 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
+            if (msg instanceof LoginHelloS2CPacket) {
+                super.channelRead(ctx, msg);
+                return;
+            }
             if (msg instanceof LoginCompressionS2CPacket) {
                 super.channelRead(ctx, msg);
                 return;
