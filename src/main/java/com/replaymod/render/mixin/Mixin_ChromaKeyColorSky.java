@@ -22,14 +22,20 @@ public abstract class Mixin_ChromaKeyColorSky {
 
     //#if MC>=11800
     //$$ @Inject(
-            //#if MC>=12005
+            //#if MC>=12102
+            //$$ method = "method_62215",
+            //#elseif MC>=12005
             //$$ method = "renderSky(Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;FLnet/minecraft/client/render/Camera;ZLjava/lang/Runnable;)V",
             //#elseif MC>=11802
             //$$ method = "renderSky(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/util/math/Matrix4f;FLnet/minecraft/client/render/Camera;ZLjava/lang/Runnable;)V",
             //#else
             //$$ method = "renderSky(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/util/math/Matrix4f;FLjava/lang/Runnable;)V",
             //#endif
-    //$$         at = @At(value = "INVOKE", target = "Ljava/lang/Runnable;run()V", remap = false, shift = At.Shift.AFTER),
+            //#if MC>=12102
+            //$$ at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/RenderPhase$Target;startDrawing()V", shift = At.Shift.AFTER),
+            //#else
+            //$$ at = @At(value = "INVOKE", target = "Ljava/lang/Runnable;run()V", remap = false, shift = At.Shift.AFTER),
+            //#endif
     //$$         cancellable = true)
     //#elseif MC>=11400 || 10710>=MC
     @Inject(method = "renderSky", at = @At("HEAD"), cancellable = true)
@@ -43,7 +49,7 @@ public abstract class Mixin_ChromaKeyColorSky {
             if (color != null) {
                 GlStateManager.clearColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, 1);
                 GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT
-                        //#if MC>=11400
+                        //#if MC>=11400 && MC<12102
                         , false
                         //#endif
                 );

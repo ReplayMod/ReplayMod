@@ -414,7 +414,9 @@ public class MCVer {
         //#else
         //$$ RenderSystem.getModelViewStack().pop();
         //#endif
+        //#if MC<12102
         //$$ RenderSystem.applyModelViewMatrix();
+        //#endif
         //#else
         GlStateManager.popMatrix();
         //#endif

@@ -19,7 +19,11 @@ public abstract class Mixin_PreserveDepthDuringGuiRendering {
     @ModifyArg(
             //#if MC>=11500
             method = "render",
+            //#if MC>=12102
+            //$$ at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(I)V"), index = 0
+            //#else
             at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V"), index = 0
+            //#endif
             //#elseif MC>=11400
             //$$ method = "method_4493",
             //$$ at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/GlStateManager;clear(IZ)V"), index = 0

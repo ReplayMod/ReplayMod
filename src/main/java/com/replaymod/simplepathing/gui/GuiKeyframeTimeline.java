@@ -37,6 +37,10 @@ import static de.johni0702.minecraft.gui.versions.MCVer.popScissorState;
 import static de.johni0702.minecraft.gui.versions.MCVer.pushScissorState;
 import static de.johni0702.minecraft.gui.versions.MCVer.setScissorDisabled;
 
+//#if MC>=12102
+//$$ import net.minecraft.client.gl.ShaderProgramKeys;
+//#endif
+
 //#if MC>=11700
 //$$ import com.mojang.blaze3d.systems.RenderSystem;
 //$$ import net.minecraft.client.render.GameRenderer;
@@ -175,7 +179,9 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     emitLine(matrixStack, buffer, p2, p3, color);
                     emitLine(matrixStack, buffer, p3, p4, color);
 
-                    //#if MC>=11700
+                    //#if MC>=12102
+                    //$$ RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
+                    //#elseif MC>=11700
                     //$$ RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
                     //#else
                     GL11.glEnable(GL11.GL_LINE_SMOOTH);

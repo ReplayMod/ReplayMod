@@ -29,6 +29,7 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.Packet;
+import net.minecraft.network.packet.s2c.login.LoginHelloS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
@@ -56,6 +57,10 @@ import net.minecraft.util.math.Vec3d;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
+//#if MC>=12005
+//$$ import net.minecraft.network.packet.s2c.common.ServerTransferS2CPacket;
+//#endif
+
 //#if MC>=12002
 //$$ import net.minecraft.network.packet.s2c.config.ReadyS2CPacket;
 //$$ import net.minecraft.network.packet.s2c.play.CommonPlayerSpawnInfo;
@@ -81,6 +86,10 @@ import net.minecraft.network.packet.s2c.play.PlayerSpawnS2CPacket;
 //#else
 import net.minecraft.network.packet.s2c.play.MobSpawnS2CPacket;
 import net.minecraft.network.packet.s2c.play.PaintingSpawnS2CPacket;
+//#endif
+
+//#if MC>=11800
+//$$ import org.apache.commons.lang3.mutable.MutableBoolean;
 //#endif
 
 //#if MC>=11600
@@ -166,6 +175,10 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
      * These packets are ignored completely during replay.
      */
     private static final List<Class> BAD_PACKETS = Arrays.<Class>asList(
+            LoginHelloS2CPacket.class, // workaround for an issue where ReplayMod prior to 2.6.20 would record these
+            //#if MC>=12005
+            //$$ ServerTransferS2CPacket.class,
+            //#endif
             //#if MC>=11404
             PlayerActionResponseS2CPacket.class,
             //#endif
@@ -437,7 +450,9 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                             ClientWorld world = mc.world;
                             if (world != null) {
                                 //#if MC>=11800
-                                //$$ while (!world.hasNoChunkUpdaters()) {
+                                //$$ MutableBoolean done = new MutableBoolean();
+                                //$$ world.enqueueChunkUpdate(done::setTrue);
+                                //$$ while (!done.booleanValue()) {
                                 //$$     world.runQueuedChunkUpdates();
                                 //$$ }
                                 //#endif
@@ -842,7 +857,11 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
 
             //#if MC>=10800
             //#if MC>=11904
+            //#if MC>=12102
+            //$$ for (PositionFlag relative : ppl.relatives()) {
+            //#else
             //$$ for (PositionFlag relative : ppl.getFlags()) {
+            //#endif
             //$$     if (relative == PositionFlag.X || relative == PositionFlag.Y || relative == PositionFlag.Z) {
             //#elseif MC>=11400
             for (PlayerPositionLookS2CPacket.Flag relative : ppl.getFlags()) {
@@ -876,14 +895,24 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                     }
 
                     CameraEntity cent = replayHandler.getCameraEntity();
+                    //#if MC>=12102
+                    //$$ if (!allowMovement && !((Math.abs(cent.getX() - ppl.change().position().x) > TP_DISTANCE_LIMIT) ||
+                    //$$         (Math.abs(cent.getZ() - ppl.change().position().z) > TP_DISTANCE_LIMIT))) {
+                    //#else
                     if (!allowMovement && !((Math.abs(cent.getX() - ppl.getX()) > TP_DISTANCE_LIMIT) ||
                             (Math.abs(cent.getZ() - ppl.getZ()) > TP_DISTANCE_LIMIT))) {
+                    //#endif
                         return;
                     } else {
                         allowMovement = false;
                     }
+                    //#if MC>=12102
+                    //$$ cent.setCameraPosition(ppl.change().position().x, ppl.change().position().y, ppl.change().position().z);
+                    //$$ cent.setCameraRotation(ppl.change().yaw(), ppl.change().pitch(), cent.roll);
+                    //#else
                     cent.setCameraPosition(ppl.getX(), ppl.getY(), ppl.getZ());
                     cent.setCameraRotation(ppl.getYaw(), ppl.getPitch(), cent.roll);
+                    //#endif
                 }
             });
 
@@ -951,6 +980,9 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
     //$$             org.isFlat(),
     //$$             org.lastDeathLocation(),
     //$$             org.portalCooldown()
+                //#if MC>=12102
+                //$$ , org.seaLevel()
+                //#endif
     //$$     );
     //$$ }
     //#endif

@@ -12,7 +12,6 @@ import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityAnimationS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityAttachS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityEquipmentUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySetHeadYawS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
@@ -27,6 +26,13 @@ import net.minecraft.server.integrated.IntegratedServer;
 //$$ import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 //$$ import net.minecraftforge.eventbus.api.SubscribeEvent;
 //$$ import net.minecraftforge.event.entity.player.PlayerEvent.ItemPickupEvent;
+//#endif
+
+//#if MC>=12102
+//$$ import net.minecraft.entity.player.PlayerPosition;
+//$$ import net.minecraft.network.packet.s2c.play.EntityPositionSyncS2CPacket;
+//#else
+import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
 //#endif
 
 //#if MC>=12002
@@ -197,7 +203,9 @@ public class RecordingEventHandler extends EventRegistrations {
 
             Packet packet;
             if (force || Math.abs(dx) > maxRelDist || Math.abs(dy) > maxRelDist || Math.abs(dz) > maxRelDist) {
-                //#if MC>=10800
+                //#if MC>=12102
+                //$$ packet = new EntityPositionSyncS2CPacket(player.getId(), PlayerPosition.fromEntity(player), player.isOnGround());
+                //#elseif MC>=10800
                 packet = new EntityPositionS2CPacket(player);
                 //#else
                 //$$ // In 1.7.10 the client player entity has its posY at eye height

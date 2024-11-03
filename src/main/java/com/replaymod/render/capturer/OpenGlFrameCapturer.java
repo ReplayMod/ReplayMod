@@ -84,7 +84,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         frameBuffer().beginWrite(true);
 
         GlStateManager.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
-                //#if MC>=11400
+                //#if MC>=11400 && MC<12102
                 , false
                 //#endif
         );

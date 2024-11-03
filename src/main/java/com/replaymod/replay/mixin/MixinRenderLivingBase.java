@@ -28,7 +28,13 @@ public abstract class MixinRenderLivingBase {
     //#else
     //$$ @Inject(method = "canRenderName(Lnet/minecraft/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
     //#endif
-    private void replayModReplay_canRenderInvisibleName(LivingEntity entity, CallbackInfoReturnable<Boolean> ci) {
+    private void replayModReplay_canRenderInvisibleName(
+            LivingEntity entity,
+            //#if MC>=12102
+            //$$ double distSquared,
+            //#endif
+            CallbackInfoReturnable<Boolean> ci
+    ) {
         PlayerEntity thePlayer = getMinecraft().player;
         if (thePlayer instanceof CameraEntity && entity.isInvisible()) {
             ci.setReturnValue(false);
@@ -36,7 +42,9 @@ public abstract class MixinRenderLivingBase {
     }
 
     @Redirect(
-            //#if MC>=11500
+            //#if MC>=12102
+            //$$ method = "updateRenderState(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;F)V",
+            //#elseif MC>=11500
             method = "render",
             //#else
             //$$ method = "render(Lnet/minecraft/entity/LivingEntity;FFFFFF)V",
