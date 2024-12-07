@@ -31,7 +31,9 @@ public abstract class Mixin_ChromaKeyColorSky {
             //#else
             //$$ method = "renderSky(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/util/math/Matrix4f;FLjava/lang/Runnable;)V",
             //#endif
-            //#if MC>=12102
+            //#if MC>=12104
+            //$$ at = @At("HEAD"),
+            //#elseif MC>=12102
             //$$ at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/RenderPhase$Target;startDrawing()V", shift = At.Shift.AFTER),
             //#else
             //$$ at = @At(value = "INVOKE", target = "Ljava/lang/Runnable;run()V", remap = false, shift = At.Shift.AFTER),

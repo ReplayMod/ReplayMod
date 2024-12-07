@@ -16,7 +16,7 @@
     //#if MC<10904
     //$$ "EntityAccessor",
     //#endif
-    //#if MC>=10904
+    //#if MC>=10904 && MC<11900
     "ItemRendererAccessor",
     //#endif
     "ParticleAccessor",

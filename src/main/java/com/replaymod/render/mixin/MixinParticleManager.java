@@ -33,7 +33,12 @@ import net.minecraft.client.render.Camera;
 @Mixin(ParticleManager.class)
 public abstract class MixinParticleManager {
     //#if MC>=11500
+    //#if MC>=12104
+    //$$ @Redirect(method = "renderParticles(Lnet/minecraft/client/render/Camera;FLnet/minecraft/client/render/VertexConsumerProvider$Immediate;Lnet/minecraft/client/particle/ParticleTextureSheet;Ljava/util/Queue;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;render(Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/client/render/Camera;F)V"))
+    //$$ static
+    //#else
     @Redirect(method = "renderParticles", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/Particle;buildGeometry(Lnet/minecraft/client/render/VertexConsumer;Lnet/minecraft/client/render/Camera;F)V"))
+    //#endif
     private void buildOrientedGeometry(Particle particle, VertexConsumer vertexConsumer, Camera camera, float partialTicks) {
         EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) MCVer.getMinecraft().gameRenderer).replayModRender_getHandler();
         if (handler == null || !handler.omnidirectional) {
@@ -55,7 +60,7 @@ public abstract class MixinParticleManager {
         }
     }
 
-    private void buildGeometry(Particle particle, VertexConsumer vertexConsumer, Camera camera, float partialTicks) {
+    private static void buildGeometry(Particle particle, VertexConsumer vertexConsumer, Camera camera, float partialTicks) {
         //#if MC<11900
         BlendState blendState = BlendState.getState();
         if (blendState != null) {
