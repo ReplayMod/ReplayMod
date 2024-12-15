@@ -42,6 +42,7 @@ import net.minecraft.util.math.Box;
 
 //#if MC>=12002
 //$$ import net.minecraft.client.util.SkinTextures;
+//$$ import net.minecraft.util.math.MathHelper;
 //#endif
 
 //#if MC>=11400
@@ -219,6 +220,11 @@ public class CameraEntity
      * @param roll Roll in degrees
      */
     public void setCameraRotation(float yaw, float pitch, float roll) {
+        //#if MC>=12102
+        //$$ // Note: MC's `setPitch` now forces values into the [-90; 90] range, however the math it uses is incorrect, so
+        //$$ //       we need to wrap our value into the [-180; 180] range first to get correct results.
+        //$$ pitch = MathHelper.wrapDegrees(pitch);
+        //#endif
         this.prevYaw = yaw;
         this.prevPitch = pitch;
         this.yaw = yaw;

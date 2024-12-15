@@ -88,6 +88,7 @@ dependencies {
             12006 -> "0.98.0+1.20.6"
             12100 -> "0.100.3+1.21"
             12102 -> "0.106.1+1.21.2"
+            12104 -> "0.111.0+1.21.4"
             else -> throw UnsupportedOperationException()
         }
         val fabricApiModules = mutableListOf(
@@ -166,6 +167,7 @@ dependencies {
 
     if (platform.isFabric) {
         val modMenuVersion = when {
+            mcVersion >= 12104 -> "13.0.0-beta.1"
             mcVersion >= 12102 -> "12.0.0-beta.1"
             mcVersion >= 12100 -> "11.0.0-rc.4"
             mcVersion >= 12006 -> "10.0.0-beta.1"
