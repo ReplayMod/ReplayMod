@@ -456,7 +456,7 @@ To use **High Performance Rendering**, hold down the `Ctrl` key  (`Cmd` key on M
 
 ## Ambient Lighting [lighting]
 ![](img/ambient-lighting-comparison.jpg)
-The same setting, onace with **Ambient Lighting** enabled, once with **Ambient Lighting** disabled
+The same setting, once with **Ambient Lighting** enabled, once with **Ambient Lighting** disabled
 
 ![](img/eyecon.jpg)
 While **Ambient Lighting** is enabled, this eye symbol is displayed in the lower right corner of the screen.
