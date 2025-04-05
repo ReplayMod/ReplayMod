@@ -713,7 +713,7 @@ public class VideoRenderer implements RenderInfo {
         //$$     return new String[] {
         //$$             "ODS export requires Iris to be installed for Minecraft 1.17 and above.",
         //$$             "Note that it is nevertheless incompatible with other shaders and will simply replace them.",
-        //$$             "Get it from: https://irisshaders.net/",
+        //$$             "Get it from: https://modrinth.com/mod/iris",
         //$$     };
         //$$ }
         //#endif
