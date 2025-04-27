@@ -240,7 +240,9 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
         final int videoHeight = videoSize.getHeight();
 
         if (previewTexture == null) {
-            //#if MC>=11400
+            //#if MC>=12105
+            //$$ previewTexture = new NativeImageBackedTexture((String) null, videoWidth, videoHeight, true);
+            //#elseif MC>=11400
             previewTexture = new NativeImageBackedTexture(videoWidth, videoHeight, true);
             //#else
             //$$ previewTexture = new DynamicTexture(videoWidth, videoHeight);
@@ -252,7 +254,11 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
             previewTextureDirty = false;
         }
 
+        //#if MC>=12105
+        //$$ guiRenderer.bindTexture(previewTexture.getGlTexture());
+        //#else
         guiRenderer.bindTexture(previewTexture.getGlId());
+        //#endif
         renderPreviewTexture(guiRenderer, size, videoWidth, videoHeight);
     }
 

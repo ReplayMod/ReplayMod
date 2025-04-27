@@ -69,16 +69,24 @@ public class VirtualWindow implements Closeable {
 
     public void beginWrite() {
         MinecraftClientExt.get(mc).setFramebufferDelegate(guiFramebuffer);
+        //#if MC<12105
         guiFramebuffer.beginWrite(true);
+        //#endif
     }
 
     public void endWrite() {
+        //#if MC<12105
         guiFramebuffer.endWrite();
+        //#endif
         MinecraftClientExt.get(mc).setFramebufferDelegate(null);
     }
 
     public void flip() {
+        //#if MC>=12105
+        //$$ guiFramebuffer.blitToScreen();
+        //#else
         guiFramebuffer.draw(framebufferWidth, framebufferHeight);
+        //#endif
 
         //#if MC>=12102
         //$$ window.swapBuffers(null);

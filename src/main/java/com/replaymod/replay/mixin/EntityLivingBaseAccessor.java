@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(LivingEntity.class)
 public interface EntityLivingBaseAccessor {
-    //#if MC>=11400
+    //#if MC>=11400 && MC<12105
     @Accessor("serverX")
     double getInterpTargetX();
     @Accessor("serverY")

@@ -11,6 +11,15 @@ import net.minecraft.client.util.ScreenshotUtils;
 import static com.replaymod.core.versions.MCVer.popMatrix;
 import static com.replaymod.core.versions.MCVer.pushMatrix;
 
+//#if MC>=12105
+//$$ import com.mojang.blaze3d.buffers.BufferType;
+//$$ import com.mojang.blaze3d.buffers.BufferUsage;
+//$$ import com.mojang.blaze3d.buffers.GpuBuffer;
+//$$ import com.mojang.blaze3d.systems.CommandEncoder;
+//$$ import com.mojang.blaze3d.systems.GpuDevice;
+//$$ import net.minecraft.client.texture.NativeImage;
+//#endif
+
 //#if MC>=12100
 //$$ import net.minecraft.client.render.RenderTickCounter;
 //#endif
@@ -66,6 +75,11 @@ public class NoGuiScreenshot {
 
                     // Render frame without GUI
                     pushMatrix();
+                    //#if MC>=12105
+                    //$$ RenderSystem.getDevice()
+                    //$$         .createCommandEncoder()
+                    //$$         .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+                    //#else
                     GlStateManager.clear(
                             16640
                             //#if MC>=11400 && MC<12102
@@ -73,6 +87,7 @@ public class NoGuiScreenshot {
                             //#endif
                     );
                     mc.getFramebuffer().beginWrite(true);
+                    //#endif
                     //#if MC<11904
                     GlStateManager.enableTexture();
                     //#endif
@@ -98,11 +113,15 @@ public class NoGuiScreenshot {
                     //#endif
                     //#endif
 
+                    //#if MC<12105
                     mc.getFramebuffer().endWrite();
+                    //#endif
                     popMatrix();
+                    //#if MC<12105
                     pushMatrix();
                     mc.getFramebuffer().draw(frameWidth, frameHeight);
                     popMatrix();
+                    //#endif
                 } catch (Throwable t) {
                     future.setException(t);
                     return;
@@ -114,7 +133,24 @@ public class NoGuiScreenshot {
                 // The frame without GUI has been rendered
                 // Read it, create the screenshot and finish the future
                 try {
-                    //#if MC>=11400
+                    //#if MC>=12105
+                    //$$ Image image;
+                    //$$ GpuDevice device = RenderSystem.getDevice();
+                    //$$ try (GpuBuffer gpuBuffer = device.createBuffer(null, BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, frameWidth * frameHeight * 4)) {
+                    //$$     CommandEncoder cmd = device.createCommandEncoder();
+                    //$$     cmd.copyTextureToBuffer(mc.getFramebuffer().getColorAttachment(), gpuBuffer, 0, () -> {}, 0);
+                    //$$     try (GpuBuffer.ReadView readView = cmd.readBuffer(gpuBuffer)) {
+                    //$$         NativeImage nativeImage = new NativeImage(frameWidth, frameHeight, false);
+                    //$$         for (int y = 0; y < frameHeight; ++y) {
+                    //$$             for (int x = 0; x < frameWidth; ++x) {
+                    //$$                 int color = readView.data().getInt((x + y * frameWidth) * 4);
+                    //$$                 nativeImage.setColor(x, frameHeight - y - 1, 0xff000000 | color);
+                    //$$             }
+                    //$$         }
+                    //$$         image = new Image(nativeImage);
+                    //$$     }
+                    //$$ }
+                    //#elseif MC>=11400
                     Image image = new Image(ScreenshotUtils.takeScreenshot(
                             //#if MC<11701
                             frameWidth, frameHeight,

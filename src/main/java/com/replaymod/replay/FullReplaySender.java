@@ -36,7 +36,6 @@ import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.network.packet.s2c.play.ExperienceBarUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.ExperienceOrbSpawnS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameStateChangeS2CPacket;
 import net.minecraft.network.packet.s2c.play.CloseScreenS2CPacket;
@@ -56,6 +55,11 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+
+//#if MC>=12105
+//#else
+import net.minecraft.network.packet.s2c.play.ExperienceOrbSpawnS2CPacket;
+//#endif
 
 //#if MC>=12005
 //$$ import net.minecraft.network.packet.s2c.common.ServerTransferS2CPacket;
@@ -501,7 +505,9 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                 //#if MC<11600
                 //$$ || packet instanceof EntitySpawnGlobalS2CPacket
                 //#endif
+                //#if MC<12105
                 || packet instanceof ExperienceOrbSpawnS2CPacket
+                //#endif
                 || packet instanceof EntitiesDestroyS2CPacket;
         if (!relevantPacket) {
             return; // don't want to do it too often, only when there's likely to be a dead entity

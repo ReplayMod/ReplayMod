@@ -3,6 +3,7 @@ import java.io.ByteArrayOutputStream
 
 plugins {
     id("gg.essential.multi-version.root")
+    id("gg.essential.loom") version "1.7.28" apply false
     id("com.github.hierynomus.license") version "0.15.0"
 }
 
@@ -203,6 +204,7 @@ defaultTasks("bundleJar")
 preprocess {
     strictExtraMappings.set(true)
 
+    val mc12105 = createNode("1.21.5", 12105, "yarn")
     val mc12104 = createNode("1.21.4", 12104, "yarn")
     val mc12102 = createNode("1.21.2", 12102, "yarn")
     val mc12100 = createNode("1.21", 12100, "yarn")
@@ -234,6 +236,7 @@ preprocess {
     val mc10800 = createNode("1.8", 10800, "srg")
     val mc10710 = createNode("1.7.10", 10710, "srg")
 
+    mc12105.link(mc12104, file("versions/mapping-fabric-1.21.5-1.21.4.txt"))
     mc12104.link(mc12102)
     mc12102.link(mc12100)
     mc12100.link(mc12006)

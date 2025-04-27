@@ -45,6 +45,10 @@ import net.minecraft.network.ClientConnection;
 import java.io.IOException;
 import java.util.*;
 
+//#if MC>=12105
+//$$ import net.minecraft.entity.PositionInterpolator;
+//#endif
+
 //#if MC>=12102
 //$$ import com.mojang.blaze3d.systems.ProjectionType;
 //#endif
@@ -713,21 +717,31 @@ public class ReplayHandler {
 
                 // Perform the rendering using OpenGL
                 pushMatrix();
+                //#if MC>=12105
+                //$$ RenderSystem.getDevice()
+                //$$         .createCommandEncoder()
+                //$$         .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+                //#else
                 GlStateManager.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
                         //#if MC>=11400 && MC<12102
                         , true
                         //#endif
                 );
+                //#endif
                 //#if MC<11904
                 GlStateManager.enableTexture();
                 //#endif
+                //#if MC<12105
                 mc.getFramebuffer().beginWrite(true);
+                //#endif
                 Window window = mc.getWindow();
                 //#if MC>=11500
+                //#if MC<12105
                 //#if MC>=12102
                 //$$ RenderSystem.clear(256);
                 //#else
                 RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
+                //#endif
                 //#endif
                 //#if MC>=11700
                 //$$ RenderSystem.setProjectionMatrix(Matrix4f.projectionMatrix(
@@ -788,10 +802,16 @@ public class ReplayHandler {
                 //#endif
                 guiScreen.toMinecraft().removed();
 
+                //#if MC<12105
                 mc.getFramebuffer().endWrite();
+                //#endif
                 popMatrix();
                 pushMatrix();
+                //#if MC>=12105
+                //$$ mc.getFramebuffer().blitToScreen();
+                //#else
                 mc.getFramebuffer().draw(mc.getWindow().getFramebufferWidth(), mc.getWindow().getFramebufferHeight());
+                //#endif
                 popMatrix();
 
                 //#if MC>=12102
@@ -861,7 +881,13 @@ public class ReplayHandler {
     }
 
     private void skipTeleportInterpolation(Entity entity) {
-        //#if MC>=11400
+        //#if MC>=12105
+        //$$ PositionInterpolator i = entity.getInterpolator();
+        //$$ if (i != null && i.isInterpolating()) {
+        //$$     entity.refreshPositionAndAngles(i.getLerpedPos(), i.getLerpedYaw(), i.getLerpedPitch());
+        //$$     i.clear();
+        //$$ }
+        //#elseif MC>=11400
         if (entity instanceof LivingEntity && !(entity instanceof CameraEntity)) {
             LivingEntity e = (LivingEntity) entity;
             EntityLivingBaseAccessor ea = (EntityLivingBaseAccessor) e;
