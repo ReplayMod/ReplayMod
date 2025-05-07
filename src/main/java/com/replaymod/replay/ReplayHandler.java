@@ -130,6 +130,7 @@ import javax.annotation.Nullable;
 import static com.replaymod.core.utils.Utils.DEFAULT_MS_PER_TICK;
 import static com.replaymod.core.versions.MCVer.*;
 import static com.replaymod.replay.ReplayModReplay.LOGGER;
+import static de.johni0702.minecraft.gui.utils.Utils.clamp;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
@@ -607,6 +608,31 @@ public class ReplayHandler {
         if (cam != null && targetCameraPosition != null) {
             cam.setCameraPosRot(targetCameraPosition);
         }
+    }
+
+    public void relativeJumpButton(boolean forward) {
+        int skipTime = 1000;
+
+        if (Utils.isShiftDown()) {
+            skipTime = 50;
+        }
+
+        if (Utils.isCtrlDown()) {
+            skipTime *= 10;
+        }
+
+        if (Utils.isAltDown()) {
+            skipTime *= 30;
+        }
+
+        if (!forward) {
+            skipTime = -skipTime;
+        }
+
+        int targetTime = getReplaySender().currentTimeStamp() + skipTime;
+        targetTime = clamp(targetTime, 0, replayDuration);
+
+        doJump(targetTime, true);
     }
 
     public void doJump(int targetTime, boolean retainCameraPosition) {
