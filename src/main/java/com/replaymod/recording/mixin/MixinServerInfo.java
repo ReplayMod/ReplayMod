@@ -35,7 +35,11 @@ public abstract class MixinServerInfo implements ServerInfoExt {
     private static void deserialize(CompoundTag tag, CallbackInfoReturnable<ServerInfo> ci) {
         ServerInfoExt serverInfo = ServerInfoExt.from(ci.getReturnValue());
         if (tag.contains("autoRecording")) {
+            //#if MC>=12105
+            //$$ serverInfo.setAutoRecording(tag.getBoolean("autoRecording").orElseThrow());
+            //#else
             serverInfo.setAutoRecording(tag.getBoolean("autoRecording"));
+            //#endif
         }
     }
 

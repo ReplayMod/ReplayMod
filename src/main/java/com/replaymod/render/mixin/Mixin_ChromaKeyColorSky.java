@@ -49,12 +49,19 @@ public abstract class Mixin_ChromaKeyColorSky {
         if (handler != null) {
             ReadableColor color = handler.getSettings().getChromaKeyingColor();
             if (color != null) {
+                //#if MC>=12105
+                //$$ RenderSystem.getDevice().createCommandEncoder().clearColorTexture(
+                //$$         this.client.getFramebuffer().getColorAttachment(),
+                //$$         (0xff << 24) | (color.getRed() << 16) | (color.getGreen() << 8) | color.getBlue()
+                //$$ );
+                //#else
                 GlStateManager.clearColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, 1);
                 GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT
                         //#if MC>=11400 && MC<12102
                         , false
                         //#endif
                 );
+                //#endif
                 ci.cancel();
             }
         }

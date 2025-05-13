@@ -37,8 +37,16 @@ import static de.johni0702.minecraft.gui.versions.MCVer.popScissorState;
 import static de.johni0702.minecraft.gui.versions.MCVer.pushScissorState;
 import static de.johni0702.minecraft.gui.versions.MCVer.setScissorDisabled;
 
+//#if MC>=12105
+//$$ import net.minecraft.client.render.RenderLayer;
+//$$ import net.minecraft.client.render.VertexConsumer;
+//$$ import net.minecraft.client.render.VertexConsumerProvider;
+//#endif
+
 //#if MC>=12102
+//#if MC<12105
 //$$ import net.minecraft.client.gl.ShaderProgramKeys;
+//#endif
 //#endif
 
 //#if MC>=11700
@@ -157,12 +165,18 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     float positionXKeyframeTimeline = positonX + KEYFRAME_SIZE / 2f;
 
                     final int color = 0xff0000ff;
+                    //#if MC>=12105
+                    //$$ VertexConsumerProvider.Immediate immediate = getMinecraft().getBufferBuilders().getEntityVertexConsumers();
+                    //$$ immediate.draw();
+                    //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayer.LINE_STRIP);
+                    //#else
                     Tessellator tessellator = Tessellator.getInstance();
                     //#if MC>=12100
                     //$$ BufferBuilder buffer = tessellator.begin(net.minecraft.client.render.VertexFormat.DrawMode.LINE_STRIP, VertexFormats.LINES);
                     //#else
                     BufferBuilder buffer = tessellator.getBuffer();
                     buffer.begin(GL11.GL_LINE_STRIP, VertexFormats.POSITION_COLOR);
+                    //#endif
                     //#endif
 
                     // Start just below the top border of the replay timeline
@@ -179,6 +193,13 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     emitLine(matrixStack, buffer, p2, p3, color);
                     emitLine(matrixStack, buffer, p3, p4, color);
 
+                    pushScissorState();
+                    setScissorDisabled();
+                    GL11.glLineWidth(2);
+
+                    //#if MC>=12105
+                    //$$ immediate.draw();
+                    //#else
                     //#if MC>=12102
                     //$$ RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
                     //#elseif MC>=11700
@@ -187,9 +208,6 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     GL11.glEnable(GL11.GL_LINE_SMOOTH);
                     GL11.glDisable(GL11.GL_TEXTURE_2D);
                     //#endif
-                    pushScissorState();
-                    setScissorDisabled();
-                    GL11.glLineWidth(2);
                     //#if MC>=12100
                     //$$ try (var builtBuffer = buffer.end()) {
                     //$$     net.minecraft.client.render.BufferRenderer.drawWithGlobalProgram(builtBuffer);
@@ -197,11 +215,13 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     //#else
                     tessellator.draw();
                     //#endif
-                    popScissorState();
                     //#if MC<11700
                     GL11.glEnable(GL11.GL_TEXTURE_2D);
                     GL11.glDisable(GL11.GL_LINE_SMOOTH);
                     //#endif
+                    //#endif
+
+                    popScissorState();
                 }
             }
         });

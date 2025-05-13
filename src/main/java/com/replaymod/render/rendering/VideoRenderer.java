@@ -495,21 +495,33 @@ public class VideoRenderer implements RenderInfo {
             }
 
             pushMatrix();
+            //#if MC>=12105
+            //$$ RenderSystem.getDevice()
+            //$$         .createCommandEncoder()
+            //$$         .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+            //#else
             GlStateManager.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
                     //#if MC>=11400 && MC<12102
                     , false
                     //#endif
             );
+            //#endif
             //#if MC<11904
             GlStateManager.enableTexture();
             //#endif
             guiWindow.beginWrite();
 
             //#if MC>=11500
+            //#if MC>=12105
+            //$$ RenderSystem.getDevice()
+            //$$         .createCommandEncoder()
+            //$$         .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+            //#else
             //#if MC>=12102
             //$$ RenderSystem.clear(256);
             //#else
             RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
+            //#endif
             //#endif
             //#if MC>=11700
             //$$ RenderSystem.setProjectionMatrix(Matrix4f.projectionMatrix(
@@ -713,7 +725,7 @@ public class VideoRenderer implements RenderInfo {
         //$$     return new String[] {
         //$$             "ODS export requires Iris to be installed for Minecraft 1.17 and above.",
         //$$             "Note that it is nevertheless incompatible with other shaders and will simply replace them.",
-        //$$             "Get it from: https://irisshaders.net/",
+        //$$             "Get it from: https://modrinth.com/mod/iris",
         //$$     };
         //$$ }
         //#endif

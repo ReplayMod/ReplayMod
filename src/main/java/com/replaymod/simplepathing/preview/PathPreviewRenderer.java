@@ -30,8 +30,16 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.opengl.GL11;
 
+//#if MC>=12105
+//$$ import net.minecraft.client.render.RenderLayer;
+//$$ import net.minecraft.client.render.VertexConsumer;
+//$$ import net.minecraft.client.render.VertexConsumerProvider;
+//#endif
+
 //#if MC>=12102
+//#if MC<12105
 //$$ import net.minecraft.client.gl.ShaderProgramKeys;
+//#endif
 //#endif
 
 //#if MC>=11700
@@ -173,9 +181,11 @@ public class PathPreviewRenderer extends EventRegistrations {
                 }
             }
 
+            //#if MC<12105
             GL11.glEnable(GL11.GL_BLEND);
             GL11.glBlendFunc(GL11.GL_DST_COLOR, GL11.GL_SRC_COLOR);
             GL11.glDisable(GL11.GL_DEPTH_TEST);
+            //#endif
             //#if MC<11700
             GL11.glEnable(GL11.GL_TEXTURE_2D);
             //#endif
@@ -188,8 +198,10 @@ public class PathPreviewRenderer extends EventRegistrations {
                     .sorted(new KeyframeComparator(viewPos)) // Need to render the furthest first
                     .forEachOrdered(p -> drawPoint(viewPos, p.getRight(), p.getLeft()));
 
+            //#if MC<12105
             GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
             GL11.glEnable(GL11.GL_DEPTH_TEST);
+            //#endif
 
             int time = guiPathing.timeline.getCursorPosition();
             Optional<Integer> entityId = path.getValue(SpectatorProperty.PROPERTY, time);
@@ -214,10 +226,12 @@ public class PathPreviewRenderer extends EventRegistrations {
             }
         } finally {
             popMatrix();
+            //#if MC<12105
             //#if MC>=11700
             //$$ GL11.glDisable(GL11.GL_BLEND);
             //#else
             GL11.glPopAttrib();
+            //#endif
             //#endif
         }
     }
@@ -252,6 +266,11 @@ public class PathPreviewRenderer extends EventRegistrations {
         if (distanceSquared(view, pos1) > renderDistanceSquared) return;
         if (distanceSquared(view, pos2) > renderDistanceSquared) return;
 
+        //#if MC>=12105
+        //$$ VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
+        //$$ immediate.draw();
+        //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayer.LINES);
+        //#else
         Tessellator tessellator = Tessellator.getInstance();
         //#if MC>=12100
         //$$ BufferBuilder buffer = tessellator.begin(net.minecraft.client.render.VertexFormat.DrawMode.LINES, VertexFormats.LINES);
@@ -259,9 +278,15 @@ public class PathPreviewRenderer extends EventRegistrations {
         BufferBuilder buffer = tessellator.getBuffer();
         buffer.begin(GL11.GL_LINES, VertexFormats.POSITION_COLOR);
         //#endif
+        //#endif
 
         emitLine(new MatrixStack(), buffer, Vector3f.sub(pos1, view, null), Vector3f.sub(pos2, view, null), color);
 
+        GL11.glLineWidth(3);
+
+        //#if MC>=12105
+        //$$ immediate.draw();
+        //#else
         //#if MC>=11700
         //#if MC>=12102
         //$$ RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
@@ -270,7 +295,6 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#endif
         //$$ RenderSystem.disableCull();
         //#endif
-        GL11.glLineWidth(3);
         //#if MC>=12100
         //$$ try (var builtBuffer = buffer.end()) {
         //$$     net.minecraft.client.render.BufferRenderer.drawWithGlobalProgram(builtBuffer);
@@ -280,6 +304,7 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#endif
         //#if MC>=11700
         //$$ RenderSystem.enableCull();
+        //#endif
         //#endif
     }
 
@@ -304,18 +329,24 @@ public class PathPreviewRenderer extends EventRegistrations {
         float maxX = 0.5f;
         float maxY = 0.5f;
 
+        //#if MC>=12105
+        //$$ VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
+        //$$ immediate.draw();
+        //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayer.getGuiTexturedOverlay(TEXTURE));
+        //#else
         Tessellator tessellator = Tessellator.getInstance();
         //#if MC>=12100
-        //$$ BufferBuilder buffer = tessellator.begin(net.minecraft.client.render.VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
+        //$$ BufferBuilder buffer = tessellator.begin(net.minecraft.client.render.VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         //#else
         BufferBuilder buffer = tessellator.getBuffer();
-        buffer.begin(GL11.GL_QUADS, VertexFormats.POSITION_TEXTURE);
+        buffer.begin(GL11.GL_QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+        //#endif
         //#endif
 
-        buffer.vertex(minX, minY, 0).texture(posX + size, posY + size).next();
-        buffer.vertex(minX, maxY, 0).texture(posX + size, posY).next();
-        buffer.vertex(maxX, maxY, 0).texture(posX, posY).next();
-        buffer.vertex(maxX, minY, 0).texture(posX, posY + size).next();
+        buffer.vertex(minX, minY, 0).texture(posX + size, posY + size).color(255, 255, 255, 255).next();
+        buffer.vertex(minX, maxY, 0).texture(posX + size, posY).color(255, 255, 255, 255).next();
+        buffer.vertex(maxX, maxY, 0).texture(posX, posY).color(255, 255, 255, 255).next();
+        buffer.vertex(maxX, minY, 0).texture(posX, posY + size).color(255, 255, 255, 255).next();
 
         pushMatrix();
 
@@ -324,11 +355,14 @@ public class PathPreviewRenderer extends EventRegistrations {
         GL11.glRotatef(-mc.getEntityRenderDispatcher().camera.getYaw(), 0, 1, 0);
         GL11.glRotatef(mc.getEntityRenderDispatcher().camera.getPitch(), 1, 0, 0);
 
+        //#if MC>=12105
+        //$$ immediate.draw();
+        //#else
         //#if MC>=12102
-        //$$ RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
+        //$$ RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
         //#elseif MC>=11700
         //$$ RenderSystem.applyModelViewMatrix();
-        //$$ RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        //$$ RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         //#endif
         //#if MC>=12100
         //$$ try (var builtBuffer = buffer.end()) {
@@ -336,6 +370,7 @@ public class PathPreviewRenderer extends EventRegistrations {
         //$$ }
         //#else
         tessellator.draw();
+        //#endif
         //#endif
 
         popMatrix();
@@ -354,6 +389,11 @@ public class PathPreviewRenderer extends EventRegistrations {
         GL11.glRotatef(rot.z, 0, 0, 1); // Roll
 
         //draw the position line
+        //#if MC>=12105
+        //$$ VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
+        //$$ immediate.draw();
+        //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayer.LINES);
+        //#else
         Tessellator tessellator = Tessellator.getInstance();
         //#if MC>=12100
         //$$ BufferBuilder buffer = tessellator.begin(net.minecraft.client.render.VertexFormat.DrawMode.LINES, VertexFormats.LINES);
@@ -361,9 +401,13 @@ public class PathPreviewRenderer extends EventRegistrations {
         BufferBuilder buffer = tessellator.getBuffer();
         buffer.begin(GL11.GL_LINES, VertexFormats.POSITION_COLOR);
         //#endif
+        //#endif
 
         emitLine(new MatrixStack(), buffer, new Vector3f(0, 0, 0), new Vector3f(0, 0, 2), 0x00ff00aa);
 
+        //#if MC>=12105
+        //$$ immediate.draw();
+        //#else
         //#if MC>=12102
         //$$ RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
         //#elseif MC>=11700
@@ -384,6 +428,7 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#if MC<11700
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         //#endif
+        //#endif
 
         // draw camera cube
 
@@ -395,7 +440,9 @@ public class PathPreviewRenderer extends EventRegistrations {
         double r = -cubeSize/2;
         //#endif
 
-        //#if MC>=12100
+        //#if MC>=12105
+        //$$ buffer = immediate.getBuffer(RenderLayer.getGuiTextured(CAMERA_HEAD));
+        //#elseif MC>=12100
         //$$ buffer = tessellator.begin(net.minecraft.client.render.VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         //#else
         buffer.begin(GL11.GL_QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
@@ -437,6 +484,9 @@ public class PathPreviewRenderer extends EventRegistrations {
         buffer.vertex(r + cubeSize, r + cubeSize, r + cubeSize).texture(2*8/64f, 8/64f).color(255, 255, 255, 200).next();
         buffer.vertex(r + cubeSize, r + cubeSize, r).texture(2 * 8 / 64f, 0).color(255, 255, 255, 200).next();
 
+        //#if MC>=12105
+        //$$ immediate.draw();
+        //#else
         //#if MC>=12102
         //$$ RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
         //#elseif MC>=11700
@@ -449,6 +499,7 @@ public class PathPreviewRenderer extends EventRegistrations {
         //$$ }
         //#else
         tessellator.draw();
+        //#endif
         //#endif
 
         popMatrix();

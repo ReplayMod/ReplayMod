@@ -16,6 +16,10 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.Vec3d;
 
+//#if MC>=12105
+//$$ import net.minecraft.client.render.VertexConsumer;
+//#endif
+
 //#if MC>=11700
 //$$ import net.minecraft.util.math.Matrix4f;
 //#endif
@@ -440,11 +444,19 @@ public class MCVer {
     //$$ }
     //#endif
 
+    //#if MC>=12105
+    //$$ public static void emitLine(MatrixStack matrixStack, VertexConsumer buffer, Vector2f p1, Vector2f p2, int color) {
+    //#else
     public static void emitLine(MatrixStack matrixStack, BufferBuilder buffer, Vector2f p1, Vector2f p2, int color) {
+    //#endif
         emitLine(matrixStack, buffer, new Vector3f(p1.x, p1.y, 0), new Vector3f(p2.x, p2.y, 0), color);
     }
 
+    //#if MC>=12105
+    //$$ public static void emitLine(MatrixStack matrixStack, VertexConsumer buffer, Vector3f p1, Vector3f p2, int color) {
+    //#else
     public static void emitLine(MatrixStack matrixStack, BufferBuilder buffer, Vector3f p1, Vector3f p2, int color) {
+    //#endif
         int r = color >> 24 & 0xff;
         int g = color >> 16 & 0xff;
         int b = color >> 8 & 0xff;
