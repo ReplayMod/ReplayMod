@@ -55,6 +55,7 @@
     //#endif
     "MixinKeyboardListener",
     "MixinPlayerControllerMP",
+    "Mixin_CreateReplayCamera",
     "MixinRenderItem",
     "MixinRenderLivingBase",
     "MixinTileEntityEndPortalRenderer",
