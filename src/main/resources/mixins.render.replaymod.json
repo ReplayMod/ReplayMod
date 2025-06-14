@@ -17,6 +17,9 @@
     //#if MC>=12100
     //$$ "Mixin_FakeSystemTimeUniforms_Iris",
     //#endif
+    //#if MC>=12105
+    //$$ "Mixin_FixCopyTextureToBuffer_DepthTexture",
+    //#endif
     "Mixin_ForceChunkLoading",
     "Mixin_HideNameTags",
     "Mixin_HideNameTags_LivingEntity",
