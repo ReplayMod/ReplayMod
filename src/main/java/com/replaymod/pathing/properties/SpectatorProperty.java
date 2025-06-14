@@ -35,7 +35,11 @@ public class SpectatorProperty extends AbstractProperty<Integer> {
         ReplayHandler handler = ((ReplayHandler) replayHandler);
         CameraEntity cameraEntity = handler.getCameraEntity();
         if (cameraEntity == null) return;
+        //#if MC>=12106
+        //$$ World world = cameraEntity.getWorld();
+        //#else
         World world = cameraEntity.getEntityWorld();
+        //#endif
         // Lookup entity by id, returns null if an entity with the id does not exists
         Entity target = world.getEntityById(value);
         // Spectate entity, when called with null, returns to camera

@@ -100,7 +100,11 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
                 }
                 // MC sometimes schedules invalid chunks when you're outside of loaded chunks (e.g. y > 256)
                 if (builtChunk.shouldBuild()) {
+                    //#if MC>=12106
+                    //$$ builtChunk.scheduleRebuild(chunkRendererRegionBuilder);
+                    //#else
                     builtChunk.scheduleRebuild(this.field_45614, chunkRendererRegionBuilder);
+                    //#endif
                     areWeDoneYet = false;
                 }
                 builtChunk.cancelRebuild();

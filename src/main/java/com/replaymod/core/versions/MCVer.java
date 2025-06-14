@@ -102,7 +102,9 @@ import java.util.Optional;
  */
 public class MCVer {
     public static int getProtocolVersion() {
-        //#if MC>=11400
+        //#if MC>=12106
+        //$$ return SharedConstants.getProtocolVersion();
+        //#elseif MC>=11400
         return SharedConstants.getGameVersion().getProtocolVersion();
         //#else
         //$$ return RealmsSharedConstants.NETWORK_PROTOCOL_VERSION;
@@ -488,9 +490,11 @@ public class MCVer {
         buffer.next();
     }
 
+    //#if MC<12105
     public static void bindTexture(Identifier id) {
         de.johni0702.minecraft.gui.versions.MCVer.bindTexture(id);
     }
+    //#endif
 
     //#if MC<10900
     //$$ public static class SoundEvent {}

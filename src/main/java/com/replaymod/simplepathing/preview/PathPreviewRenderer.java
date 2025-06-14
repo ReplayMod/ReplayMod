@@ -34,6 +34,8 @@ import org.lwjgl.opengl.GL11;
 //$$ import net.minecraft.client.render.RenderLayer;
 //$$ import net.minecraft.client.render.VertexConsumer;
 //$$ import net.minecraft.client.render.VertexConsumerProvider;
+//#else
+import static com.replaymod.core.versions.MCVer.bindTexture;
 //#endif
 
 //#if MC>=12102
@@ -54,7 +56,6 @@ import java.util.Comparator;
 import java.util.Optional;
 
 import static com.replaymod.core.ReplayMod.TEXTURE;
-import static com.replaymod.core.versions.MCVer.bindTexture;
 import static com.replaymod.core.versions.MCVer.emitLine;
 import static com.replaymod.core.versions.MCVer.popMatrix;
 import static com.replaymod.core.versions.MCVer.pushMatrix;
@@ -310,7 +311,9 @@ public class PathPreviewRenderer extends EventRegistrations {
 
     private void drawPoint(Vector3f view, Vector3f pos, Keyframe keyframe) {
 
+        //#if MC<12105
         bindTexture(TEXTURE);
+        //#endif
 
         float posX = 80f / ReplayMod.TEXTURE_SIZE;
         float posY = 0f;
@@ -332,7 +335,11 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#if MC>=12105
         //$$ VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
         //$$ immediate.draw();
+        //#if MC>=12106
+        //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayer.getTextSeeThrough(TEXTURE));
+        //#else
         //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayer.getGuiTexturedOverlay(TEXTURE));
+        //#endif
         //#else
         Tessellator tessellator = Tessellator.getInstance();
         //#if MC>=12100
@@ -343,10 +350,10 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#endif
         //#endif
 
-        buffer.vertex(minX, minY, 0).texture(posX + size, posY + size).color(255, 255, 255, 255).next();
-        buffer.vertex(minX, maxY, 0).texture(posX + size, posY).color(255, 255, 255, 255).next();
-        buffer.vertex(maxX, maxY, 0).texture(posX, posY).color(255, 255, 255, 255).next();
-        buffer.vertex(maxX, minY, 0).texture(posX, posY + size).color(255, 255, 255, 255).next();
+        vertex(buffer, minX, minY, 0, posX + size, posY + size, 255);
+        vertex(buffer, minX, maxY, 0, posX + size, posY, 255);
+        vertex(buffer, maxX, maxY, 0, posX, posY, 255);
+        vertex(buffer, maxX, minY, 0, posX, posY + size, 255);
 
         pushMatrix();
 
@@ -378,7 +385,9 @@ public class PathPreviewRenderer extends EventRegistrations {
 
     private void drawCamera(Vector3f view, Vector3f pos, Vector3f rot) {
 
+        //#if MC<12105
         bindTexture(CAMERA_HEAD);
+        //#endif
 
         pushMatrix();
 
@@ -434,13 +443,11 @@ public class PathPreviewRenderer extends EventRegistrations {
 
         float cubeSize = 0.5f;
 
-        //#if MC>=12100
-        //$$ float r = -cubeSize/2;
-        //#else
-        double r = -cubeSize/2;
-        //#endif
+        float r = -cubeSize/2;
 
-        //#if MC>=12105
+        //#if MC>=12106
+        //$$ buffer = immediate.getBuffer(RenderLayer.getText(CAMERA_HEAD));
+        //#elseif MC>=12105
         //$$ buffer = immediate.getBuffer(RenderLayer.getGuiTextured(CAMERA_HEAD));
         //#elseif MC>=12100
         //$$ buffer = tessellator.begin(net.minecraft.client.render.VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
@@ -449,40 +456,40 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#endif
 
         //back
-        buffer.vertex(r, r + cubeSize, r).texture(3 * 8 / 64f, 8 / 64f).color(255, 255, 255, 200).next();
-        buffer.vertex(r + cubeSize, r + cubeSize, r).texture(4*8/64f, 8/64f).color(255, 255, 255, 200).next();
-        buffer.vertex(r + cubeSize, r, r).texture(4*8/64f, 2*8/64f).color(255, 255, 255, 200).next();
-        buffer.vertex(r, r, r).texture(3*8/64f, 2*8/64f).color(255, 255, 255, 200).next();
+        vertex(buffer, r, r + cubeSize, r, 3 * 8 / 64f, 8 / 64f, 200);
+        vertex(buffer, r + cubeSize, r + cubeSize, r, 4*8/64f, 8/64f, 200);
+        vertex(buffer, r + cubeSize, r, r, 4*8/64f, 2*8/64f, 200);
+        vertex(buffer, r, r, r, 3*8/64f, 2*8/64f, 200);
 
         //front
-        buffer.vertex(r + cubeSize, r, r + cubeSize).texture(2 * 8 / 64f, 2*8/64f).color(255, 255, 255, 200).next();
-        buffer.vertex(r + cubeSize, r + cubeSize, r + cubeSize).texture(2 * 8 / 64f, 8/64f).color(255, 255, 255, 200).next();
-        buffer.vertex(r, r + cubeSize, r + cubeSize).texture(8 / 64f, 8 / 64f).color(255, 255, 255, 200).next();
-        buffer.vertex(r, r, r + cubeSize).texture(8 / 64f, 2*8/64f).color(255, 255, 255, 200).next();
+        vertex(buffer, r + cubeSize, r, r + cubeSize, 2 * 8 / 64f, 2*8/64f, 200);
+        vertex(buffer, r + cubeSize, r + cubeSize, r + cubeSize, 2 * 8 / 64f, 8/64f, 200);
+        vertex(buffer, r, r + cubeSize, r + cubeSize, 8 / 64f, 8 / 64f, 200);
+        vertex(buffer, r, r, r + cubeSize, 8 / 64f, 2*8/64f, 200);
 
         //left
-        buffer.vertex(r + cubeSize, r + cubeSize, r).texture(0, 8/64f).color(255, 255, 255, 200).next();
-        buffer.vertex(r + cubeSize, r + cubeSize, r + cubeSize).texture(8/64f, 8/64f).color(255, 255, 255, 200).next();
-        buffer.vertex(r + cubeSize, r, r + cubeSize).texture(8/64f, 2*8/64f).color(255, 255, 255, 200).next();
-        buffer.vertex(r+cubeSize, r, r).texture(0, 2*8/64f).color(255, 255, 255, 200).next();
+        vertex(buffer, r + cubeSize, r + cubeSize, r, 0, 8/64f, 200);
+        vertex(buffer, r + cubeSize, r + cubeSize, r + cubeSize, 8/64f, 8/64f, 200);
+        vertex(buffer, r + cubeSize, r, r + cubeSize, 8/64f, 2*8/64f, 200);
+        vertex(buffer, r+cubeSize, r, r, 0, 2*8/64f, 200);
 
         //right
-        buffer.vertex(r, r + cubeSize, r + cubeSize).texture(2*8/64f, 8/64f).color(255, 255, 255, 200).next();
-        buffer.vertex(r, r + cubeSize, r).texture(3*8/64f, 8/64f).color(255, 255, 255, 200).next();
-        buffer.vertex(r, r, r).texture(3*8/64f, 2*8/64f).color(255, 255, 255, 200).next();
-        buffer.vertex(r, r, r + cubeSize).texture(2 * 8 / 64f, 2 * 8 / 64f).color(255, 255, 255, 200).next();
+        vertex(buffer, r, r + cubeSize, r + cubeSize, 2*8/64f, 8/64f, 200);
+        vertex(buffer, r, r + cubeSize, r, 3*8/64f, 8/64f, 200);
+        vertex(buffer, r, r, r, 3*8/64f, 2*8/64f, 200);
+        vertex(buffer, r, r, r + cubeSize, 2 * 8 / 64f, 2 * 8 / 64f, 200);
 
         //bottom
-        buffer.vertex(r + cubeSize, r, r).texture(3*8/64f, 0).color(255, 255, 255, 200).next();
-        buffer.vertex(r + cubeSize, r, r + cubeSize).texture(3*8/64f, 8/64f).color(255, 255, 255, 200).next();
-        buffer.vertex(r, r, r + cubeSize).texture(2*8/64f, 8/64f).color(255, 255, 255, 200).next();
-        buffer.vertex(r, r, r).texture(2 * 8 / 64f, 0).color(255, 255, 255, 200).next();
+        vertex(buffer, r + cubeSize, r, r, 3*8/64f, 0, 200);
+        vertex(buffer, r + cubeSize, r, r + cubeSize, 3*8/64f, 8/64f, 200);
+        vertex(buffer, r, r, r + cubeSize, 2*8/64f, 8/64f, 200);
+        vertex(buffer, r, r, r, 2 * 8 / 64f, 0, 200);
 
         //top
-        buffer.vertex(r, r + cubeSize, r).texture(8/64f, 0).color(255, 255, 255, 200).next();
-        buffer.vertex(r, r + cubeSize, r + cubeSize).texture(8/64f, 8/64f).color(255, 255, 255, 200).next();
-        buffer.vertex(r + cubeSize, r + cubeSize, r + cubeSize).texture(2*8/64f, 8/64f).color(255, 255, 255, 200).next();
-        buffer.vertex(r + cubeSize, r + cubeSize, r).texture(2 * 8 / 64f, 0).color(255, 255, 255, 200).next();
+        vertex(buffer, r, r + cubeSize, r, 8/64f, 0, 200);
+        vertex(buffer, r, r + cubeSize, r + cubeSize, 8/64f, 8/64f, 200);
+        vertex(buffer, r + cubeSize, r + cubeSize, r + cubeSize, 2*8/64f, 8/64f, 200);
+        vertex(buffer, r + cubeSize, r + cubeSize, r, 2 * 8 / 64f, 0, 200);
 
         //#if MC>=12105
         //$$ immediate.draw();
@@ -503,6 +510,18 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#endif
 
         popMatrix();
+    }
+
+    //#if MC>=12105
+    //$$ private void vertex(VertexConsumer buffer, float x, float y, float z, float u, float v, int alpha) {
+    //#else
+    private void vertex(BufferBuilder buffer, float x, float y, float z, float u, float v, int alpha) {
+    //#endif
+        //#if MC>=12106
+        //$$ buffer.vertex(x, y, z).color(255, 255, 255, alpha).texture(u, v).light(240, 240);
+        //#else
+        buffer.vertex(x, y, z).texture(u, v).color(255, 255, 255, alpha).next();
+        //#endif
     }
 
     private class KeyframeComparator implements Comparator<Pair<Keyframe, Vector3f>> {

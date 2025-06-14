@@ -12,8 +12,10 @@ import static com.replaymod.core.versions.MCVer.popMatrix;
 import static com.replaymod.core.versions.MCVer.pushMatrix;
 
 //#if MC>=12105
+//#if MC<12106
 //$$ import com.mojang.blaze3d.buffers.BufferType;
 //$$ import com.mojang.blaze3d.buffers.BufferUsage;
+//#endif
 //$$ import com.mojang.blaze3d.buffers.GpuBuffer;
 //$$ import com.mojang.blaze3d.systems.CommandEncoder;
 //$$ import com.mojang.blaze3d.systems.GpuDevice;
@@ -136,10 +138,18 @@ public class NoGuiScreenshot {
                     //#if MC>=12105
                     //$$ Image image;
                     //$$ GpuDevice device = RenderSystem.getDevice();
+                    //#if MC>=12106
+                    //$$ try (GpuBuffer gpuBuffer = device.createBuffer(null, GpuBuffer.USAGE_COPY_DST | GpuBuffer.USAGE_MAP_READ, frameWidth * frameHeight * 4)) {
+                    //#else
                     //$$ try (GpuBuffer gpuBuffer = device.createBuffer(null, BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, frameWidth * frameHeight * 4)) {
+                    //#endif
                     //$$     CommandEncoder cmd = device.createCommandEncoder();
                     //$$     cmd.copyTextureToBuffer(mc.getFramebuffer().getColorAttachment(), gpuBuffer, 0, () -> {}, 0);
-                    //$$     try (GpuBuffer.ReadView readView = cmd.readBuffer(gpuBuffer)) {
+                        //#if MC>=12106
+                        //$$ try (GpuBuffer.MappedView readView = cmd.mapBuffer(gpuBuffer, true, false)) {
+                        //#else
+                        //$$ try (GpuBuffer.ReadView readView = cmd.readBuffer(gpuBuffer)) {
+                        //#endif
                     //$$         NativeImage nativeImage = new NativeImage(frameWidth, frameHeight, false);
                     //$$         for (int y = 0; y < frameHeight; ++y) {
                     //$$             for (int x = 0; x < frameWidth; ++x) {

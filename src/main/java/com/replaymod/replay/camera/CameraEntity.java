@@ -31,6 +31,10 @@ import net.minecraft.stat.StatHandler;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
 
+//#if MC>=12106
+//$$ import net.minecraft.util.PlayerInput;
+//#endif
+
 //#if FABRIC>=1
 //#else
 //$$ import net.minecraftforge.client.event.EntityViewRenderEvent;
@@ -164,7 +168,11 @@ public class CameraEntity
                 , recipeBook
                 //#endif
                 //#if MC>=11600
+                //#if MC>=12106
+                //$$ , PlayerInput.DEFAULT
+                //#else
                 , false
+                //#endif
                 , false
                 //#endif
         );

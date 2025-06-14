@@ -11,6 +11,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+//#if MC>=12106
+//$$ import net.minecraft.util.PlayerInput;
+//#endif
+
 //#if MC>=11400
 import net.minecraft.client.world.ClientWorld;
 //#else
@@ -51,7 +55,9 @@ public abstract class Mixin_CreateReplayCamera {
     //#endif
 
     //#if MC>=11400
-    //#if MC>=11602
+    //#if MC>=12106
+    //$$ @Inject(method = "createPlayer(Lnet/minecraft/client/world/ClientWorld;Lnet/minecraft/stat/StatHandler;Lnet/minecraft/client/recipebook/ClientRecipeBook;Lnet/minecraft/util/PlayerInput;Z)Lnet/minecraft/client/network/ClientPlayerEntity;", at=@At("HEAD"), cancellable = true)
+    //#elseif MC>=11602
     @Inject(method = "createPlayer(Lnet/minecraft/client/world/ClientWorld;Lnet/minecraft/stat/StatHandler;Lnet/minecraft/client/recipebook/ClientRecipeBook;ZZ)Lnet/minecraft/client/network/ClientPlayerEntity;", at=@At("HEAD"), cancellable = true)
     //#else
     //$$ @Inject(method = "createPlayer", at=@At("HEAD"), cancellable = true)
@@ -65,7 +71,11 @@ public abstract class Mixin_CreateReplayCamera {
             StatHandler statisticsManager,
             ClientRecipeBook recipeBookClient,
             //#if MC>=11600
+            //#if MC>=12106
+            //$$ PlayerInput playerInput,
+            //#else
             boolean lastIsHoldingSneakKey,
+            //#endif
             boolean lastSprinting,
             //#endif
             CallbackInfoReturnable<ClientPlayerEntity> ci

@@ -45,6 +45,12 @@ import net.minecraft.network.ClientConnection;
 import java.io.IOException;
 import java.util.*;
 
+//#if MC>=12106
+//$$ import com.replaymod.render.mixin.GameRendererAccessor;
+//$$ import net.minecraft.client.gui.render.state.GuiRenderState;
+//$$ import net.minecraft.client.render.fog.FogRenderer;
+//#endif
+
 //#if MC>=12105
 //$$ import net.minecraft.entity.PositionInterpolator;
 //#endif
@@ -219,7 +225,9 @@ public class ReplayHandler {
         //#endif
 
         // Force re-creation of camera entity by unloading the previous world
-        //#if MC>=11400
+        //#if MC>=12106
+        //$$ mc.disconnectWithProgressScreen();
+        //#elseif MC>=11400
         mc.disconnect();
         //#else
         //$$ // We need to re-set the GUI screen because having one with `allowsUserInput = true` active during world
@@ -261,7 +269,9 @@ public class ReplayHandler {
         }
 
         if (mc.world != null) {
-            //#if MC>=11400
+            //#if MC>=12106
+            //$$ mc.disconnectWithProgressScreen();
+            //#elseif MC>=11400
             mc.disconnect();
             //#else
             //$$ mc.world.sendQuittingDisconnectingPacket();
@@ -743,7 +753,8 @@ public class ReplayHandler {
                 RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
                 //#endif
                 //#endif
-                //#if MC>=11700
+                //#if MC>=12106
+                //#elseif MC>=11700
                 //$$ RenderSystem.setProjectionMatrix(Matrix4f.projectionMatrix(
                 //$$         0,
                 //$$         (float) (window.getFramebufferWidth() / window.getScaleFactor()),
@@ -787,7 +798,18 @@ public class ReplayHandler {
                 //#endif
 
                 guiScreen.toMinecraft().init(mc, window.getScaledWidth(), window.getScaledHeight());
-                //#if MC>=12000
+                //#if MC>=12106
+                //$$ GameRendererAccessor gameRenderer = (GameRendererAccessor) mc.gameRenderer;
+                //$$ GuiRenderState guiRenderState = gameRenderer.getGuiState();
+                //$$ guiRenderState.clear();
+                //$$ guiScreen.toMinecraft().renderWithTooltip(new DrawContext(mc, guiRenderState), 0, 0, 0);
+                //$$ var orgFog = RenderSystem.getShaderFog();
+                //$$ var orgProjBuf = RenderSystem.getProjectionMatrixBuffer();
+                //$$ var orgProjType = RenderSystem.getProjectionType();
+                //$$ gameRenderer.getGuiRenderer().render(gameRenderer.getFogRenderer().getFogBuffer(FogRenderer.FogType.NONE));
+                //$$ RenderSystem.setShaderFog(orgFog);
+                //$$ RenderSystem.setProjectionMatrix(orgProjBuf, orgProjType);
+                //#elseif MC>=12000
                 //$$ DrawContext drawContext = new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers());
                 //$$ guiScreen.toMinecraft().render(drawContext, 0, 0, 0);
                 //$$ drawContext.draw();

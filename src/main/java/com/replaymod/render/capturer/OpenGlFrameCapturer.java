@@ -24,8 +24,10 @@ import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
 //#if MC>=12105
+//#if MC<12106
 //$$ import com.mojang.blaze3d.buffers.BufferType;
 //$$ import com.mojang.blaze3d.buffers.BufferUsage;
+//#endif
 //$$ import com.mojang.blaze3d.buffers.GpuBuffer;
 //$$ import com.mojang.blaze3d.systems.GpuDevice;
 //#endif
@@ -121,9 +123,17 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         ByteBuffer buffer = ByteBufferPool.allocate(getFrameWidth() * getFrameHeight() * 4);
         //#if MC>=12105
         //$$ GpuDevice device = RenderSystem.getDevice();
+        //#if MC>=12106
+        //$$ try (GpuBuffer gpuBuffer = device.createBuffer(null, GpuBuffer.USAGE_COPY_DST | GpuBuffer.USAGE_MAP_READ, getFrameWidth() * getFrameHeight() * 4)) {
+        //#else
         //$$ try (GpuBuffer gpuBuffer = device.createBuffer(null, BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, getFrameWidth() * getFrameHeight() * 4)) {
+        //#endif
         //$$     device.createCommandEncoder().copyTextureToBuffer(frameBuffer().getColorAttachment(), gpuBuffer, 0, () -> {}, 0);
-        //$$     try (GpuBuffer.ReadView view = device.createCommandEncoder().readBuffer(gpuBuffer)) {
+            //#if MC>=12106
+            //$$ try (GpuBuffer.MappedView view = device.createCommandEncoder().mapBuffer(gpuBuffer, true, false)) {
+            //#else
+            //$$ try (GpuBuffer.ReadView view = device.createCommandEncoder().readBuffer(gpuBuffer)) {
+            //#endif
         //$$         buffer.put(view.data());
         //$$     }
         //$$ }
