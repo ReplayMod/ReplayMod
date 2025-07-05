@@ -14,8 +14,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 //#if MC>=12105
+//#if MC<12106
 //$$ import com.mojang.blaze3d.buffers.BufferType;
 //$$ import com.mojang.blaze3d.buffers.BufferUsage;
+//#endif
 //$$ import com.mojang.blaze3d.buffers.GpuBuffer;
 //$$ import com.mojang.blaze3d.systems.CommandEncoder;
 //$$ import com.mojang.blaze3d.systems.GpuDevice;
@@ -38,7 +40,10 @@ public abstract class PboOpenGlFrameCapturer<F extends Frame, D extends Enum<D> 
         withDepth = renderInfo.getRenderSettings().isDepthMap();
         data = type.getEnumConstants();
         int bufferSize = framePixels * (4 /* bgra */ + (withDepth ? 4 /* float */ : 0)) * data.length;
-        //#if MC>=12105
+        //#if MC>=12106
+        //$$ pbo = RenderSystem.getDevice().createBuffer(null, GpuBuffer.USAGE_COPY_DST | GpuBuffer.USAGE_MAP_READ, bufferSize);
+        //$$ otherPBO = RenderSystem.getDevice().createBuffer(null, GpuBuffer.USAGE_COPY_DST | GpuBuffer.USAGE_MAP_READ, bufferSize);
+        //#elseif MC>=12105
         //$$ pbo = RenderSystem.getDevice().createBuffer(null, BufferType.PIXEL_PACK, BufferUsage.STREAM_READ, bufferSize);
         //$$ otherPBO = RenderSystem.getDevice().createBuffer(null, BufferType.PIXEL_PACK, BufferUsage.STREAM_READ, bufferSize);
         //#else
@@ -97,7 +102,11 @@ public abstract class PboOpenGlFrameCapturer<F extends Frame, D extends Enum<D> 
         if (framesDone > 1) {
             // Read pbo to memory
             //#if MC>=12105
+            //#if MC>=12106
+            //$$ try (GpuBuffer.MappedView view = RenderSystem.getDevice().createCommandEncoder().mapBuffer(pbo, true, false)) {
+            //#else
             //$$ try (GpuBuffer.ReadView view = RenderSystem.getDevice().createCommandEncoder().readBuffer(pbo)) {
+            //#endif
             //$$     channels = new HashMap<>();
             //$$     channels.put(Channel.BRGA, readFromPbo(view.data(), 4, true));
             //$$     if (withDepth) {

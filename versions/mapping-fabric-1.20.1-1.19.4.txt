@@ -3,3 +3,4 @@ net.irisshaders.iris.config.IrisConfig net.coderbot.iris.config.IrisConfig
 net.irisshaders.iris.gl.uniform.UniformHolder net.coderbot.iris.gl.uniform.UniformHolder
 net.irisshaders.iris.gl.uniform.UniformUpdateFrequency net.coderbot.iris.gl.uniform.UniformUpdateFrequency
 net.irisshaders.iris.uniforms.CommonUniforms net.coderbot.iris.uniforms.CommonUniforms
+net.irisshaders.iris.pathways.HandRenderer net.coderbot.iris.pipeline.HandRenderer

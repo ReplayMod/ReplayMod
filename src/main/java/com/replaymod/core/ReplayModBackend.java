@@ -21,7 +21,11 @@ public class ReplayModBackend implements ClientModInitializer {
     }
 
     public String getMinecraftVersion() {
+        //#if MC>=12106
+        //$$ return SharedConstants.getGameVersion().comp_4025();
+        //#else
         return SharedConstants.getGameVersion().getName();
+        //#endif
     }
 
     public boolean isModLoaded(String id) {

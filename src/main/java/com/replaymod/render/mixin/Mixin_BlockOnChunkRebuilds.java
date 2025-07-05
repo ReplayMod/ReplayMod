@@ -21,6 +21,12 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+//#if MC>=12106
+//$$ import net.minecraft.client.render.chunk.AbstractChunkRenderData;
+//$$ import org.spongepowered.asm.mixin.Mutable;
+//$$ import java.util.concurrent.Executor;
+//#endif
+
 //#if MC>=12105
 //$$ import org.spongepowered.asm.mixin.Mutable;
 //$$ import java.util.AbstractQueue;
@@ -60,6 +66,13 @@ public abstract class Mixin_BlockOnChunkRebuilds implements ForceChunkLoadingHoo
     //$$         runnable.run();
     //$$         anything = true;
     //$$     }
+        //#if MC>=12106
+        //$$ AbstractChunkRenderData entry;
+        //$$     while ((entry = this.renderQueue.poll()) != null) {
+        //$$     entry.close();
+        //$$     anything = true;
+        //$$ }
+        //#endif
     //$$     return anything;
     //$$ }
     //#else
@@ -105,7 +118,42 @@ public abstract class Mixin_BlockOnChunkRebuilds implements ForceChunkLoadingHoo
         }
     }
 
-    //#if MC>=12105
+    //#if MC>=12106
+    //$$ @Shadow @Final @Mutable
+    //$$ Executor uploadExecutor;
+    //$$ @Shadow @Final @Mutable Queue<AbstractChunkRenderData> renderQueue;
+    //$$ @Inject(method = "<init>", at = @At("RETURN"))
+    //$$ private void notifyMainThreadOfNewUpload(CallbackInfo ci) {
+    //$$     Executor innerUploadExecutor = this.uploadExecutor;
+    //$$     this.uploadExecutor = runnable -> {
+    //$$         innerUploadExecutor.execute(runnable);
+    //$$         waitingForWorkLock.lock();
+    //$$         try {
+    //$$             newWork.signal();
+    //$$         } finally {
+    //$$             waitingForWorkLock.unlock();
+    //$$         }
+    //$$     };
+    //$$     Queue<AbstractChunkRenderData> innerRenderQueue = this.renderQueue;
+    //$$     this.renderQueue = new AbstractQueue<>() {
+    //$$         @Override
+    //$$         public boolean offer(AbstractChunkRenderData runnable) {
+    //$$             boolean result = innerRenderQueue.offer(runnable);
+    //$$             waitingForWorkLock.lock();
+    //$$             try {
+    //$$                 newWork.signal();
+    //$$             } finally {
+    //$$                 waitingForWorkLock.unlock();
+    //$$             }
+    //$$             return result;
+    //$$         }
+    //$$         @Override public AbstractChunkRenderData poll() { return innerRenderQueue.poll(); }
+    //$$         @Override public AbstractChunkRenderData peek() { return innerRenderQueue.peek(); }
+    //$$         @Override public int size() { return innerRenderQueue.size(); }
+    //$$         @Override public Iterator<AbstractChunkRenderData> iterator() { return innerRenderQueue.iterator(); }
+    //$$     };
+    //$$ }
+    //#elseif MC>=12105
     //$$ @Inject(method = "<init>", at = @At("RETURN"))
     //$$ private void notifyMainThreadOfNewUpload(CallbackInfo ci) {
     //$$     Queue<Runnable> inner = this.uploadQueue;

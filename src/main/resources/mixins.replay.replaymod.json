@@ -35,6 +35,9 @@
     //#else
     //$$ "EntityOtherPlayerMPAccessor",
     //#endif
+    //#if MC>=12106
+    //$$ "DrawContextAccessor",
+    //#endif
     "EntityPlayerAccessor",
     "FirstPersonRendererAccessor",
     //#if MC>=10904
@@ -55,6 +58,7 @@
     //#endif
     "MixinKeyboardListener",
     "MixinPlayerControllerMP",
+    "Mixin_CreateReplayCamera",
     "MixinRenderItem",
     "MixinRenderLivingBase",
     "MixinTileEntityEndPortalRenderer",

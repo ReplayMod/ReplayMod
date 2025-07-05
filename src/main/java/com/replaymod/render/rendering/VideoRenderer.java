@@ -40,6 +40,14 @@ import net.minecraft.util.crash.CrashException;
 import net.minecraft.sound.SoundCategory;
 import org.lwjgl.glfw.GLFW;
 
+//#if MC>=12106
+//$$ import com.replaymod.render.mixin.GameRendererAccessor;
+//$$ import net.minecraft.client.gui.render.GuiRenderer;
+//$$ import net.minecraft.client.gui.render.state.GuiRenderState;
+//$$ import net.minecraft.client.render.fog.FogRenderer;
+//$$ import java.util.Collections;
+//#endif
+
 //#if MC>=12102
 //$$ import com.mojang.blaze3d.systems.ProjectionType;
 //#endif
@@ -523,7 +531,8 @@ public class VideoRenderer implements RenderInfo {
             RenderSystem.clear(256, MinecraftClient.IS_SYSTEM_MAC);
             //#endif
             //#endif
-            //#if MC>=11700
+            //#if MC>=12106
+            //#elseif MC>=11700
             //$$ RenderSystem.setProjectionMatrix(Matrix4f.projectionMatrix(
             //$$         0,
             //$$         (float) (window.getFramebufferWidth() / window.getScaleFactor()),
@@ -591,7 +600,12 @@ public class VideoRenderer implements RenderInfo {
             int mouseX = (int) mc.mouse.getX() * window.getScaledWidth() / Math.max(window.getWidth(), 1);
             int mouseY = (int) mc.mouse.getY() * window.getScaledHeight() / Math.max(window.getHeight(), 1);
 
-            //#if MC>=12000
+            //#if MC>=12106
+            //$$ GameRendererAccessor gameRenderer = (GameRendererAccessor) mc.gameRenderer;
+            //$$ GuiRenderState guiRenderState = gameRenderer.getGuiState();
+            //$$ guiRenderState.clear();
+            //$$ DrawContext drawContext = new DrawContext(mc, guiRenderState);
+            //#elseif MC>=12000
             //$$ DrawContext drawContext = new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers());
             //#endif
 
@@ -611,15 +625,26 @@ public class VideoRenderer implements RenderInfo {
                 }
             } else {
                 gui.toMinecraft().tick();
+                //#if MC>=12106
+                //$$ gui.toMinecraft().renderWithTooltip(
+                //#else
                 gui.toMinecraft().render(
+                //#endif
                         //#if MC>=12000
-                        //$$ new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers()),
+                        //$$ drawContext,
                         //#elseif MC>=11600
                         new MatrixStack(),
                         //#endif
                         mouseX, mouseY, 0);
             }
-            //#if MC>=12000
+            //#if MC>=12106
+            //$$ var orgFog = RenderSystem.getShaderFog();
+            //$$ var orgProjBuf = RenderSystem.getProjectionMatrixBuffer();
+            //$$ var orgProjType = RenderSystem.getProjectionType();
+            //$$ gameRenderer.getGuiRenderer().render(gameRenderer.getFogRenderer().getFogBuffer(FogRenderer.FogType.NONE));
+            //$$ RenderSystem.setShaderFog(orgFog);
+            //$$ RenderSystem.setProjectionMatrix(orgProjBuf, orgProjType);
+            //#elseif MC>=12000
             //$$ drawContext.draw();
             //#endif
             //#else

@@ -88,12 +88,21 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
             GameRendererAccessor gameRenderer = (GameRendererAccessor) mc.gameRenderer;
             Screen orgScreen = mc.currentScreen;
             boolean orgPauseOnLostFocus = mc.options.pauseOnLostFocus;
+            //#if MC>=12106
+            //$$ boolean orgRenderHand = mc.gameRenderer.isRenderingPanorama();
+            //#else
             boolean orgRenderHand = gameRenderer.getRenderHand();
+            //#endif
             try {
                 mc.currentScreen = null; // do not want to render the current screen (that'd just be the progress gui)
                 mc.options.pauseOnLostFocus = false; // do not want the pause menu to open if the window is unfocused
                 if (omnidirectional) {
-                    gameRenderer.setRenderHand(false); // makes no sense, we wouldn't even know where to put it
+                    // makes no sense, we wouldn't even know where to put it
+                    //#if MC>=12106
+                    //$$ mc.gameRenderer.setRenderingPanorama(false);
+                    //#else
+                    gameRenderer.setRenderHand(false);
+                    //#endif
                 }
 
                 //#if MC>=12100
@@ -111,7 +120,11 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
             } finally {
                 mc.currentScreen = orgScreen;
                 mc.options.pauseOnLostFocus = orgPauseOnLostFocus;
+                //#if MC>=12106
+                //$$ mc.gameRenderer.setRenderingPanorama(orgRenderHand);
+                //#else
                 gameRenderer.setRenderHand(orgRenderHand);
+                //#endif
             }
         }
 
