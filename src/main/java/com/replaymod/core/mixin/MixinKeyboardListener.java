@@ -2,6 +2,7 @@ package com.replaymod.core.mixin;
 
 import com.replaymod.core.events.KeyBindingEventCallback;
 import com.replaymod.core.events.KeyEventCallback;
+import de.johni0702.minecraft.gui.function.KeyInput;
 import net.minecraft.client.Keyboard;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,7 +15,8 @@ public class MixinKeyboardListener {
 
     @Inject(method = "onKey", at = @At(value = "INVOKE", target = ON_KEY_PRESSED), cancellable = true)
     private void beforeKeyBindingTick(long windowPointer, int key, int scanCode, int action, int modifiers, CallbackInfo ci) {
-        if (KeyEventCallback.EVENT.invoker().onKeyEvent(key, scanCode, action, modifiers)) {
+        KeyInput keyInput = new KeyInput(key, scanCode, modifiers);
+        if (KeyEventCallback.EVENT.invoker().onKeyEvent(keyInput, action)) {
             ci.cancel();
         }
     }

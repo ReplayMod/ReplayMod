@@ -6,6 +6,11 @@ import com.replaymod.render.rendering.VideoRenderer;
 import com.replaymod.render.utils.RenderJob;
 import de.johni0702.minecraft.gui.GuiRenderer;
 import de.johni0702.minecraft.gui.RenderInfo;
+import de.johni0702.minecraft.gui.function.CharHandler;
+import de.johni0702.minecraft.gui.function.CharInput;
+import de.johni0702.minecraft.gui.function.Click;
+import de.johni0702.minecraft.gui.function.KeyHandler;
+import de.johni0702.minecraft.gui.function.KeyInput;
 import de.johni0702.minecraft.gui.versions.Image;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.util.Formatting;
@@ -25,7 +30,6 @@ import de.johni0702.minecraft.gui.container.GuiPanel;
 import de.johni0702.minecraft.gui.container.GuiScreen;
 import de.johni0702.minecraft.gui.element.*;
 import de.johni0702.minecraft.gui.element.advanced.AbstractGuiResourceLoadingList;
-import de.johni0702.minecraft.gui.function.Typeable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
 import de.johni0702.minecraft.gui.layout.VerticalLayout;
@@ -35,7 +39,6 @@ import de.johni0702.minecraft.gui.utils.Colors;
 import de.johni0702.minecraft.gui.utils.Consumer;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
-import de.johni0702.minecraft.gui.utils.lwjgl.ReadablePoint;
 import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashException;
@@ -79,7 +82,7 @@ public class GuiReplayViewer extends GuiScreen {
 
     public final GuiReplayList list = new GuiReplayList(this).onSelectionChanged(this::updateButtons).onSelectionDoubleClicked(() -> {
         if (this.loadButton.isEnabled()) {
-            this.loadButton.onClick();
+            this.loadButton.onClick(new Click(-1, -1, 0, 0));
         }
     });
 
@@ -146,7 +149,7 @@ public class GuiReplayViewer extends GuiScreen {
                 @Override
                 public void run() {
                     if (popup.getYesButton().isEnabled()) {
-                        popup.getYesButton().onClick();
+                        popup.getYesButton().onClick(new Click(-1, -1, 0, 0));
                     }
                 }
             }).onTextChanged(obj -> {
@@ -352,7 +355,7 @@ public class GuiReplayViewer extends GuiScreen {
         }
     }
 
-    public static class GuiReplayList extends AbstractGuiResourceLoadingList<GuiReplayList, GuiReplayEntry> implements Typeable {
+    public static class GuiReplayList extends AbstractGuiResourceLoadingList<GuiReplayList, GuiReplayEntry> implements KeyHandler, CharHandler {
         private File folder = null;
 
         // Not actually a child of this element, we just use it for text manipulation
@@ -417,8 +420,8 @@ public class GuiReplayViewer extends GuiScreen {
         }
 
         @Override
-        public boolean typeKey(ReadablePoint mousePosition, int keyCode, char keyChar, boolean ctrlDown, boolean shiftDown) {
-            if (keyCode == Keyboard.KEY_F1) {
+        public boolean handleKey(KeyInput keyInput) {
+            if (keyInput.key == Keyboard.KEY_F1) {
                 SettingsRegistry reg = ReplayMod.instance.getSettingsRegistry();
                 reg.set(Setting.SHOW_SERVER_IPS, !reg.get(Setting.SHOW_SERVER_IPS));
                 reg.save();
@@ -426,16 +429,26 @@ public class GuiReplayViewer extends GuiScreen {
             }
 
             boolean filterHasPriority = !filterTextField.getText().isEmpty();
-            if (filterHasPriority && filterTextField.typeKey(mousePosition, keyCode, keyChar, ctrlDown, shiftDown)) {
+            if (filterHasPriority && filterTextField.handleKey(keyInput)) {
                 scrollY(0); // ensure we scroll to top if most entries are filtered
                 return true;
             }
 
-            if (super.typeKey(mousePosition, keyCode, keyChar, ctrlDown, shiftDown)) {
+            if (super.handleKey(keyInput)) {
                 return true;
             }
 
-            if (!filterHasPriority && filterTextField.typeKey(mousePosition, keyCode, keyChar, ctrlDown, shiftDown)) {
+            if (!filterHasPriority && filterTextField.handleKey(keyInput)) {
+                scrollY(0); // ensure we scroll to top if most entries are filtered
+                return true;
+            }
+
+            return false;
+        }
+
+        @Override
+        public boolean handleChar(CharInput charInput) {
+            if (filterTextField.handleChar(charInput)) {
                 scrollY(0); // ensure we scroll to top if most entries are filtered
                 return true;
             }

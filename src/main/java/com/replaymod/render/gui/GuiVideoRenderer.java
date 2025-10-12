@@ -11,6 +11,7 @@ import de.johni0702.minecraft.gui.element.GuiButton;
 import de.johni0702.minecraft.gui.element.GuiCheckbox;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.advanced.GuiProgressBar;
+import de.johni0702.minecraft.gui.function.Click;
 import de.johni0702.minecraft.gui.function.Tickable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
@@ -67,8 +68,8 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
         boolean waitingForConfirmation;
 
         @Override
-        public boolean mouseClick(ReadablePoint position, int button) {
-            boolean result = super.mouseClick(position, button);
+        public boolean mouseClick(Click click) {
+            boolean result = super.mouseClick(click);
             if (waitingForConfirmation && !result) {
                 setI18nLabel("replaymod.gui.rendering.cancel");
                 waitingForConfirmation = false;
@@ -77,8 +78,8 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
         }
 
         @Override
-        public void onClick() {
-            super.onClick();
+        public void onClick(Click click) {
+            super.onClick(click);
             if (!waitingForConfirmation) {
                 setI18nLabel("replaymod.gui.rendering.cancel.callback");
                 waitingForConfirmation = true;
