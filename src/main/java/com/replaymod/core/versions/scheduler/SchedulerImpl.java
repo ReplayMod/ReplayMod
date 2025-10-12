@@ -5,6 +5,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -82,10 +84,13 @@ public class SchedulerImpl implements  Scheduler {
         }
     }
     public final ReplayModExecutor executor = new ReplayModExecutor("Client/ReplayMod");
+    private final List<Runnable> delayedTasks = new ArrayList<>();
 
     @Override
     public void runTasks() {
         executor.runTasks();
+        delayedTasks.forEach(executor::send);
+        delayedTasks.clear();
     }
 
     @Override
@@ -100,15 +105,8 @@ public class SchedulerImpl implements  Scheduler {
     }
 
     private void runLater(Runnable runnable, Runnable defer) {
-        if (mc.isOnThread() && inRunLater && !inRenderTaskQueue) {
-            ((MinecraftAccessor) mc).getRenderTaskQueue().offer(() -> {
-                inRenderTaskQueue = true;
-                try {
-                    defer.run();
-                } finally {
-                    inRenderTaskQueue = false;
-                }
-            });
+        if (mc.isOnThread() && inRunLater) {
+            delayedTasks.add(defer);
         } else {
             executor.send(() -> {
                 inRunLater = true;
