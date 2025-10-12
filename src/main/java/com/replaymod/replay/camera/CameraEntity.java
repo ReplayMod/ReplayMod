@@ -30,6 +30,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.stat.StatHandler;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
+import net.minecraft.world.World;
+
+//#if MC>=12109
+//$$ import net.minecraft.client.network.ClientPlayerLikeEntity;
+//$$ import net.minecraft.entity.PlayerLikeEntity;
+//#endif
 
 //#if MC>=12106
 //$$ import net.minecraft.util.PlayerInput;
@@ -322,15 +328,18 @@ public class CameraEntity
             // This is important if the spectated player respawns as their
             // entity is recreated and we have to spectate a new entity
             UUID spectating = ReplayModReplay.instance.getReplayHandler().getSpectatedUUID();
+            // FIXME remap bug: Pattern doesn't work when these two are inlined
+            World cameraWorld = this.world;
+            World viewWorld = view.world;
             if (spectating != null && (view.getUuid() != spectating
-                    || view.world != this.world)
-                    || this.world.getEntityById(view.getEntityId()) != view) {
+                    || viewWorld != cameraWorld)
+                    || cameraWorld.getEntityById(view.getEntityId()) != view) {
                 if (spectating == null) {
                     // Entity (non-player) died, stop spectating
                     ReplayModReplay.instance.getReplayHandler().spectateEntity(this);
                     return;
                 }
-                view = this.world.getPlayerByUuid(spectating);
+                view = cameraWorld.getPlayerByUuid(spectating);
                 if (view != null) {
                     this.client.setCameraEntity(view);
                 } else {
@@ -502,7 +511,16 @@ public class CameraEntity
         return super.isInvisible();
     }
 
-    //#if MC>=12002
+    //#if MC>=12109
+    //$$ @Override
+    //$$ public SkinTextures getSkin() {
+    //$$     Entity view = this.client.getCameraEntity();
+    //$$     if (view != this && view instanceof ClientPlayerLikeEntity) {
+    //$$         return ((ClientPlayerLikeEntity) view).getSkin();
+    //$$     }
+    //$$     return super.getSkin();
+    //$$ }
+    //#elseif MC>=12002
     //$$ @Override
     //$$ public SkinTextures getSkinTextures() {
     //$$     Entity view = this.client.getCameraEntity();
@@ -533,7 +551,16 @@ public class CameraEntity
     //#endif
     //#endif
 
-    //#if MC>=10800
+    //#if MC>=12109
+    //$$ @Override
+    //$$ public boolean isModelPartVisible(PlayerModelPart modelPart) {
+    //$$     Entity view = this.client.getCameraEntity();
+    //$$     if (view != this && view instanceof PlayerLikeEntity) {
+    //$$         return ((PlayerLikeEntity) view).isModelPartVisible(modelPart);
+    //$$     }
+    //$$     return super.isModelPartVisible(modelPart);
+    //$$ }
+    //#elseif MC>=10800
     @Override
     public boolean isPartVisible(PlayerModelPart modelPart) {
         Entity view = this.client.getCameraEntity();

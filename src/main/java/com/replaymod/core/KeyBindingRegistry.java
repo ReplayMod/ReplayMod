@@ -40,9 +40,13 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class KeyBindingRegistry extends EventRegistrations {
+    //#if MC>=12109
+    //$$ private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(identifier(MOD_ID, "general"));
+    //#else
     private static final String CATEGORY = "replaymod.title";
     //#if FABRIC>=1 && MC<11600
     //$$ static { net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry.INSTANCE.addCategory(CATEGORY); }
+    //#endif
     //#endif
 
     private final Map<String, Binding> bindings = new HashMap<>();

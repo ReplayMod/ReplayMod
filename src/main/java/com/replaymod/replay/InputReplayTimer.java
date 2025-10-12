@@ -7,8 +7,16 @@ import com.replaymod.replay.camera.CameraEntity;
 import de.johni0702.minecraft.gui.versions.ScreenExt;
 import net.minecraft.client.MinecraftClient;
 
+//#if MC>=12109
+//$$ import net.minecraft.client.gui.screen.Overlay;
+//#endif
+
+//#if MC>=12109
+//$$ import net.minecraft.client.gui.screen.world.LevelLoadingScreen;
+//#else
 //#if MC>=11802
 //$$ import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
+//#endif
 //#endif
 
 //#if MC>=11400
@@ -92,11 +100,23 @@ public class InputReplayTimer {
             //#if MC>=11802
             //$$ // As of 1.18.2, this screen always stays open for at least two seconds, and requires ticking to close.
             //$$ // Thanks, but we'll have none of that (at least while in a replay).
+            //#if MC>=12109
+            //$$ if (mc.currentScreen instanceof LevelLoadingScreen) {
+            //#else
             //$$ if (mc.currentScreen instanceof DownloadingTerrainScreen) {
+            //#endif
             //$$     mc.currentScreen.close();
             //$$ }
             //#endif
 
+            //#if MC>=12109
+            //$$ // The SplashOverlay now only closes on `tick`, but there are no ticks while the replay is paused.
+            //$$ // so we need to manually tick it to not get stuck.
+            //$$ Overlay overlay = mc.getOverlay();
+            //$$ if (overlay != null) {
+            //$$     overlay.tick();
+            //$$ }
+            //#endif
         }
     }
 

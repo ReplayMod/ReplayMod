@@ -258,6 +258,10 @@ public class ReplayMod implements Module, Scheduler {
     }
 
     private void printToChat(boolean warning, String message, Object... args) {
+        if (!mc.isOnThread()) {
+            runLater(() -> printToChat(warning, message, args));
+            return;
+        }
         if (getSettingsRegistry().get(Setting.NOTIFICATIONS)) {
             // Some nostalgia: "§8[§6Replay Mod§8]§r Your message goes here"
             //#if MC>=10904

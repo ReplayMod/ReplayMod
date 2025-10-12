@@ -68,6 +68,11 @@ import java.util.function.Consumer;
 
 import static com.replaymod.core.versions.MCVer.getMinecraft;
 
+//#if MC>=12109
+//$$ import com.replaymod.core.versions.MCVer.Keyboard;
+//$$ import net.minecraft.client.input.SystemKeycodes;
+//#endif
+
 //#if MC>=12100
 //$$ import net.minecraft.util.crash.ReportType;
 //#endif
@@ -229,7 +234,9 @@ public class Utils {
     }
 
     public static boolean isCtrlDown() {
-        //#if MC>=11400
+        //#if MC>=12109
+        //$$ return Keyboard.isKeyDown(SystemKeycodes.LEFT_CTRL) || Keyboard.isKeyDown(SystemKeycodes.RIGHT_CTRL);
+        //#elseif MC>=11400
         return Screen.hasControlDown();
         //#else
         //$$ return Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL);

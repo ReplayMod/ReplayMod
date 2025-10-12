@@ -190,6 +190,11 @@ public class LangResourcePack extends AbstractFileResourcePack {
                 key = String.format(FABRIC_KEY_FORMAT, key.substring(LEGACY_KEY_PREFIX.length()));
             }
             //#endif
+            //#if MC>=12109
+            if (key.equals("replaymod.title")) {
+                properties.put("key.category.replaymod.general", value);
+            }
+            //#endif
             properties.put(key, value);
         }
 

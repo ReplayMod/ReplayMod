@@ -31,7 +31,6 @@ import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
 import net.minecraft.client.network.ClientLoginNetworkHandler;
 import net.minecraft.client.util.Window;
 import net.minecraft.network.DecoderHandler;
@@ -44,6 +43,12 @@ import net.minecraft.network.ClientConnection;
 
 import java.io.IOException;
 import java.util.*;
+
+//#if MC>=12109
+//$$ import net.minecraft.client.gui.screen.world.LevelLoadingScreen;
+//#else
+import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
+//#endif
 
 //#if MC>=12106
 //$$ import com.replaymod.render.mixin.GameRendererAccessor;
@@ -373,7 +378,11 @@ public class ReplayHandler {
         // We don't send any packets (there is no server to receive them), so we need to switch manually.
         //#if MC>=12006
         //$$ networkManager.transitionInbound(LoginStates.S2C, new ClientLoginNetworkHandler(
-        //$$         networkManager, mc, null, null, false, null, it -> {}, null
+        //$$         networkManager, mc, null, null, false, null, it -> {},
+                //#if MC>=12109
+                //$$ new net.minecraft.client.world.ClientChunkLoadProgress(),
+               //#endif
+        //$$         null
         //$$ ));
         //$$ networkManager.transitionOutbound(LoginStates.C2S);
         //#else
@@ -697,7 +706,11 @@ public class ReplayHandler {
                     do {
                         replaySender.sendPacketsTill(targetTime);
                         targetTime += 500;
+                    //#if MC>=12109
+                    //$$ } while (mc.player == null || mc.currentScreen instanceof LevelLoadingScreen);
+                    //#else
                     } while (mc.player == null || mc.currentScreen instanceof DownloadingTerrainScreen);
+                    //#endif
                     replaySender.setAsyncMode(true);
 
                     for (int i = 0; i < Math.min(diff / 50, 3); i++) {
@@ -852,7 +865,11 @@ public class ReplayHandler {
                 do {
                     replaySender.sendPacketsTill(targetTime);
                     targetTime += 500;
+                //#if MC>=12109
+                //$$ } while (mc.player == null || mc.currentScreen instanceof LevelLoadingScreen);
+                //#else
                 } while (mc.player == null || mc.currentScreen instanceof DownloadingTerrainScreen);
+                //#endif
                 replaySender.setAsyncMode(true);
                 replaySender.setReplaySpeed(0);
 

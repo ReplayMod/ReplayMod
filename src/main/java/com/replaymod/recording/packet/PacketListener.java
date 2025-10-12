@@ -191,7 +191,21 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
         // Otherwise, injected packets may end up further down the packet stream than they were supposed to and other
         // inbound packets which may rely on the injected packet would behave incorrectly when played back.
         if (!mc.isOnThread()) {
+            // Note that we must use the same queue as regular packets, otherwise stuff will be out of order!
+            //#if MC>=12109
+            //$$ mc.getPacketApplyBatcher().add(channel.pipeline().get(ClientConnection.class).getPacketListener(), new net.minecraft.network.packet.Packet<>() {
+            //$$     @Override
+            //$$     public net.minecraft.network.packet.PacketType<? extends net.minecraft.network.packet.Packet<net.minecraft.network.listener.PacketListener>> getPacketType() {
+            //$$         return null;
+            //$$     }
+            //$$     @Override
+            //$$     public void apply(net.minecraft.network.listener.PacketListener listener) {
+            //$$         save(packet);
+            //$$     }
+            //$$ });
+            //#else
             mc.send(() -> save(packet));
+            //#endif
             return;
         }
         try {

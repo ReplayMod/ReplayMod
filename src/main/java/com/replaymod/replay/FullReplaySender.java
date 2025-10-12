@@ -23,7 +23,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.OtherClientPlayerEntity;
-import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
 import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
@@ -55,6 +54,17 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+
+//#if MC>=12109
+//$$ import net.minecraft.network.ClientConnection;
+//$$ import net.minecraft.network.listener.PacketListener;
+//#endif
+
+//#if MC>=12109
+//$$ import net.minecraft.client.gui.screen.world.LevelLoadingScreen;
+//#else
+import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
+//#endif
 
 //#if MC>=12105
 //#else
@@ -853,7 +863,11 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
             if(!hasWorldLoaded) hasWorldLoaded = true;
 
             ReplayMod.instance.runLater(() -> {
+                //#if MC>=12109
+                //$$ if (mc.currentScreen instanceof LevelLoadingScreen) {
+                //#else
                 if (mc.currentScreen instanceof DownloadingTerrainScreen) {
+                //#endif
                     // Close the world loading screen manually in case we swallow the packet
                     mc.openScreen(null);
                 }
@@ -969,7 +983,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
             return processPacketAsync(p);
         } else {
             Packet fp = p;
-            mc.send(() -> processPacketSync(fp));
+            schedulePacketHandler(() -> processPacketSync(fp));
             return p;
         }
     }
@@ -1383,7 +1397,18 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
         if (mc.isOnThread()) {
             runnable.run();
         } else {
-            //#if MC>=11400
+            //#if MC>=12109
+            //$$ mc.getPacketApplyBatcher().add(channel.pipeline().get(ClientConnection.class).getPacketListener(), new Packet<>() {
+            //$$     @Override
+            //$$     public net.minecraft.network.packet.PacketType<? extends Packet<PacketListener>> getPacketType() {
+            //$$         return null;
+            //$$     }
+            //$$     @Override
+            //$$     public void apply(PacketListener listener) {
+            //$$         runnable.run();
+            //$$     }
+            //$$ });
+            //#elseif MC>=11400
             mc.execute(runnable);
             //#else
             //$$ mc.addScheduledTask(runnable);

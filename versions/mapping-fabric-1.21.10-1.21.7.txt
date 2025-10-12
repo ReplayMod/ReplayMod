@@ -1,0 +1,9 @@
+net.minecraft.util.HeldItemContext getEntityWorld() net.minecraft.entity.Entity getWorld()
+net.minecraft.util.HeldItemContext getEntityPos() net.minecraft.entity.Entity getPos()
+net.minecraft.client.network.ClientPlayerLikeEntity getSkin() net.minecraft.client.network.AbstractClientPlayerEntity getSkinTextures()
+net.minecraft.entity.PlayerLikeEntity isModelPartVisible() net.minecraft.entity.player.PlayerEntity isPartVisible()
+
+com.mojang.authlib.GameProfile com.mojang.authlib.GameProfile
+com.mojang.authlib.GameProfile id() getId()Ljava/util/UUID;
+com.mojang.authlib.GameProfile name() getName()Ljava/lang/String;
+com.mojang.authlib.GameProfile properties() getProperties()Lcom/mojang/authlib/properties/PropertyMap;
