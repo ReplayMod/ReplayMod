@@ -5,74 +5,76 @@
         "1.7.10-recommended": "1.7.10-2.5.2",
         "1.8-latest": "1.8-2.6.15",
         "1.8-recommended": "1.8-2.6.15",
-        "1.8.9-latest": "1.8.9-2.6.23",
-        "1.8.9-recommended": "1.8.9-2.6.23",
-        "1.9.4-latest": "1.9.4-2.6.23",
-        "1.9.4-recommended": "1.9.4-2.6.23",
-        "1.10.2-latest": "1.10.2-2.6.23",
-        "1.10.2-recommended": "1.10.2-2.6.23",
-        "1.11-latest": "1.11-2.6.23",
-        "1.11-recommended": "1.11-2.6.23",
-        "1.11.2-latest": "1.11.2-2.6.23",
-        "1.11.2-recommended": "1.11.2-2.6.23",
-        "1.12-latest": "1.12-2.6.23",
-        "1.12-recommended": "1.12-2.6.23",
-        "1.12.1-latest": "1.12.1-2.6.23",
-        "1.12.1-recommended": "1.12.1-2.6.23",
-        "1.12.2-latest": "1.12.2-2.6.23",
-        "1.12.2-recommended": "1.12.2-2.6.23",
-        "1.13.2-latest": "1.13.2-2.6.23",
-        "1.13.2-recommended": "1.13.2-2.6.23",
+        "1.8.9-latest": "1.8.9-2.6.24",
+        "1.8.9-recommended": "1.8.9-2.6.24",
+        "1.9.4-latest": "1.9.4-2.6.24",
+        "1.9.4-recommended": "1.9.4-2.6.24",
+        "1.10.2-latest": "1.10.2-2.6.24",
+        "1.10.2-recommended": "1.10.2-2.6.24",
+        "1.11-latest": "1.11-2.6.24",
+        "1.11-recommended": "1.11-2.6.24",
+        "1.11.2-latest": "1.11.2-2.6.24",
+        "1.11.2-recommended": "1.11.2-2.6.24",
+        "1.12-latest": "1.12-2.6.24",
+        "1.12-recommended": "1.12-2.6.24",
+        "1.12.1-latest": "1.12.1-2.6.24",
+        "1.12.1-recommended": "1.12.1-2.6.24",
+        "1.12.2-latest": "1.12.2-2.6.24",
+        "1.12.2-recommended": "1.12.2-2.6.24",
+        "1.13.2-latest": "1.13.2-2.6.24",
+        "1.13.2-recommended": "1.13.2-2.6.24",
         "1.14.2-latest": "1.14.2-2.2.0-b2",
         "1.14.3-latest": "1.14.3-2.2.0-b6",
-        "1.14.4-latest": "1.14.4-2.6.23",
-        "1.14.4-recommended": "1.14.4-2.6.23",
-        "1.15.2-latest": "1.15.2-2.6.23",
-        "1.15.2-recommended": "1.15.2-2.6.23",
-        "1.16.1-latest": "1.16.1-2.6.23",
-        "1.16.1-recommended": "1.16.1-2.6.23",
+        "1.14.4-latest": "1.14.4-2.6.24",
+        "1.14.4-recommended": "1.14.4-2.6.24",
+        "1.15.2-latest": "1.15.2-2.6.24",
+        "1.15.2-recommended": "1.15.2-2.6.24",
+        "1.16.1-latest": "1.16.1-2.6.24",
+        "1.16.1-recommended": "1.16.1-2.6.24",
         "1.16.2-latest": "1.16.2-2.4.4",
         "1.16.2-recommended": "1.16.2-2.4.4",
         "1.16.3-latest": "1.16.3-2.4.5",
         "1.16.3-recommended": "1.16.3-2.4.5",
-        "1.16.4-latest": "1.16.4-2.6.23",
-        "1.16.4-recommended": "1.16.4-2.6.23",
+        "1.16.4-latest": "1.16.4-2.6.24",
+        "1.16.4-recommended": "1.16.4-2.6.24",
         "1.17-latest": "1.17-2.6.12",
         "1.17-recommended": "1.17-2.6.12",
-        "1.17.1-latest": "1.17.1-2.6.23",
-        "1.17.1-recommended": "1.17.1-2.6.23",
-        "1.18.1-latest": "1.18.1-2.6.23",
-        "1.18.1-recommended": "1.18.1-2.6.23",
-        "1.18.2-latest": "1.18.2-2.6.23",
-        "1.18.2-recommended": "1.18.2-2.6.23",
-        "1.19-latest": "1.19-2.6.23",
-        "1.19-recommended": "1.19-2.6.23",
-        "1.19.1-latest": "1.19.1-2.6.23",
-        "1.19.1-recommended": "1.19.1-2.6.23",
-        "1.19.2-latest": "1.19.2-2.6.23",
-        "1.19.2-recommended": "1.19.2-2.6.23",
-        "1.19.3-latest": "1.19.3-2.6.23",
-        "1.19.3-recommended": "1.19.3-2.6.23",
-        "1.19.4-latest": "1.19.4-2.6.23",
-        "1.19.4-recommended": "1.19.4-2.6.23",
-        "1.20.1-latest": "1.20.1-2.6.23",
-        "1.20.1-recommended": "1.20.1-2.6.23",
-        "1.20.2-latest": "1.20.2-2.6.23",
-        "1.20.2-recommended": "1.20.2-2.6.23",
-        "1.20.4-latest": "1.20.4-2.6.23",
-        "1.20.4-recommended": "1.20.4-2.6.23",
-        "1.20.6-latest": "1.20.6-2.6.23",
-        "1.20.6-recommended": "1.20.6-2.6.23",
-        "1.21-latest": "1.21-2.6.23",
-        "1.21-recommended": "1.21-2.6.23",
-        "1.21.2-latest": "1.21.2-2.6.23",
-        "1.21.2-recommended": "1.21.2-2.6.23",
-        "1.21.4-latest": "1.21.4-2.6.23",
-        "1.21.4-recommended": "1.21.4-2.6.23",
-        "1.21.5-latest": "1.21.5-2.6.23",
-        "1.21.5-recommended": "1.21.5-2.6.23",
-        "1.21.7-latest": "1.21.7-2.6.23",
-        "1.21.7-recommended": "1.21.7-2.6.23"
+        "1.17.1-latest": "1.17.1-2.6.24",
+        "1.17.1-recommended": "1.17.1-2.6.24",
+        "1.18.1-latest": "1.18.1-2.6.24",
+        "1.18.1-recommended": "1.18.1-2.6.24",
+        "1.18.2-latest": "1.18.2-2.6.24",
+        "1.18.2-recommended": "1.18.2-2.6.24",
+        "1.19-latest": "1.19-2.6.24",
+        "1.19-recommended": "1.19-2.6.24",
+        "1.19.1-latest": "1.19.1-2.6.24",
+        "1.19.1-recommended": "1.19.1-2.6.24",
+        "1.19.2-latest": "1.19.2-2.6.24",
+        "1.19.2-recommended": "1.19.2-2.6.24",
+        "1.19.3-latest": "1.19.3-2.6.24",
+        "1.19.3-recommended": "1.19.3-2.6.24",
+        "1.19.4-latest": "1.19.4-2.6.24",
+        "1.19.4-recommended": "1.19.4-2.6.24",
+        "1.20.1-latest": "1.20.1-2.6.24",
+        "1.20.1-recommended": "1.20.1-2.6.24",
+        "1.20.2-latest": "1.20.2-2.6.24",
+        "1.20.2-recommended": "1.20.2-2.6.24",
+        "1.20.4-latest": "1.20.4-2.6.24",
+        "1.20.4-recommended": "1.20.4-2.6.24",
+        "1.20.6-latest": "1.20.6-2.6.24",
+        "1.20.6-recommended": "1.20.6-2.6.24",
+        "1.21-latest": "1.21-2.6.24",
+        "1.21-recommended": "1.21-2.6.24",
+        "1.21.2-latest": "1.21.2-2.6.24",
+        "1.21.2-recommended": "1.21.2-2.6.24",
+        "1.21.4-latest": "1.21.4-2.6.24",
+        "1.21.4-recommended": "1.21.4-2.6.24",
+        "1.21.5-latest": "1.21.5-2.6.24",
+        "1.21.5-recommended": "1.21.5-2.6.24",
+        "1.21.7-latest": "1.21.7-2.6.24",
+        "1.21.7-recommended": "1.21.7-2.6.24",
+        "1.21.10-latest": "1.21.10-2.6.24",
+        "1.21.10-recommended": "1.21.10-2.6.24"
     },
     "1.7.10": {
         "1.7.10-2.5.2": "See https://www.replaymod.com/changelog.txt",
@@ -151,6 +153,7 @@
         "1.8-2.0.0-b1": "See https://www.replaymod.com/changelog.txt"
     },
     "1.8.9": {
+        "1.8.9-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.8.9-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.8.9-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.8.9-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -205,6 +208,7 @@
         "1.8.9-2.0.0-b5": "See https://www.replaymod.com/changelog.txt"
     },
     "1.9.4": {
+        "1.9.4-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.9.4-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.9.4-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.9.4-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -263,6 +267,7 @@
         "1.9.4-2.0.0-b1": "See https://www.replaymod.com/changelog.txt"
     },
     "1.10.2": {
+        "1.10.2-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.10.2-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.10.2-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.10.2-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -319,6 +324,7 @@
         "1.10.2-2.0.0-b3": "See https://www.replaymod.com/changelog.txt"
     },
     "1.11": {
+        "1.11-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.11-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.11-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.11-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -374,6 +380,7 @@
         "1.11-2.0.0-b4": "See https://www.replaymod.com/changelog.txt"
     },
     "1.11.2": {
+        "1.11.2-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.11.2-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.11.2-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.11.2-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -428,6 +435,7 @@
         "1.11.2-2.0.0-b5": "See https://www.replaymod.com/changelog.txt"
     },
     "1.12": {
+        "1.12-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.12-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.12-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.12-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -481,6 +489,7 @@
         "1.12-2.0.0-b7": "See https://www.replaymod.com/changelog.txt"
     },
     "1.12.1": {
+        "1.12.1-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.12.1-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.12.1-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.12.1-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -533,6 +542,7 @@
         "1.12.1-2.0.0-b8": "See https://www.replaymod.com/changelog.txt"
     },
     "1.12.2": {
+        "1.12.2-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.12.2-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.12.2-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.12.2-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -584,6 +594,7 @@
         "1.12.2-2.0.1-b1": "See https://www.replaymod.com/changelog.txt"
     },
     "1.13.2": {
+        "1.13.2-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.13.2-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.13.2-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.13.2-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -639,6 +650,7 @@
         "1.14.3-2.2.0-b3": "See https://www.replaymod.com/changelog.txt"
     },
     "1.14.4": {
+        "1.14.4-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.14.4-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.14.4-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.14.4-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -678,6 +690,7 @@
         "1.14.4-2.2.0-b7": "See https://www.replaymod.com/changelog.txt"
     },
     "1.15.2": {
+        "1.15.2-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.15.2-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.15.2-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.15.2-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -716,6 +729,7 @@
         "1.15.2-2.3.0-b1": "See https://www.replaymod.com/changelog.txt"
     },
     "1.16.1": {
+        "1.16.1-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.16.1-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.16.1-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.16.1-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -757,6 +771,7 @@
         "1.16.3-2.4.5": "See https://www.replaymod.com/changelog.txt"
     },
     "1.16.4": {
+        "1.16.4-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.16.4-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.16.4-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.16.4-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -800,6 +815,7 @@
         "1.17-2.6.0": "See https://www.replaymod.com/changelog.txt"
     },
     "1.17.1": {
+        "1.17.1-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.17.1-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.17.1-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.17.1-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -825,6 +841,7 @@
         "1.17.1-2.6.0": "See https://www.replaymod.com/changelog.txt"
     },
     "1.18.1": {
+        "1.18.1-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.18.1-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.18.1-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.18.1-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -848,6 +865,7 @@
         "1.18.1-2.6.2": "See https://www.replaymod.com/changelog.txt"
     },
     "1.18.2": {
+        "1.18.2-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.18.2-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.18.2-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.18.2-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -869,6 +887,7 @@
         "1.18.2-2.6.4": "See https://www.replaymod.com/changelog.txt"
     },
     "1.19": {
+        "1.19-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.19-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.19-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.19-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -888,6 +907,7 @@
         "1.19-2.6.6": "See https://www.replaymod.com/changelog.txt"
     },
     "1.19.1": {
+        "1.19.1-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.19.1-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.19.1-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.19.1-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -906,6 +926,7 @@
         "1.19.1-2.6.7": "See https://www.replaymod.com/changelog.txt"
     },
     "1.19.2": {
+        "1.19.2-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.19.2-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.19.2-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.19.2-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -922,6 +943,7 @@
         "1.19.2-2.6.9": "See https://www.replaymod.com/changelog.txt"
     },
     "1.19.3": {
+        "1.19.3-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.19.3-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.19.3-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.19.3-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -938,6 +960,7 @@
         "1.19.3-2.6.9": "See https://www.replaymod.com/changelog.txt"
     },
     "1.19.4": {
+        "1.19.4-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.19.4-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.19.4-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.19.4-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -952,6 +975,7 @@
         "1.19.4-2.6.11": "See https://www.replaymod.com/changelog.txt"
     },
     "1.20.1": {
+        "1.20.1-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.20.1-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.20.1-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.20.1-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -964,6 +988,7 @@
         "1.20.1-2.6.13": "See https://www.replaymod.com/changelog.txt"
     },
     "1.20.2": {
+        "1.20.2-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.20.2-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.20.2-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.20.2-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -975,6 +1000,7 @@
         "1.20.2-2.6.14": "See https://www.replaymod.com/changelog.txt"
     },
     "1.20.4": {
+        "1.20.4-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.20.4-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.20.4-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.20.4-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -986,6 +1012,7 @@
         "1.20.4-2.6.14": "See https://www.replaymod.com/changelog.txt"
     },
     "1.20.6": {
+        "1.20.6-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.20.6-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.20.6-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.20.6-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -995,6 +1022,7 @@
         "1.20.6-2.6.16": "See https://www.replaymod.com/changelog.txt"
     },
     "1.21": {
+        "1.21-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.21-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.21-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.21-2.6.21": "See https://www.replaymod.com/changelog.txt",
@@ -1004,21 +1032,28 @@
         "1.21-2.6.16": "See https://www.replaymod.com/changelog.txt"
     },
     "1.21.2": {
+        "1.21.2-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.21.2-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.21.2-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.21.2-2.6.21": "See https://www.replaymod.com/changelog.txt",
         "1.21.2-2.6.19": "See https://www.replaymod.com/changelog.txt"
     },
     "1.21.4": {
+        "1.21.4-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.21.4-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.21.4-2.6.22": "See https://www.replaymod.com/changelog.txt",
         "1.21.4-2.6.21": "See https://www.replaymod.com/changelog.txt"
     },
     "1.21.5": {
+        "1.21.5-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.21.5-2.6.23": "See https://www.replaymod.com/changelog.txt",
         "1.21.5-2.6.22": "See https://www.replaymod.com/changelog.txt"
     },
     "1.21.7": {
+        "1.21.7-2.6.24": "See https://www.replaymod.com/changelog.txt",
         "1.21.7-2.6.23": "See https://www.replaymod.com/changelog.txt"
+    },
+    "1.21.10": {
+        "1.21.10-2.6.24": "See https://www.replaymod.com/changelog.txt"
     }
 }
