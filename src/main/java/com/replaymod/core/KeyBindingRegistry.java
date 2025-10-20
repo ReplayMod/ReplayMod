@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.replaymod.core.events.PreRenderCallback;
 import com.replaymod.core.mixin.KeyBindingAccessor;
+import de.johni0702.minecraft.gui.function.KeyInput;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.core.events.KeyBindingEventCallback;
 import com.replaymod.core.events.KeyEventCallback;
@@ -36,17 +37,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 public class KeyBindingRegistry extends EventRegistrations {
+    //#if MC>=12109
+    //$$ private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(identifier(MOD_ID, "general"));
+    //#else
     private static final String CATEGORY = "replaymod.title";
     //#if FABRIC>=1 && MC<11600
     //$$ static { net.fabricmc.fabric.api.client.keybinding.KeyBindingRegistry.INSTANCE.addCategory(CATEGORY); }
     //#endif
+    //#endif
 
     private final Map<String, Binding> bindings = new HashMap<>();
     private Set<KeyBinding> onlyInReplay = new HashSet<>();
-    private Multimap<Integer, Supplier<Boolean>> rawHandlers = ArrayListMultimap.create();
+    private Multimap<Integer, Function<KeyInput, Boolean>> rawHandlers = ArrayListMultimap.create();
 
     public Binding registerKeyBinding(String name, int keyCode, Runnable whenPressed, boolean onlyInRepay) {
         Binding binding = registerKeyBinding(name, keyCode, onlyInRepay);
@@ -92,7 +97,7 @@ public class KeyBindingRegistry extends EventRegistrations {
         return binding;
     }
 
-    public void registerRaw(int keyCode, Supplier<Boolean> whenPressed) {
+    public void registerRaw(int keyCode, Function<KeyInput, Boolean> whenPressed) {
         rawHandlers.put(keyCode, whenPressed);
     }
 
@@ -138,18 +143,18 @@ public class KeyBindingRegistry extends EventRegistrations {
         }
     }
 
-    { on(KeyEventCallback.EVENT, (keyCode, scanCode, action, modifiers) -> handleRaw(keyCode, action)); }
-    private boolean handleRaw(int keyCode, int action) {
+    { on(KeyEventCallback.EVENT, this::handleRaw); }
+    private boolean handleRaw(KeyInput keyInput, int action) {
         if (action != KeyEventCallback.ACTION_PRESS) return false;
-        for (final Supplier<Boolean> handler : rawHandlers.get(keyCode)) {
+        for (final Function<KeyInput, Boolean> handler : rawHandlers.get(keyInput.key)) {
             try {
-                if (handler.get()) {
+                if (handler.apply(keyInput)) {
                     return true;
                 }
             } catch (Throwable cause) {
                 CrashReport crashReport = CrashReport.create(cause, "Handling Raw Key Binding");
                 CrashReportSection category = crashReport.addElement("Key Binding");
-                category.add("Key Code", () -> "" + keyCode);
+                category.add("Key Code", () -> "" + keyInput.key);
                 category.add("Handler", handler::toString);
                 throw new CrashException(crashReport);
             }

@@ -49,13 +49,13 @@ public class GuiCreateScreenshot extends GuiRenderSettings implements Loadable {
 
         exportArguments.setText(""); // To disable any preset-based checks
         buttonPanel.removeElement(queueButton);
-        renderButton.setI18nLabel("replaymod.gui.advancedscreenshots.create").onClick(() -> {
+        renderButton.setI18nLabel("replaymod.gui.advancedscreenshots.create").onClick(click -> {
             // Closing this GUI ensures that settings are saved
             close();
 
             mod.runLater(() -> {
                 try {
-                    RenderSettings settings = save(false);
+                    RenderSettings settings = save(false, click.hasCtrl());
 
                     boolean success = new ScreenshotRenderer(settings).renderScreenshot();
                     if (success) {

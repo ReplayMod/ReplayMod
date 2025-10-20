@@ -8,6 +8,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+//#if MC>=12109
+//$$ import net.minecraft.network.PacketApplyBatcher;
+//$$ import org.spongepowered.asm.mixin.Final;
+//#endif
+
 //#if MC>=11400
 import com.replaymod.core.events.PostRenderCallback;
 import com.replaymod.core.events.PreRenderCallback;
@@ -42,8 +47,14 @@ public abstract class MixinMinecraft
     }
 
     //#if MC>=11400
+    //#if MC>=12109
+    //$$ @Shadow @Final private PacketApplyBatcher packetApplyBatcher;
+    //#endif
     @Override
     public void replayModExecuteTaskQueue() {
+        //#if MC>=12109
+        //$$ this.packetApplyBatcher.apply();
+        //#endif
         runTasks();
     }
     //#endif

@@ -85,8 +85,8 @@ public class HotkeyButtons extends EventRegistrations implements Extra {
 
                         super.draw(renderer, size, renderInfo);
                     }
-                }.onClick(() -> {
-                    if (keyBinding.supportsAutoActivation() && Screen.hasControlDown()) {
+                }.onClick(click -> {
+                    if (keyBinding.supportsAutoActivation() && click.hasCtrl()) {
                         keyBinding.setAutoActivating(!keyBinding.isAutoActivating());
                     } else {
                         keyBinding.trigger();

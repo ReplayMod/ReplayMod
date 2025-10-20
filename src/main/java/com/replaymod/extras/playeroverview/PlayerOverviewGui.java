@@ -13,6 +13,7 @@ import de.johni0702.minecraft.gui.element.GuiImage;
 import de.johni0702.minecraft.gui.element.GuiLabel;
 import de.johni0702.minecraft.gui.element.GuiTooltip;
 import de.johni0702.minecraft.gui.element.IGuiCheckbox;
+import de.johni0702.minecraft.gui.function.Click;
 import de.johni0702.minecraft.gui.function.Closeable;
 import de.johni0702.minecraft.gui.layout.CustomLayout;
 import de.johni0702.minecraft.gui.layout.HorizontalLayout;
@@ -52,13 +53,13 @@ public class PlayerOverviewGui extends GuiScreen implements Closeable {
             .setI18nLabel("replaymod.gui.playeroverview.remembersettings");
     public final GuiCheckbox checkAll = new GuiCheckbox(contentPanel){
         @Override
-        public void onClick() {
+        public void onClick(Click click) {
             playersScrollable.invokeAll(IGuiCheckbox.class, e -> e.setChecked(true));
         }
     }.setLabel("").setChecked(true).setTooltip(new GuiTooltip().setI18nText("replaymod.gui.playeroverview.showall"));
     public final GuiCheckbox uncheckAll = new GuiCheckbox(contentPanel){
         @Override
-        public void onClick() {
+        public void onClick(Click click) {
             playersScrollable.invokeAll(IGuiCheckbox.class, e -> e.setChecked(false));
         }
     }.setLabel("").setChecked(false).setTooltip(new GuiTooltip().setI18nText("replaymod.gui.playeroverview.hideall"));

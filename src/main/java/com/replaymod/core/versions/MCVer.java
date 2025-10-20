@@ -621,12 +621,10 @@ public class MCVer {
         //$$ public static final int KEY_Z = org.lwjgl.input.Keyboard.KEY_Z;
         //#endif
 
-        public static boolean hasControlDown() {
-            return Screen.hasControlDown();
-        }
-
         public static boolean isKeyDown(int keyCode) {
-            //#if MC>=11500
+            //#if MC>=12109
+            //$$ return InputUtil.isKeyPressed(getMinecraft().getWindow(), keyCode);
+            //#elseif MC>=11500
             return InputUtil.isKeyPressed(getMinecraft().getWindow().getHandle(), keyCode);
             //#else
             //#if MC>=11400

@@ -8,8 +8,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-import java.util.Queue;
-
 //#if MC>=11800
 //$$ import java.util.function.Supplier;
 //#endif
@@ -25,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 //#if MC<11400
 //$$ import net.minecraft.client.resources.IResourcePack;
 //$$ import java.util.List;
+//$$ import java.util.Queue;
 //#endif
 
 @Mixin(MinecraftClient.class)
@@ -53,8 +52,6 @@ public interface MinecraftAccessor {
     //#endif
 
     //#if MC>=11400
-    @Accessor
-    Queue<Runnable> getRenderTaskQueue();
     //#else
     //$$ @Accessor
     //$$ Queue<FutureTask<?>> getScheduledTasks();

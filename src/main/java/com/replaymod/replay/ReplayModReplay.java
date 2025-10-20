@@ -19,6 +19,7 @@ import com.replaymod.replay.gui.screen.GuiModCompatWarning;
 import com.replaymod.replay.handler.GuiHandler;
 import com.replaymod.replaystudio.data.Marker;
 import com.replaymod.replaystudio.replay.ReplayFile;
+import de.johni0702.minecraft.gui.function.Click;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.options.KeyBinding;
 import org.apache.logging.log4j.LogManager;
@@ -116,7 +117,7 @@ public class ReplayModReplay implements Module {
             @Override
             public void run() {
                 if (replayHandler != null) {
-                    replayHandler.getOverlay().playPauseButton.onClick();
+                    replayHandler.getOverlay().playPauseButton.onClick(new Click(-1, -1, 0, 0));
                 }
             }
         }, true);

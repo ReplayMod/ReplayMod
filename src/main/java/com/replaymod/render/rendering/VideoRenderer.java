@@ -40,6 +40,10 @@ import net.minecraft.util.crash.CrashException;
 import net.minecraft.sound.SoundCategory;
 import org.lwjgl.glfw.GLFW;
 
+//#if MC>=12109
+//$$ import net.minecraft.client.gui.screen.Overlay;
+//#endif
+
 //#if MC>=12106
 //$$ import com.replaymod.render.mixin.GameRendererAccessor;
 //$$ import net.minecraft.client.gui.render.GuiRenderer;
@@ -335,13 +339,18 @@ public class VideoRenderer implements RenderInfo {
         //$$     Display.setResizable(false);
         //$$ }
         //#endif
+        //#if MC>=12109
+        //$$ if (mc.debugHudEntryList.isF3Enabled()) {
+        //$$     mc.debugHudEntryList.setF3Enabled(false);
+        //#else
         if (mc.options.debugEnabled) {
-            debugInfoWasShown = true;
             //#if MC>=12002
             //$$ mc.getDebugHud().toggleDebugHud();
             //#else
             mc.options.debugEnabled = false;
             //#endif
+        //#endif
+            debugInfoWasShown = true;
         }
         //#if MC>=11400
         if (mc.mouse.isCursorLocked()) {
@@ -406,7 +415,9 @@ public class VideoRenderer implements RenderInfo {
         //$$ }
         //#endif
         if (debugInfoWasShown) {
-            //#if MC>=12002
+            //#if MC>=12109
+            //$$ mc.debugHudEntryList.setF3Enabled(true);
+            //#elseif MC>=12002
             //$$ mc.getDebugHud().toggleDebugHud();
             //#else
             mc.options.debugEnabled = true;
@@ -453,6 +464,15 @@ public class VideoRenderer implements RenderInfo {
             while (mc.getOverlay() != null) {
                 drawGui();
                 ((MinecraftMethodAccessor) mc).replayModExecuteTaskQueue();
+
+                //#if MC>=12109
+                //$$ // The SplashOverlay now only closes on `tick`, but there are no ticks while we're waiting,
+                //$$ // so we need to manually tick it to not get stuck.
+                //$$ Overlay overlay = mc.getOverlay();
+                //$$ if (overlay != null) {
+                //$$     overlay.tick();
+                //$$ }
+                //#endif
             }
 
             CompletableFuture<Void> resourceReloadFuture = ((MinecraftAccessor) mc).getResourceReloadFuture();

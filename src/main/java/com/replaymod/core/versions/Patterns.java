@@ -982,7 +982,9 @@ class Patterns {
 
     @Pattern
     public Identifier getSkinTexture(AbstractClientPlayerEntity player) {
-        //#if MC>=12002
+        //#if MC>=12109
+        //$$ return player.getSkin().body().texturePath();
+        //#elseif MC>=12002
         //$$ return player.getSkinTextures().texture();
         //#else
         return player.getSkinTexture();

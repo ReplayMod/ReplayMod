@@ -1,12 +1,13 @@
 package com.replaymod.core.events;
 
+import de.johni0702.minecraft.gui.function.KeyInput;
 import de.johni0702.minecraft.gui.utils.Event;
 
 public interface KeyEventCallback {
     Event<KeyEventCallback> EVENT = Event.create((listeners) ->
-            (key, scanCode, action, modifiers) -> {
+            (keyInput, action) -> {
                 for (KeyEventCallback listener : listeners) {
-                    if (listener.onKeyEvent(key, scanCode, action, modifiers)) {
+                    if (listener.onKeyEvent(keyInput, action)) {
                         return true;
                     }
                 }
@@ -22,5 +23,5 @@ public interface KeyEventCallback {
     //$$ int ACTION_PRESS = 1;
     //#endif
 
-    boolean onKeyEvent(int key, int scanCode, int action, int modifiers);
+    boolean onKeyEvent(KeyInput keyInput, int action);
 }

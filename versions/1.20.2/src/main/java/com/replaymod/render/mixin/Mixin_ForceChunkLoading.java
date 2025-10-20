@@ -31,6 +31,12 @@ import java.util.concurrent.TimeoutException;
 public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
     private ForceChunkLoadingHook replayModRender_hook;
 
+    //#if MC>=12109
+    //$$ private static final String SETUP_TERRAIN = "Lnet/minecraft/client/render/WorldRenderer;method_74752(Lnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/Frustum;Z)V";
+    //#else
+    private static final String SETUP_TERRAIN = "Lnet/minecraft/client/render/WorldRenderer;setupTerrain(Lnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/Frustum;ZZ)V";
+    //#endif
+
     @Override
     public void replayModRender_setHook(ForceChunkLoadingHook hook) {
         this.replayModRender_hook = hook;
@@ -40,18 +46,28 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
 
     @Shadow @Final private ChunkRenderingDataPreparer field_45615;
 
+    //#if MC>=12109
+    //$$ @Shadow protected abstract void method_74752(Camera par1, Frustum par2, boolean par3);
+    //#else
     @Shadow protected abstract void setupTerrain(Camera par1, Frustum par2, boolean par3, boolean par4);
 
     @Shadow private Frustum frustum;
 
     @Shadow private Frustum capturedFrustum;
+    //#endif
 
     @Shadow @Final private MinecraftClient client;
 
     @Shadow protected abstract void applyFrustum(Frustum par1);
 
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/WorldRenderer;setupTerrain(Lnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/Frustum;ZZ)V"))
-    private void forceAllChunks(CallbackInfo ci, @Local(argsOnly = true) Camera camera) {
+    @Inject(method = "render", at = @At(value = "INVOKE", target = SETUP_TERRAIN))
+    private void forceAllChunks(
+            CallbackInfo ci,
+            //#if MC>=12109
+            //$$ @Local Frustum frustum,
+            //#endif
+            @Local(argsOnly = true) Camera camera
+    ) {
         if (replayModRender_hook == null) {
             return;
         }
@@ -69,7 +85,11 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
             boolean areWeDoneYet = true;
 
             // Determine which chunks shall be visible
+            //#if MC>=12109
+            //$$ method_74752(camera, frustum, this.client.player.isSpectator());
+            //#else
             setupTerrain(camera, this.frustum, this.capturedFrustum != null, this.client.player.isSpectator());
+            //#endif
 
             // Wait for async processing to be complete
             Future<?> fullUpdateFuture = renderingDataAcc.fullUpdateFuture();
