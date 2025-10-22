@@ -243,6 +243,22 @@ public class Utils {
         //#endif
     }
 
+    public static boolean isAltDown() {
+        //#if MC>=11400
+        return Screen.hasAltDown();
+        //#else
+        //$$ return Keyboard.isKeyDown(Keyboard.KEY_LMENU) || Keyboard.isKeyDown(Keyboard.KEY_RMENU);
+        //#endif
+    }
+
+    public static boolean isShiftDown() {
+        //#if MC>=11400
+        return Screen.hasShiftDown();
+        //#else
+        //$$ return Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
+        //#endif
+    }
+
     public static <T> void addCallback(ListenableFuture<T> future, Consumer<T> onSuccess, Consumer<Throwable> onFailure) {
         Futures.addCallback(future, new FutureCallback<T>() {
             @Override
