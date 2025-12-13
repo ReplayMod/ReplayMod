@@ -13,6 +13,7 @@ import com.replaymod.replaystudio.protocol.packets.PacketEnabledPacksData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.network.ClientConfigurationNetworkHandler;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.listener.ClientConfigurationPacketListener;
@@ -20,10 +21,7 @@ import net.minecraft.network.packet.BrandCustomPayload;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.config.ReadyS2CPacket;
 import net.minecraft.network.state.ConfigurationStates;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.*;
 import net.minecraft.world.dimension.DimensionType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -32,6 +30,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Map;
+
+//#if MC>=12111
+//$$ import net.minecraft.world.attribute.timeline.Timeline;
+//#endif
 
 @Mixin(ClientConfigurationNetworkHandler.class)
 public abstract class MixinNetHandlerConfigClient {
@@ -43,8 +45,15 @@ public abstract class MixinNetHandlerConfigClient {
         ByteBuf byteBuf = Unpooled.buffer();
         PacketByteBuf buf = new PacketByteBuf(byteBuf);
         buf.writeString(PacketEnabledPacksData.ID);
+        RegistryOps<NbtElement> ops = registryManager.getOps(NbtOps.INSTANCE);
+        //#if MC>=12111
+        //$$ buf.writeVarInt(2);
+        //$$ write(buf, registryManager.getOrThrow(RegistryKeys.DIMENSION_TYPE), DimensionType.CODEC, ops);
+        //$$ write(buf, registryManager.getOrThrow(RegistryKeys.TIMELINE), Timeline.CODEC, ops);
+        //#else
         buf.writeVarInt(1);
-        write(buf, registryManager.get(RegistryKeys.DIMENSION_TYPE), DimensionType.CODEC);
+        write(buf, registryManager.get(RegistryKeys.DIMENSION_TYPE), DimensionType.CODEC, ops);
+        //#endif
 
         byte[] bytes = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(bytes);
@@ -59,12 +68,12 @@ public abstract class MixinNetHandlerConfigClient {
     }
 
     @Unique
-    private <T> void write(PacketByteBuf buf, Registry<T> registry, Codec<T> codec) {
+    private <T> void write(PacketByteBuf buf, Registry<T> registry, Codec<T> codec, RegistryOps<NbtElement> ops) {
         buf.writeString(registry.getKey().getValue().toString());
         buf.writeVarInt(registry.size());
         for (Map.Entry<RegistryKey<T>, T> entry : registry.getEntrySet()) {
             buf.writeString(entry.getKey().getValue().toString());
-            buf.writeNbt(codec.encodeStart(NbtOps.INSTANCE, entry.getValue()).getOrThrow());
+            buf.writeNbt(codec.encodeStart(ops, entry.getValue()).getOrThrow());
         }
     }
 

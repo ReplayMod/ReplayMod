@@ -65,7 +65,11 @@ public class CameraPathExporter {
 
         //#if MC>=11400
         net.minecraft.client.render.Camera camera = mc.gameRenderer.getCamera();
+        //#if MC>=12111
+        //$$ Vec3d vec = camera.getCameraPos();
+        //#else
         Vec3d vec = camera.getPos();
+        //#endif
         float x = (float) vec.getX();
         float y = (float) vec.getY();
         float z = (float) vec.getZ();

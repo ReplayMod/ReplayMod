@@ -18,8 +18,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(WorldRenderer.class)
 public abstract class Mixin_ChromaKeyColorSky {
-    @Shadow @Final private MinecraftClient client;
-
     //#if MC>=11800
     //$$ @Inject(
             //#if MC>=12102
@@ -44,14 +42,18 @@ public abstract class Mixin_ChromaKeyColorSky {
     //#else
     //$$ @Inject(method = "renderSky(FI)V", at = @At("HEAD"), cancellable = true)
     //#endif
+    //#if MC>=12111
+    //$$ private static void chromaKeyingSky(CallbackInfo ci) {
+    //#else
     private void chromaKeyingSky(CallbackInfo ci) {
-        EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) this.client.gameRenderer).replayModRender_getHandler();
+    //#endif
+        EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) MinecraftClient.getInstance().gameRenderer).replayModRender_getHandler();
         if (handler != null) {
             ReadableColor color = handler.getSettings().getChromaKeyingColor();
             if (color != null) {
                 //#if MC>=12105
                 //$$ RenderSystem.getDevice().createCommandEncoder().clearColorTexture(
-                //$$         this.client.getFramebuffer().getColorAttachment(),
+                //$$         MinecraftClient.getInstance().getFramebuffer().getColorAttachment(),
                 //$$         (0xff << 24) | (color.getRed() << 16) | (color.getGreen() << 8) | color.getBlue()
                 //$$ );
                 //#else

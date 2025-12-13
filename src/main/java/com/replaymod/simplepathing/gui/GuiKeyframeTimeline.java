@@ -38,6 +38,10 @@ import static de.johni0702.minecraft.gui.versions.MCVer.popScissorState;
 import static de.johni0702.minecraft.gui.versions.MCVer.pushScissorState;
 import static de.johni0702.minecraft.gui.versions.MCVer.setScissorDisabled;
 
+//#if MC>=12111
+//$$ import net.minecraft.client.render.RenderLayers;
+//#endif
+
 //#if MC>=12106
 //$$ import com.replaymod.replay.mixin.DrawContextAccessor;
 //$$ import com.replaymod.render.mixin.GameRendererAccessor;
@@ -186,7 +190,11 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     float positionXKeyframeTimeline = positonX + KEYFRAME_SIZE / 2f;
 
                     final int color = 0xff0000ff;
-                    //#if MC>=12105
+                    //#if MC>=12111
+                    //$$ VertexConsumerProvider.Immediate immediate = getMinecraft().getBufferBuilders().getEntityVertexConsumers();
+                    //$$ immediate.draw();
+                    //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayers.LINES);
+                    //#elseif MC>=12105
                     //$$ VertexConsumerProvider.Immediate immediate = getMinecraft().getBufferBuilders().getEntityVertexConsumers();
                     //$$ immediate.draw();
                     //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayer.LINE_STRIP);
@@ -342,10 +350,16 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     //$$     @Override
     //$$     protected void render(TimeTimelineLinesRenderState state, MatrixStack matrixStack) {
     //$$         matrixStack.translate(-state.x2 / 2f, -state.y2, 100);
+    //#if MC>=12111
+    //$$         for (Pair<Vector2f, Vector2f> line : state.lines) {
+    //$$             emitLine(matrixStack, vertexConsumers.getBuffer(RenderLayers.LINES), line.getLeft(), line.getRight(), state.color);
+    //$$         }
+    //#else
     //$$         RenderSystem.lineWidth(2);
     //$$         for (Pair<Vector2f, Vector2f> line : state.lines) {
     //$$             emitLine(matrixStack, vertexConsumers.getBuffer(RenderLayer.LINES), line.getLeft(), line.getRight(), state.color);
     //$$         }
+    //#endif
     //$$     }
     //$$
     //$$     @Override

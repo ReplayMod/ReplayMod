@@ -134,7 +134,11 @@ public class VirtualWindow implements Closeable {
 
         applyScaleFactor();
         if (mc.currentScreen != null) {
+            //#if MC>=12111
+            //$$ mc.currentScreen.resize(window.getScaledWidth(), window.getScaledHeight());
+            //#else
             mc.currentScreen.resize(mc, window.getScaledWidth(), window.getScaledHeight());
+            //#endif
         }
     }
 

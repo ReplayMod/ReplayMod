@@ -810,12 +810,20 @@ public class ReplayHandler {
                 //#endif
                 //#endif
 
-                guiScreen.toMinecraft().init(mc, window.getScaledWidth(), window.getScaledHeight());
+                //#if MC>=12111
+                //$$ guiScreen.toMinecraft().init(window.getScaledWidth(), window.getScaledHeight());
+                //#else
+                //$$ guiScreen.toMinecraft().init(mc, window.getScaledWidth(), window.getScaledHeight());
+                //#endif
                 //#if MC>=12106
                 //$$ GameRendererAccessor gameRenderer = (GameRendererAccessor) mc.gameRenderer;
                 //$$ GuiRenderState guiRenderState = gameRenderer.getGuiState();
                 //$$ guiRenderState.clear();
+                //#if MC>=12111
+                //$$ guiScreen.toMinecraft().renderWithTooltip(new DrawContext(mc, guiRenderState, 0, 0), 0, 0, 0); // TODO: Make it proper
+                //#else
                 //$$ guiScreen.toMinecraft().renderWithTooltip(new DrawContext(mc, guiRenderState), 0, 0, 0);
+                //#endif
                 //$$ var orgFog = RenderSystem.getShaderFog();
                 //$$ var orgProjBuf = RenderSystem.getProjectionMatrixBuffer();
                 //$$ var orgProjType = RenderSystem.getProjectionType();

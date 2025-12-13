@@ -25,6 +25,10 @@ import net.minecraft.util.Util;
 //$$ import net.minecraftforge.fml.common.FMLCommonHandler;
 //#endif
 //#endif
+//#if MC>=12111
+//$$ import net.minecraft.client.render.CameraOverride;
+//$$ import org.joml.Vector3f;
+//#endif
 
 import java.io.IOException;
 
@@ -98,7 +102,9 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
                 mc.options.pauseOnLostFocus = false; // do not want the pause menu to open if the window is unfocused
                 if (omnidirectional) {
                     // makes no sense, we wouldn't even know where to put it
-                    //#if MC>=12106
+                    //#if MC>=12111
+                    //$$ mc.gameRenderer.setCameraOverride(new CameraOverride(new Vector3f(mc.gameRenderer.getCamera().getHorizontalPlane())));
+                    //#elseif MC>=12106
                     //$$ mc.gameRenderer.setRenderingPanorama(false);
                     //#else
                     gameRenderer.setRenderHand(false);
@@ -120,7 +126,9 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
             } finally {
                 mc.currentScreen = orgScreen;
                 mc.options.pauseOnLostFocus = orgPauseOnLostFocus;
-                //#if MC>=12106
+                //#if MC>=12111
+                //$$ mc.gameRenderer.setCameraOverride(null);
+                //#elseif MC>=12106
                 //$$ mc.gameRenderer.setRenderingPanorama(orgRenderHand);
                 //#else
                 gameRenderer.setRenderHand(orgRenderHand);

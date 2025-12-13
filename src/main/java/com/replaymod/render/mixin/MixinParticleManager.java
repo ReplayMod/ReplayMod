@@ -48,7 +48,11 @@ public abstract class MixinParticleManager {
             Quaternion org = rotation.copy();
             try {
                 Vec3d from = new Vec3d(0, 0, 1);
+                //#if MC>=12111
+                //$$ Vec3d to = MCVer.getPosition(particle, partialTicks).subtract(camera.getCameraPos()).normalize();
+                //#else
                 Vec3d to = MCVer.getPosition(particle, partialTicks).subtract(camera.getPos()).normalize();
+                //#endif
                 Vec3d axis = from.crossProduct(to);
                 rotation.set((float) axis.x, (float) axis.y, (float) axis.z, (float) (1 + from.dotProduct(to)));
                 rotation.normalize();

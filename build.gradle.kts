@@ -92,6 +92,7 @@ dependencies {
             12105 -> "0.119.9+1.21.5"
             12107 -> "0.128.1+1.21.7"
             12110 -> "0.135.0+1.21.10"
+            12111 -> "0.139.5+1.21.11"
             else -> throw UnsupportedOperationException()
         }
         val fabricApiModules = mutableListOf(

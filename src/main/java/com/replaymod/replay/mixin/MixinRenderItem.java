@@ -12,15 +12,22 @@ import net.minecraft.util.Util;
 //$$ import net.minecraft.client.Minecraft;
 //#endif
 
+//#if MC>=12111
+//$$ @Mixin(net.minecraft.client.render.TextureTransform.class)
+//#else
 //#if MC>=11500
-@Mixin(net.minecraft.client.render.RenderPhase.class)
+//$$ @Mixin(net.minecraft.client.render.RenderPhase.class)
 //#else
 //$$ @Mixin(net.minecraft.client.render.item.ItemRenderer.class)
 //#endif
+//#endif
 public class MixinRenderItem {
+    //#if MC>=12111
+    //$$ @Redirect(method = "getGlintTransformation", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
+    //#else
     //#if MC>=11400
     //#if MC>=11500
-    @Redirect(method = "setupGlintTexturing", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
+    //$$ @Redirect(method = "setupGlintTexturing", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
     //#else
     //#if MC>=11400
     //$$ @Redirect(method = "renderGlint", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
@@ -28,11 +35,11 @@ public class MixinRenderItem {
     //$$ @Redirect(method = "renderEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;milliTime()J"))
     //#endif
     //#endif
-    private static long getEnchantmentTime() {
     //#else
     //$$ @Redirect(method = "renderEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getSystemTime()J"))
-    //$$ private long getEnchantmentTime() {
     //#endif
+    //#endif
+    private static long getEnchantmentTime() {
         ReplayHandler replayHandler = ReplayModReplay.instance.getReplayHandler();
         if (replayHandler != null) {
             return replayHandler.getReplaySender().currentTimeStamp();

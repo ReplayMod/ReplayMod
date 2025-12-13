@@ -139,7 +139,10 @@ public class Util {
     //#if MC>=10800
     public static Vector3f getCameraPos() {
         MinecraftClient mc = MinecraftClient.getInstance();
-        //#if MC>=11400
+        //#if MC>=12111
+        //$$ Vec3d pos = mc.getEntityRenderDispatcher().camera.getCameraPos();
+        //$$ return new Vector3f((float) pos.x, (float) pos.y, (float) pos.z);
+        //#elseif MC>=11400
         Vec3d pos = mc.getEntityRenderDispatcher().camera.getPos();
         return new Vector3f((float) pos.x, (float) pos.y, (float) pos.z);
         //#else

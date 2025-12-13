@@ -320,7 +320,9 @@ public class GuiHandler extends EventRegistrations {
                     this::onButton
             ) {
                 @Override
-                //#if MC>=12000
+                //#if MC>=12111
+                //$$ public void drawIcon(DrawContext context, int mouseX, int mouseY, float delta) {
+                //#elseif MC>=12000
                 //$$ public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
                 //$$     super.renderButton(context, mouseX, mouseY, delta);
                 //#elseif MC>=11904
@@ -594,12 +596,22 @@ public class GuiHandler extends EventRegistrations {
             //$$ this.onClick = null;
             //#endif
 
-            //#if MC>=11903
+            //#if MC>=12111
+            //$$ if (tooltip != null) {
+            //$$     setTooltip(Tooltip.of(net.minecraft.text.Text.translatable(tooltip)));
+            //$$ }
+            //#elseif MC>=11903
             //$$ if (tooltip != null) {
             //$$     setTooltip(Tooltip.of(Text.translatable(tooltip)));
             //$$ }
             //#endif
         }
+
+        //#if MC>=12111
+        //$$ @Override
+        //$$ protected void drawIcon(DrawContext drawContext, int i, int j, float f) {
+        //$$ }
+        //#endif
 
         //#if MC>=11400 && MC<11400
         //$$ @Override
