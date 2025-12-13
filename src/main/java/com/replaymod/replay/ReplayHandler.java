@@ -820,7 +820,9 @@ public class ReplayHandler {
                 //$$ GuiRenderState guiRenderState = gameRenderer.getGuiState();
                 //$$ guiRenderState.clear();
                 //#if MC>=12111
-                //$$ guiScreen.toMinecraft().renderWithTooltip(new DrawContext(mc, guiRenderState, 0, 0), 0, 0, 0); // TODO: Make it proper
+                //$$ int mouseX = (int) mc.mouse.getX() * window.getScaledWidth() / Math.max(window.getWidth(), 1);
+                //$$ int mouseY = (int) mc.mouse.getY() * window.getScaledHeight() / Math.max(window.getHeight(), 1);
+                //$$ guiScreen.toMinecraft().renderWithTooltip(new DrawContext(mc, guiRenderState, mouseX, mouseY), 0, 0, 0);
                 //#else
                 //$$ guiScreen.toMinecraft().renderWithTooltip(new DrawContext(mc, guiRenderState), 0, 0, 0);
                 //#endif
