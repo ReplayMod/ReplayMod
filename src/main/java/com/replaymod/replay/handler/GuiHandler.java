@@ -322,6 +322,7 @@ public class GuiHandler extends EventRegistrations {
                 @Override
                 //#if MC>=12111
                 //$$ public void drawIcon(DrawContext context, int mouseX, int mouseY, float delta) {
+                //$$     super.drawIcon(context, mouseX, mouseY, delta);
                 //#elseif MC>=12000
                 //$$ public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
                 //$$     super.renderButton(context, mouseX, mouseY, delta);
@@ -546,7 +547,9 @@ public class GuiHandler extends EventRegistrations {
     }
 
     public static class InjectedButton extends
-            //#if MC>=11400
+            //#if MC>=12111
+            //$$ ButtonWidget.Text
+            //#elseif MC>=11400
             ButtonWidget
             //#else
             //$$ GuiButton
@@ -606,12 +609,6 @@ public class GuiHandler extends EventRegistrations {
             //$$ }
             //#endif
         }
-
-        //#if MC>=12111
-        //$$ @Override
-        //$$ protected void drawIcon(DrawContext drawContext, int i, int j, float f) {
-        //$$ }
-        //#endif
 
         //#if MC>=11400 && MC<11400
         //$$ @Override
