@@ -289,10 +289,12 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#endif
         //#endif
 
+        final float lineWidth = 3f;
+        //#if MC>=12111
+        //$$ emitLine(new MatrixStack(), buffer, Vector3f.sub(pos1, view, null), Vector3f.sub(pos2, view, null), color, lineWidth);
+        //#else
         emitLine(new MatrixStack(), buffer, Vector3f.sub(pos1, view, null), Vector3f.sub(pos2, view, null), color);
-
-        //#if MC<=12111
-        //$$ GL11.glLineWidth(3);
+        GL11.glLineWidth(lineWidth);
         //#endif
 
         //#if MC>=12105
@@ -428,7 +430,11 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#endif
         //#endif
 
+        //#if MC>=12111
+        //$$ emitLine(new MatrixStack(), buffer, new Vector3f(0, 0, 0), new Vector3f(0, 0, 2), 0x00ff00aa, 3f);
+        //#else
         emitLine(new MatrixStack(), buffer, new Vector3f(0, 0, 0), new Vector3f(0, 0, 2), 0x00ff00aa);
+        //#endif
 
         //#if MC>=12105
         //$$ immediate.draw();

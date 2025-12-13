@@ -446,15 +446,23 @@ public class MCVer {
     //$$ }
     //#endif
 
-    //#if MC>=12105
+    //#if MC>=12111
+    //$$ public static void emitLine(MatrixStack matrixStack, VertexConsumer buffer, Vector2f p1, Vector2f p2, int color, float lineWidth) {
+    //#elseif MC>=12105
     //$$ public static void emitLine(MatrixStack matrixStack, VertexConsumer buffer, Vector2f p1, Vector2f p2, int color) {
     //#else
     public static void emitLine(MatrixStack matrixStack, BufferBuilder buffer, Vector2f p1, Vector2f p2, int color) {
     //#endif
+        //#if MC>=12111
+        //$$ emitLine(matrixStack, buffer, new Vector3f(p1.x, p1.y, 0), new Vector3f(p2.x, p2.y, 0), color, lineWidth);
+        //#else
         emitLine(matrixStack, buffer, new Vector3f(p1.x, p1.y, 0), new Vector3f(p2.x, p2.y, 0), color);
+        //#endif
     }
 
-    //#if MC>=12105
+    //#if MC>=12111
+    //$$ public static void emitLine(MatrixStack matrixStack, VertexConsumer buffer, Vector3f p1, Vector3f p2, int color, float lineWidth) {
+    //#elseif MC>=12105
     //$$ public static void emitLine(MatrixStack matrixStack, VertexConsumer buffer, Vector3f p1, Vector3f p2, int color) {
     //#else
     public static void emitLine(MatrixStack matrixStack, BufferBuilder buffer, Vector3f p1, Vector3f p2, int color) {
@@ -466,7 +474,9 @@ public class MCVer {
         //#if MC>=11700
         //$$ Vector3f n = Vector3f.sub(p2, p1, null);
         //#endif
-        //#if MC>=11600
+        //#if MC>=12111
+        //$$ buffer.vertex(matrixStack.peek().getPositionMatrix(), p1.x, p1.y, p1.z).lineWidth(lineWidth)
+        //#elseif MC>=11600
         buffer.vertex(matrixStack.peek().getModel(), p1.x, p1.y, p1.z)
         //#else
         //$$ buffer.vertex(p1.x, p1.y, p1.z)
@@ -477,7 +487,9 @@ public class MCVer {
                 //#endif
                 ;
         buffer.next();
-        //#if MC>=11600
+        //#if MC>=12111
+        //$$ buffer.vertex(matrixStack.peek().getPositionMatrix(), p2.x, p2.y, p2.z).lineWidth(lineWidth)
+        //#elseif MC>=11600
         buffer.vertex(matrixStack.peek().getModel(), p2.x, p2.y, p2.z)
         //#else
         //$$ buffer.vertex(p2.x, p2.y, p2.z)

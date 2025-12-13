@@ -190,6 +190,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     float positionXKeyframeTimeline = positonX + KEYFRAME_SIZE / 2f;
 
                     final int color = 0xff0000ff;
+                    final float lineWidth = 2f;
                     //#if MC>=12111
                     //$$ VertexConsumerProvider.Immediate immediate = getMinecraft().getBufferBuilders().getEntityVertexConsumers();
                     //$$ immediate.draw();
@@ -217,7 +218,13 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     // And finally another vertical bit (the timeline is already crammed enough, so only the border)
                     Vector2f p4 = new Vector2f(keyframeTimelineLeft + positionXKeyframeTimeline, keyframeTimelineTop + BORDER_TOP);
 
-                    //#if MC>=12106
+                    //#if MC>=12111
+                    //$$ linesRenderState.color = color;
+                    //$$ linesRenderState.lineWidth = lineWidth;
+                    //$$ linesRenderState.line(p1, p2);
+                    //$$ linesRenderState.line(p2, p3);
+                    //$$ linesRenderState.line(p3, p4);
+                    //#elseif MC>=12106
                     //$$ linesRenderState.color = color;
                     //$$ linesRenderState.line(p1, p2);
                     //$$ linesRenderState.line(p2, p3);
@@ -230,7 +237,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
 
                     pushScissorState();
                     setScissorDisabled();
-                    GL11.glLineWidth(2);
+                    GL11.glLineWidth(lineWidth);
 
                     //#if MC>=12105
                     //$$ immediate.draw();
@@ -311,6 +318,9 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     //$$
     //$$     List<Pair<Vector2f, Vector2f>> lines = new ArrayList<>();
     //$$     int color;
+    //#if MC>=12111
+    //$$     float lineWidth;
+    //#endif
     //$$
     //$$     public void line(Vector2f p1, Vector2f p2) {
     //$$         lines.add(Pair.of(p1, p2));
@@ -352,7 +362,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     //$$         matrixStack.translate(-state.x2 / 2f, -state.y2, 100);
     //#if MC>=12111
     //$$         for (Pair<Vector2f, Vector2f> line : state.lines) {
-    //$$             emitLine(matrixStack, vertexConsumers.getBuffer(RenderLayers.LINES), line.getLeft(), line.getRight(), state.color);
+    //$$             emitLine(matrixStack, vertexConsumers.getBuffer(RenderLayers.LINES), line.getLeft(), line.getRight(), state.color, state.lineWidth);
     //$$         }
     //#else
     //$$         RenderSystem.lineWidth(2);

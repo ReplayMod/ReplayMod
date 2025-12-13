@@ -171,6 +171,7 @@ dependencies {
 
     if (platform.isFabric) {
         val modMenuVersion = when {
+            mcVersion >= 12111 -> "17.0.0-alpha.1"
             mcVersion >= 12110 -> "16.0.0-rc.1"
             mcVersion >= 12107 -> "15.0.0-beta.3"
             mcVersion >= 12105 -> "14.0.0-rc.2"

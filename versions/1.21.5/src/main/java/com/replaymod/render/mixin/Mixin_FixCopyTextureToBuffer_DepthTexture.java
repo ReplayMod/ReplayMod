@@ -14,7 +14,7 @@ public class Mixin_FixCopyTextureToBuffer_DepthTexture {
     //#if MC>=12111
     //$$ @WrapOperation(
     //$$         method = "copyTextureToBuffer(Lcom/mojang/blaze3d/textures/GpuTexture;Lcom/mojang/blaze3d/buffers/GpuBuffer;JLjava/lang/Runnable;IIIII)V",
-    //$$         at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gl/FramebufferManager;setupFramebuffer(IIIII)V")
+    //$$         at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gl/BufferManager;setupFramebuffer(IIIII)V")
     //$$ )
     //#else
     @WrapOperation(
