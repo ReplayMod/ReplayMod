@@ -239,7 +239,7 @@ preprocess {
     val mc10800 = createNode("1.8", 10800, "srg")
     val mc10710 = createNode("1.7.10", 10710, "srg")
 
-    mc12111.link(mc12110)
+    mc12111.link(mc12110, file("versions/mapping-fabric-1.21.11-1.21.10.txt"))
     mc12110.link(mc12107, file("versions/mapping-fabric-1.21.10-1.21.7.txt"))
     mc12107.link(mc12105)
     mc12105.link(mc12104, file("versions/mapping-fabric-1.21.5-1.21.4.txt"))
