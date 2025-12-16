@@ -13,6 +13,7 @@ import com.replaymod.replaystudio.protocol.packets.PacketEnabledPacksData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.network.ClientConfigurationNetworkHandler;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.listener.ClientConfigurationPacketListener;
@@ -24,6 +25,7 @@ import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryOps;
 import net.minecraft.world.dimension.DimensionType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -43,8 +45,9 @@ public abstract class MixinNetHandlerConfigClient {
         ByteBuf byteBuf = Unpooled.buffer();
         PacketByteBuf buf = new PacketByteBuf(byteBuf);
         buf.writeString(PacketEnabledPacksData.ID);
+        RegistryOps<NbtElement> ops = registryManager.getOps(NbtOps.INSTANCE);
         buf.writeVarInt(1);
-        write(buf, registryManager.get(RegistryKeys.DIMENSION_TYPE), DimensionType.CODEC);
+        write(buf, registryManager.get(RegistryKeys.DIMENSION_TYPE), DimensionType.CODEC, ops);
 
         byte[] bytes = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(bytes);
@@ -59,12 +62,12 @@ public abstract class MixinNetHandlerConfigClient {
     }
 
     @Unique
-    private <T> void write(PacketByteBuf buf, Registry<T> registry, Codec<T> codec) {
+    private <T> void write(PacketByteBuf buf, Registry<T> registry, Codec<T> codec, RegistryOps<NbtElement> ops) {
         buf.writeString(registry.getKey().getValue().toString());
         buf.writeVarInt(registry.size());
         for (Map.Entry<RegistryKey<T>, T> entry : registry.getEntrySet()) {
             buf.writeString(entry.getKey().getValue().toString());
-            buf.writeNbt(codec.encodeStart(NbtOps.INSTANCE, entry.getValue()).getOrThrow());
+            buf.writeNbt(codec.encodeStart(ops, entry.getValue()).getOrThrow());
         }
     }
 

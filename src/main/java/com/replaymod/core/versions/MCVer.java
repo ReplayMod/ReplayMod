@@ -15,6 +15,7 @@ import net.minecraft.network.NetworkState;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.Vec3d;
+import org.lwjgl.opengl.GL11;
 
 //#if MC>=12105
 //$$ import net.minecraft.client.render.VertexConsumer;
@@ -447,18 +448,21 @@ public class MCVer {
     //#endif
 
     //#if MC>=12105
-    //$$ public static void emitLine(MatrixStack matrixStack, VertexConsumer buffer, Vector2f p1, Vector2f p2, int color) {
+    //$$ public static void emitLine(MatrixStack matrixStack, VertexConsumer buffer, Vector2f p1, Vector2f p2, int color, float lineWidth) {
     //#else
-    public static void emitLine(MatrixStack matrixStack, BufferBuilder buffer, Vector2f p1, Vector2f p2, int color) {
+    public static void emitLine(MatrixStack matrixStack, BufferBuilder buffer, Vector2f p1, Vector2f p2, int color, float lineWidth) {
     //#endif
-        emitLine(matrixStack, buffer, new Vector3f(p1.x, p1.y, 0), new Vector3f(p2.x, p2.y, 0), color);
+        emitLine(matrixStack, buffer, new Vector3f(p1.x, p1.y, 0), new Vector3f(p2.x, p2.y, 0), color, lineWidth);
     }
 
     //#if MC>=12105
-    //$$ public static void emitLine(MatrixStack matrixStack, VertexConsumer buffer, Vector3f p1, Vector3f p2, int color) {
+    //$$ public static void emitLine(MatrixStack matrixStack, VertexConsumer buffer, Vector3f p1, Vector3f p2, int color, float lineWidth) {
     //#else
-    public static void emitLine(MatrixStack matrixStack, BufferBuilder buffer, Vector3f p1, Vector3f p2, int color) {
+    public static void emitLine(MatrixStack matrixStack, BufferBuilder buffer, Vector3f p1, Vector3f p2, int color, float lineWidth) {
     //#endif
+        //#if MC<12111
+        GL11.glLineWidth(lineWidth);
+        //#endif
         int r = color >> 24 & 0xff;
         int g = color >> 16 & 0xff;
         int b = color >> 8 & 0xff;
@@ -471,6 +475,9 @@ public class MCVer {
         //#else
         //$$ buffer.vertex(p1.x, p1.y, p1.z)
         //#endif
+                //#if MC>=12111
+                //$$ .lineWidth(lineWidth)
+                //#endif
                 .color(r, g, b, a)
                 //#if MC>=11700
                 //$$ .normal(n.x, n.y, n.z)
@@ -482,6 +489,9 @@ public class MCVer {
         //#else
         //$$ buffer.vertex(p2.x, p2.y, p2.z)
         //#endif
+                //#if MC>=12111
+                //$$ .lineWidth(lineWidth)
+                //#endif
                 .color(r, g, b, a)
                 //#if MC>=11700
                 //$$ .normal(n.x, n.y, n.z)
@@ -539,6 +549,11 @@ public class MCVer {
     public static abstract class Keyboard {
         //#if MC>=11400
         public static final int KEY_LCONTROL = GLFW.GLFW_KEY_LEFT_CONTROL;
+        public static final int KEY_RCONTROL = GLFW.GLFW_KEY_RIGHT_CONTROL;
+        public static final int KEY_LSUPER = GLFW.GLFW_KEY_LEFT_SUPER;
+        public static final int KEY_RSUPER = GLFW.GLFW_KEY_RIGHT_SUPER;
+        public static final int LEFT_CTRL = Util.getOperatingSystem() == Util.OperatingSystem.OSX ? KEY_LSUPER : KEY_LCONTROL;
+        public static final int RIGHT_CTRL = Util.getOperatingSystem() == Util.OperatingSystem.OSX ? KEY_RSUPER : KEY_RCONTROL;
         public static final int KEY_LSHIFT = GLFW.GLFW_KEY_LEFT_SHIFT;
         public static final int KEY_ESCAPE = GLFW.GLFW_KEY_ESCAPE;
         public static final int KEY_HOME = GLFW.GLFW_KEY_HOME;
