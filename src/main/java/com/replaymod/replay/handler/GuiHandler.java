@@ -320,7 +320,10 @@ public class GuiHandler extends EventRegistrations {
                     this::onButton
             ) {
                 @Override
-                //#if MC>=12000
+                //#if MC>=12111
+                //$$ public void drawIcon(DrawContext context, int mouseX, int mouseY, float delta) {
+                //$$     super.drawIcon(context, mouseX, mouseY, delta);
+                //#elseif MC>=12000
                 //$$ public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
                 //$$     super.renderButton(context, mouseX, mouseY, delta);
                 //#elseif MC>=11904
@@ -544,7 +547,9 @@ public class GuiHandler extends EventRegistrations {
     }
 
     public static class InjectedButton extends
-            //#if MC>=11400
+            //#if MC>=12111
+            //$$ ButtonWidget.Text
+            //#elseif MC>=11400
             ButtonWidget
             //#else
             //$$ GuiButton
@@ -596,7 +601,7 @@ public class GuiHandler extends EventRegistrations {
 
             //#if MC>=11903
             //$$ if (tooltip != null) {
-            //$$     setTooltip(Tooltip.of(Text.translatable(tooltip)));
+            //$$     setTooltip(Tooltip.of(net.minecraft.text.Text.translatable(tooltip)));
             //$$ }
             //#endif
         }

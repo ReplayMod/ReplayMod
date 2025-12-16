@@ -394,7 +394,11 @@ public class VideoRenderer implements RenderInfo {
             cameraPathExporter.setup(totalFrames);
         }
 
+        //#if MC>=12111
+        //$$ gui.toMinecraft().init(mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight());
+        //#else
         gui.toMinecraft().init(mc, mc.getWindow().getScaledWidth(), mc.getWindow().getScaledHeight());
+        //#endif
 
         forceChunkLoadingHook = new ForceChunkLoadingHook(mc.worldRenderer);
     }
@@ -599,7 +603,11 @@ public class VideoRenderer implements RenderInfo {
             //#endif
             //#endif
 
+            //#if MC>=12111
+            //$$ gui.toMinecraft().init(window.getScaledWidth(), window.getScaledHeight());
+            //#else
             gui.toMinecraft().init(mc, window.getScaledWidth(), window.getScaledHeight());
+            //#endif
 
             // Events are polled on 1.13+ in mainWindow.update which is called later
             //#if MC<11400
@@ -624,7 +632,11 @@ public class VideoRenderer implements RenderInfo {
             //$$ GameRendererAccessor gameRenderer = (GameRendererAccessor) mc.gameRenderer;
             //$$ GuiRenderState guiRenderState = gameRenderer.getGuiState();
             //$$ guiRenderState.clear();
+            //#if MC>=12111
+            //$$ DrawContext drawContext = new DrawContext(mc, guiRenderState, mouseX, mouseY);
+            //#else
             //$$ DrawContext drawContext = new DrawContext(mc, guiRenderState);
+            //#endif
             //#elseif MC>=12000
             //$$ DrawContext drawContext = new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers());
             //#endif

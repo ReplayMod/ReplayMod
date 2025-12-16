@@ -1,0 +1,1 @@
+net.minecraft.client.render.Camera getCameraPos() getPos()

@@ -38,6 +38,10 @@ import static de.johni0702.minecraft.gui.versions.MCVer.popScissorState;
 import static de.johni0702.minecraft.gui.versions.MCVer.pushScissorState;
 import static de.johni0702.minecraft.gui.versions.MCVer.setScissorDisabled;
 
+//#if MC>=12111
+//$$ import net.minecraft.client.render.RenderLayers;
+//#endif
+
 //#if MC>=12106
 //$$ import com.replaymod.replay.mixin.DrawContextAccessor;
 //$$ import com.replaymod.render.mixin.GameRendererAccessor;
@@ -186,10 +190,15 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     float positionXKeyframeTimeline = positonX + KEYFRAME_SIZE / 2f;
 
                     final int color = 0xff0000ff;
+                    final float lineWidth = 2f;
                     //#if MC>=12105
                     //$$ VertexConsumerProvider.Immediate immediate = getMinecraft().getBufferBuilders().getEntityVertexConsumers();
                     //$$ immediate.draw();
+                    //#if MC>=12111
+                    //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayers.LINES);
+                    //#else
                     //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayer.LINE_STRIP);
+                    //#endif
                     //#else
                     Tessellator tessellator = Tessellator.getInstance();
                     //#if MC>=12100
@@ -211,18 +220,18 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
 
                     //#if MC>=12106
                     //$$ linesRenderState.color = color;
+                    //$$ linesRenderState.lineWidth = lineWidth;
                     //$$ linesRenderState.line(p1, p2);
                     //$$ linesRenderState.line(p2, p3);
                     //$$ linesRenderState.line(p3, p4);
                     //#else
                     MatrixStack matrixStack = renderer.getMatrixStack();
-                    emitLine(matrixStack, buffer, p1, p2, color);
-                    emitLine(matrixStack, buffer, p2, p3, color);
-                    emitLine(matrixStack, buffer, p3, p4, color);
+                    emitLine(matrixStack, buffer, p1, p2, color, lineWidth);
+                    emitLine(matrixStack, buffer, p2, p3, color, lineWidth);
+                    emitLine(matrixStack, buffer, p3, p4, color, lineWidth);
 
                     pushScissorState();
                     setScissorDisabled();
-                    GL11.glLineWidth(2);
 
                     //#if MC>=12105
                     //$$ immediate.draw();
@@ -303,6 +312,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     //$$
     //$$     List<Pair<Vector2f, Vector2f>> lines = new ArrayList<>();
     //$$     int color;
+    //$$     float lineWidth;
     //$$
     //$$     public void line(Vector2f p1, Vector2f p2) {
     //$$         lines.add(Pair.of(p1, p2));
@@ -342,9 +352,12 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     //$$     @Override
     //$$     protected void render(TimeTimelineLinesRenderState state, MatrixStack matrixStack) {
     //$$         matrixStack.translate(-state.x2 / 2f, -state.y2, 100);
-    //$$         RenderSystem.lineWidth(2);
     //$$         for (Pair<Vector2f, Vector2f> line : state.lines) {
-    //$$             emitLine(matrixStack, vertexConsumers.getBuffer(RenderLayer.LINES), line.getLeft(), line.getRight(), state.color);
+    //#if MC>=12111
+    //$$             emitLine(matrixStack, vertexConsumers.getBuffer(RenderLayers.LINES), line.getLeft(), line.getRight(), state.color, state.lineWidth);
+    //#else
+    //$$             emitLine(matrixStack, vertexConsumers.getBuffer(RenderLayer.LINES), line.getLeft(), line.getRight(), state.color, state.lineWidth);
+    //#endif
     //$$         }
     //$$     }
     //$$

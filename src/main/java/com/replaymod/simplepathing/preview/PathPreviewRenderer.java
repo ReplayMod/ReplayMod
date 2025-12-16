@@ -30,6 +30,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.opengl.GL11;
 
+//#if MC>=12111
+//$$ import net.minecraft.client.render.RenderLayers;
+//#endif
+
 //#if MC>=12105
 //$$ import net.minecraft.client.render.RenderLayer;
 //$$ import net.minecraft.client.render.VertexConsumer;
@@ -270,7 +274,11 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#if MC>=12105
         //$$ VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
         //$$ immediate.draw();
+        //#if MC>=12111
+        //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayers.LINES);
+        //#else
         //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayer.LINES);
+        //#endif
         //#else
         Tessellator tessellator = Tessellator.getInstance();
         //#if MC>=12100
@@ -281,9 +289,7 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#endif
         //#endif
 
-        emitLine(new MatrixStack(), buffer, Vector3f.sub(pos1, view, null), Vector3f.sub(pos2, view, null), color);
-
-        GL11.glLineWidth(3);
+        emitLine(new MatrixStack(), buffer, Vector3f.sub(pos1, view, null), Vector3f.sub(pos2, view, null), color, 3f);
 
         //#if MC>=12105
         //$$ immediate.draw();
@@ -335,7 +341,9 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#if MC>=12105
         //$$ VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
         //$$ immediate.draw();
-        //#if MC>=12106
+        //#if MC>=12111
+        //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayers.textSeeThrough(TEXTURE));
+        //#elseif MC>=12106
         //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayer.getTextSeeThrough(TEXTURE));
         //#else
         //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayer.getGuiTexturedOverlay(TEXTURE));
@@ -401,7 +409,11 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#if MC>=12105
         //$$ VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
         //$$ immediate.draw();
+        //#if MC>=12111
+        //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayers.LINES);
+        //#else
         //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayer.LINES);
+        //#endif
         //#else
         Tessellator tessellator = Tessellator.getInstance();
         //#if MC>=12100
@@ -412,7 +424,7 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#endif
         //#endif
 
-        emitLine(new MatrixStack(), buffer, new Vector3f(0, 0, 0), new Vector3f(0, 0, 2), 0x00ff00aa);
+        emitLine(new MatrixStack(), buffer, new Vector3f(0, 0, 0), new Vector3f(0, 0, 2), 0x00ff00aa, 3f);
 
         //#if MC>=12105
         //$$ immediate.draw();
@@ -445,7 +457,9 @@ public class PathPreviewRenderer extends EventRegistrations {
 
         float r = -cubeSize/2;
 
-        //#if MC>=12106
+        //#if MC>=12111
+        //$$ buffer = immediate.getBuffer(RenderLayers.text(CAMERA_HEAD));
+        //#elseif MC>=12106
         //$$ buffer = immediate.getBuffer(RenderLayer.getText(CAMERA_HEAD));
         //#elseif MC>=12105
         //$$ buffer = immediate.getBuffer(RenderLayer.getGuiTextured(CAMERA_HEAD));

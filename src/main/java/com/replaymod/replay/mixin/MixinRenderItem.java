@@ -12,14 +12,18 @@ import net.minecraft.util.Util;
 //$$ import net.minecraft.client.Minecraft;
 //#endif
 
-//#if MC>=11500
+//#if MC>=12111
+//$$ @Mixin(net.minecraft.client.render.TextureTransform.class)
+//#elseif MC>=11500
 @Mixin(net.minecraft.client.render.RenderPhase.class)
 //#else
 //$$ @Mixin(net.minecraft.client.render.item.ItemRenderer.class)
 //#endif
 public class MixinRenderItem {
     //#if MC>=11400
-    //#if MC>=11500
+    //#if MC>=12111
+    //$$ @Redirect(method = "getGlintTransformation", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
+    //#elseif MC>=11500
     @Redirect(method = "setupGlintTexturing", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
     //#else
     //#if MC>=11400

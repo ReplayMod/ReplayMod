@@ -578,7 +578,9 @@ class Patterns {
 
     @Pattern
     private static void GL11_glLineWidth(float width) {
-        //#if MC>=11700
+        //#if MC>=12111
+        //$$ // Got removed in 1.21.11. Use lineWidth on VertexConsumer instead.
+        //#elseif MC>=11700
         //$$ com.mojang.blaze3d.systems.RenderSystem.lineWidth(width);
         //#else
         GL11.glLineWidth(width);
