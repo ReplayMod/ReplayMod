@@ -112,6 +112,9 @@ dependencies {
         if (mcVersion >= 11700) {
             fabricApiModules.remove("networking-v0")
         }
+        if (mcVersion >= 12109) {
+            fabricApiModules.add("resource-loader-v1")
+        }
         for (module in fabricApiModules) {
             val dep = fabricApi.module("fabric-$module", fabricApiVersion)
             modImplementation(dep)
