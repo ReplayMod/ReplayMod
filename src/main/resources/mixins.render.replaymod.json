@@ -23,6 +23,7 @@
     "Mixin_ForceChunkLoading",
     "Mixin_HideNameTags",
     "Mixin_HideNameTags_LivingEntity",
+    "Mixin_HideNameTags_PlayerEntity",
     "Mixin_Omnidirectional_Camera",
     "Mixin_Omnidirectional_Rotation",
     "Mixin_PreserveDepthDuringGuiRendering",
