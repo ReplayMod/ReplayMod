@@ -14,6 +14,11 @@ import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 
+//#if MC>=12111
+//$$ import net.minecraft.client.render.CameraOverride;
+//$$ import org.joml.Vector3f;
+//#endif
+
 //#if MC>=11400
 import com.replaymod.core.events.PostRenderCallback;
 import com.replaymod.core.events.PreRenderCallback;
@@ -24,10 +29,6 @@ import net.minecraft.util.Util;
 //#else
 //$$ import net.minecraftforge.fml.common.FMLCommonHandler;
 //#endif
-//#endif
-//#if MC>=12111
-//$$ import net.minecraft.client.render.CameraOverride;
-//$$ import org.joml.Vector3f;
 //#endif
 
 import java.io.IOException;
