@@ -70,7 +70,6 @@ import static com.replaymod.core.versions.MCVer.getMinecraft;
 
 //#if MC>=12109
 //$$ import com.replaymod.core.versions.MCVer.Keyboard;
-//$$ import net.minecraft.client.input.SystemKeycodes;
 //#endif
 
 //#if MC>=12100
@@ -234,10 +233,8 @@ public class Utils {
     }
 
     public static boolean isCtrlDown() {
-        //#if MC>=12111
-        //$$ return Keyboard.isKeyDown(SystemKeycodes.CTRL_MOD);
-        //#elseif MC>=12109
-        //$$ return Keyboard.isKeyDown(SystemKeycodes.LEFT_CTRL) || Keyboard.isKeyDown(SystemKeycodes.RIGHT_CTRL);
+        //#if MC>=12109
+        //$$ return Keyboard.isKeyDown(Keyboard.LEFT_CTRL) || Keyboard.isKeyDown(Keyboard.RIGHT_CTRL);
         //#elseif MC>=11400
         return Screen.hasControlDown();
         //#else

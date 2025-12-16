@@ -551,6 +551,11 @@ public class MCVer {
     public static abstract class Keyboard {
         //#if MC>=11400
         public static final int KEY_LCONTROL = GLFW.GLFW_KEY_LEFT_CONTROL;
+        public static final int KEY_RCONTROL = GLFW.GLFW_KEY_RIGHT_CONTROL;
+        public static final int KEY_LSUPER = GLFW.GLFW_KEY_LEFT_SUPER;
+        public static final int KEY_RSUPER = GLFW.GLFW_KEY_RIGHT_SUPER;
+        public static final int LEFT_CTRL = Util.getOperatingSystem() == Util.OperatingSystem.OSX ? KEY_LSUPER : KEY_LCONTROL;
+        public static final int RIGHT_CTRL = Util.getOperatingSystem() == Util.OperatingSystem.OSX ? KEY_RSUPER : KEY_RCONTROL;
         public static final int KEY_LSHIFT = GLFW.GLFW_KEY_LEFT_SHIFT;
         public static final int KEY_ESCAPE = GLFW.GLFW_KEY_ESCAPE;
         public static final int KEY_HOME = GLFW.GLFW_KEY_HOME;
