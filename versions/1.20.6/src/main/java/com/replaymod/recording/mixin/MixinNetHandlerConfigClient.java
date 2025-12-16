@@ -31,10 +31,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Map;
 
-//#if MC>=12111
-//$$ import net.minecraft.world.attribute.timeline.Timeline;
-//#endif
-
 @Mixin(ClientConfigurationNetworkHandler.class)
 public abstract class MixinNetHandlerConfigClient {
     @Inject(method = "onReady", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/ClientConnection;transitionInbound(Lnet/minecraft/network/NetworkState;Lnet/minecraft/network/listener/PacketListener;)V"))
@@ -46,14 +42,8 @@ public abstract class MixinNetHandlerConfigClient {
         PacketByteBuf buf = new PacketByteBuf(byteBuf);
         buf.writeString(PacketEnabledPacksData.ID);
         RegistryOps<NbtElement> ops = registryManager.getOps(NbtOps.INSTANCE);
-        //#if MC>=12111
-        //$$ buf.writeVarInt(2);
-        //$$ write(buf, registryManager.getOrThrow(RegistryKeys.DIMENSION_TYPE), DimensionType.CODEC, ops);
-        //$$ write(buf, registryManager.getOrThrow(RegistryKeys.TIMELINE), Timeline.CODEC, ops);
-        //#else
         buf.writeVarInt(1);
         write(buf, registryManager.get(RegistryKeys.DIMENSION_TYPE), DimensionType.CODEC, ops);
-        //#endif
 
         byte[] bytes = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(bytes);
