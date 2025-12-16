@@ -11,17 +11,14 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(GlResourceManager.class)
 public class Mixin_FixCopyTextureToBuffer_DepthTexture {
-    //#if MC>=12111
-    //$$ @WrapOperation(
-    //$$         method = "copyTextureToBuffer(Lcom/mojang/blaze3d/textures/GpuTexture;Lcom/mojang/blaze3d/buffers/GpuBuffer;JLjava/lang/Runnable;IIIII)V",
-    //$$         at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gl/BufferManager;setupFramebuffer(IIIII)V")
-    //$$ )
-    //#else
     @WrapOperation(
+            //#if MC>=12111
+            //$$ method = "copyTextureToBuffer(Lcom/mojang/blaze3d/textures/GpuTexture;Lcom/mojang/blaze3d/buffers/GpuBuffer;JLjava/lang/Runnable;IIIII)V",
+            //#else
             method = "copyTextureToBuffer(Lcom/mojang/blaze3d/textures/GpuTexture;Lcom/mojang/blaze3d/buffers/GpuBuffer;ILjava/lang/Runnable;IIIII)V",
+            //#endif
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gl/FramebufferManager;setupFramebuffer(IIIII)V")
     )
-    //#endif
     private void setupFramebuffer(
             FramebufferManager instance,
             int framebuffer, int colorAttachment, int depthAttachment, int mipLevel, int bindTarget,

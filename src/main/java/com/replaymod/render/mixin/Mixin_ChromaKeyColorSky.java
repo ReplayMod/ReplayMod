@@ -43,10 +43,9 @@ public abstract class Mixin_ChromaKeyColorSky {
     //$$ @Inject(method = "renderSky(FI)V", at = @At("HEAD"), cancellable = true)
     //#endif
     //#if MC>=12111
-    //$$ private static void chromaKeyingSky(CallbackInfo ci) {
-    //#else
-    private void chromaKeyingSky(CallbackInfo ci) {
+    //$$ static
     //#endif
+    private void chromaKeyingSky(CallbackInfo ci) {
         EntityRendererHandler handler = ((EntityRendererHandler.IEntityRenderer) MinecraftClient.getInstance().gameRenderer).replayModRender_getHandler();
         if (handler != null) {
             ReadableColor color = handler.getSettings().getChromaKeyingColor();
