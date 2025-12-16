@@ -14,26 +14,22 @@ import net.minecraft.util.Util;
 
 //#if MC>=12111
 //$$ @Mixin(net.minecraft.client.render.TextureTransform.class)
-//#else
-//#if MC>=11500
+//#elseif MC>=11500
 @Mixin(net.minecraft.client.render.RenderPhase.class)
 //#else
 //$$ @Mixin(net.minecraft.client.render.item.ItemRenderer.class)
-//#endif
 //#endif
 public class MixinRenderItem {
     //#if MC>=11400
     //#if MC>=12111
     //$$ @Redirect(method = "getGlintTransformation", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
-    //#else
-    //#if MC>=11500
+    //#elseif MC>=11500
     @Redirect(method = "setupGlintTexturing", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
     //#else
     //#if MC>=11400
     //$$ @Redirect(method = "renderGlint", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
     //#else
     //$$ @Redirect(method = "renderEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;milliTime()J"))
-    //#endif
     //#endif
     //#endif
     private static long getEnchantmentTime() {

@@ -599,13 +599,9 @@ public class GuiHandler extends EventRegistrations {
             //$$ this.onClick = null;
             //#endif
 
-            //#if MC>=12111
+            //#if MC>=11903
             //$$ if (tooltip != null) {
             //$$     setTooltip(Tooltip.of(net.minecraft.text.Text.translatable(tooltip)));
-            //$$ }
-            //#elseif MC>=11903
-            //$$ if (tooltip != null) {
-            //$$     setTooltip(Tooltip.of(Text.translatable(tooltip)));
             //$$ }
             //#endif
         }
