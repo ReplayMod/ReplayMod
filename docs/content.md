@@ -43,10 +43,10 @@ Alternatively, you can download the latest static build from <https://ffmpeg.org
 On Linux, you can install **FFmpeg** using your system's package manager, for example using `apt install ffmpeg`.
 If in doubt, consult the documentation of your distribution.
 
-You may need to do
-`sudo usermod -aG video <user>`
-`sudo chmod -R 755 /home/<user>/.minecraft `
-(Replace <user> with your username set on the OS.)
+You may need to do  
+`sudo usermod -aG video <user>`  
+`sudo chmod -R 755 /home/<user>/.minecraft `  
+(Replace <user> with your username set on the OS.)  
 for it to properly detect ffmpeg.
 
 ## Settings [settings]
