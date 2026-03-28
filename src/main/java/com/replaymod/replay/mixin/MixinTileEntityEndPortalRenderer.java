@@ -23,7 +23,7 @@ public class MixinTileEntityEndPortalRenderer {
     static
     //#else
     //#if MC>=11400
-    //$$ @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
+    //$$ @Redirect(method =  "render(Lnet/minecraft/block/entity/EndPortalBlockEntity;DDDFI)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getMeasuringTimeMs()J"))
     //#else
     //#if MC>=11200
     //$$ @Redirect(method = "renderTileEntityAt(Lnet/minecraft/tileentity/TileEntityEndPortal;DDDFIF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getSystemTime()J"))

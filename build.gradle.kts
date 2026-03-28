@@ -3,7 +3,7 @@ import gg.essential.gradle.util.*
 
 plugins {
     java
-    id("io.github.goooler.shadow") apply false
+    id("com.gradleup.shadow") apply false
     id("gg.essential.multi-version")
     id("gg.essential.defaults.repo")
     id("gg.essential.defaults.java")
@@ -22,6 +22,7 @@ base.archivesName.set("replaymod")
 java.withSourcesJar()
 
 loom {
+    mixin.useLegacyMixinAp = true
     mixin.defaultRefmapName.set("mixins.replaymod.refmap.json")
     noServerRunConfigs()
 }
@@ -318,9 +319,9 @@ val configureRelocation by tasks.registering {
 }
 
 val bundleJar by tasks.registering(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
-    from(tasks.remapJar.flatMap { it.archiveFile })
+    from((if (platform.isUnobfuscated) tasks.jar else tasks.remapJar).flatMap { it.archiveFile }.map { zipTree(it) })
 
-    from(jGui.tasks.remapJar.flatMap { it.archiveFile }.map { zipTree(it) }) {
+    from((if (platform.isUnobfuscated) jGui.tasks.jar else jGui.tasks.remapJar).flatMap { it.archiveFile }.map { zipTree(it) }) {
         filesMatching("mixins.jgui.json") {
             filter { it.replace("de.johni0702", "com.replaymod.lib.de.johni0702") }
         }
@@ -330,8 +331,8 @@ val bundleJar by tasks.registering(com.github.jengelman.gradle.plugins.shadow.ta
     }
     relocate("de.johni0702", "com.replaymod.lib.de.johni0702")
 
-    manifest.inheritFrom(tasks.jar.get().manifest)
-    from(shade)
+    manifest.from(tasks.jar.get().manifest)
+    from(shade.elements.map { it.map { zipTree(it) } })
     configurations = listOf(shadow)
     exclude("META-INF/INDEX.LIST", "META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA", "module-info.class")
 
