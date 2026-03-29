@@ -7,6 +7,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.util.Window;
 
+//#if MC >= 26.1
+//$$ import com.mojang.blaze3d.systems.RenderSystem;
+//#endif
+
 //#if MC>=11700
 //$$ import net.minecraft.client.gl.WindowFramebuffer;
 //#endif
@@ -88,7 +92,9 @@ public class VirtualWindow implements Closeable {
         guiFramebuffer.draw(framebufferWidth, framebufferHeight);
         //#endif
 
-        //#if MC>=12102
+        //#if MC >= 26.1
+        //$$ RenderSystem.flipFrame(null);
+        //#elseif MC>=12102
         //$$ window.swapBuffers(null);
         //#elseif MC>=11500
         window.swapBuffers();

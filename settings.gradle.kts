@@ -46,6 +46,7 @@ val jGuiVersions = listOf(
         "1.21.7",
         "1.21.10",
         "1.21.11",
+        "26.1",
 )
 val replayModVersions = listOf(
         // "1.7.10",
@@ -82,6 +83,7 @@ val replayModVersions = listOf(
         "1.21.7",
         "1.21.10",
         "1.21.11",
+        "26.1",
 )
 
 rootProject.buildFileName = "root.gradle.kts"

@@ -27,25 +27,27 @@ public class ReplayTimer extends RenderTickCounter {
 
     @Override
     // This should be handled by Remap but it isn't (was handled before a9724e3).
-    //#if MC>=11400
     public
     //#if MC>=11600
     int
     //#else
     //$$ void
     //#endif
+    //#if MC >= 26.1
+    //$$ advanceGameTime(
+    //#elseif MC >= 1.14
     beginRenderTick(
     //#else
-    //$$ public void updateTimer(
+    //$$ updateTimer(
     //#endif
             //#if MC>=11400
             long sysClock
             //#endif
-            //#if MC>=12100
+            //#if MC>=12100 && MC < 26.1
             //$$ , boolean tick
             //#endif
     ) {
-        //#if MC>=12100
+        //#if MC>=12100 && MC < 26.1
         //$$ if (!tick) return 0;
         //#endif
         UpdatedCallback.EVENT.invoker().onUpdate();

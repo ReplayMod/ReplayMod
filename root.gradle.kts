@@ -6,6 +6,7 @@ import org.gradle.process.ExecOperations
 plugins {
     id("gg.essential.multi-version.root")
     id("gg.essential.loom") version "1.15.48" apply false
+    kotlin("jvm") version "2.3.20" apply false
     id("com.github.hierynomus.license") version "0.15.0"
 }
 
@@ -49,8 +50,9 @@ subprojects {
     if (name == "jGui" || name == "ReplayStudio") {
         return@subprojects
     }
-    val (_, minor) = name.split("-")[0].split(".")
-    val fabric = minor.toInt() >= 14 && !name.endsWith("-forge")
+    val (major, minor, patch) = name.split("-")[0].split(".") + listOf("0")
+    val mcVersion = major.toInt() * 10000 + minor.toInt() * 100 + patch.toInt()
+    val fabric = mcVersion >= 1_14_00 && !name.endsWith("-forge")
     extra.set("loom.platform", if (fabric) "fabric" else "forge")
 
     afterEvaluate {
@@ -213,6 +215,7 @@ defaultTasks("bundleJar")
 preprocess {
     strictExtraMappings.set(true)
 
+    val mc26_01_00 = createNode("26.1", 26_01_00, "yarn")
     val mc12111 = createNode("1.21.11", 12111, "yarn")
     val mc12110 = createNode("1.21.10", 12110, "yarn")
     val mc12107 = createNode("1.21.7", 12107, "yarn")
@@ -248,6 +251,7 @@ preprocess {
     val mc10800 = createNode("1.8", 10800, "srg")
     val mc10710 = createNode("1.7.10", 10710, "srg")
 
+    mc26_01_00.link(mc12111, file("versions/mapping-fabric-26.1-1.21.11.txt"))
     mc12111.link(mc12110, file("versions/mapping-fabric-1.21.11-1.21.10.txt"))
     mc12110.link(mc12107, file("versions/mapping-fabric-1.21.10-1.21.7.txt"))
     mc12107.link(mc12105)

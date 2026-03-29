@@ -1,5 +1,6 @@
 import com.replaymod.gradle.preprocess.PreprocessTask
 import gg.essential.gradle.util.*
+import net.fabricmc.loom.task.RemapJarTask
 
 plugins {
     java
@@ -22,9 +23,12 @@ base.archivesName.set("replaymod")
 java.withSourcesJar()
 
 loom {
-    mixin.useLegacyMixinAp = true
-    mixin.defaultRefmapName.set("mixins.replaymod.refmap.json")
     noServerRunConfigs()
+}
+
+if (!platform.isUnobfuscated) {
+    loom.mixin.useLegacyMixinAp = true
+    loom.mixin.defaultRefmapName.set("mixins.replaymod.refmap.json")
 }
 
 if (platform.isLegacyForge) {
@@ -94,6 +98,7 @@ dependencies {
             12107 -> "0.128.1+1.21.7"
             12110 -> "0.135.0+1.21.10"
             12111 -> "0.139.5+1.21.11"
+            26_01_00 -> "0.144.3+26.1"
             else -> throw UnsupportedOperationException()
         }
         val fabricApiModules = mutableListOf(
@@ -115,6 +120,10 @@ dependencies {
         }
         if (mcVersion >= 12109) {
             fabricApiModules.add("resource-loader-v1")
+        }
+        if (mcVersion >= 26_01_00) {
+            fabricApiModules.remove("key-binding-api-v1")
+            fabricApiModules.add("key-mapping-api-v1")
         }
         for (module in fabricApiModules) {
             val dep = fabricApi.module("fabric-$module", fabricApiVersion)
@@ -170,11 +179,12 @@ dependencies {
     // FIXME hack because I don't know how to get this to be inherited properly
     implementation(rootProject.files("libs/ReplayStudio/.gradle/prebundled-jars/viaVersion.jar"))
 
-    implementation(project(path = jGui.path, configuration = "namedElements"))
+    implementation(project(path = jGui.path, configuration = if (platform.isUnobfuscated) null else "namedElements"))
     implementation(shadow("com.github.ReplayMod:lwjgl-utils:27dcd66")!!)
 
     if (platform.isFabric) {
         val modMenuVersion = when {
+            mcVersion >= 26_01_00 -> "18.0.0-alpha.8"
             mcVersion >= 12111 -> "17.0.0-alpha.1"
             mcVersion >= 12110 -> "16.0.0-rc.1"
             mcVersion >= 12107 -> "15.0.0-beta.3"
@@ -211,6 +221,7 @@ dependencies {
     }
 
     val irisVersion = when {
+        mcVersion >= 26_01_00 -> "1.10.8+26.1-fabric"
         mcVersion >= 12000 -> "1.7.2+1.20.1"
         mcVersion >= 11600 -> "1.18.x-v1.2.0"
         else -> null
@@ -252,11 +263,13 @@ tasks.jar {
     }
 }
 
-tasks.remapJar {
-    if (platform.isFabric) {
-        addNestedDependencies.set(true)
+if (!platform.isUnobfuscated) {
+    tasks.named<RemapJarTask>("remapJar") {
+        if (platform.isFabric) {
+            addNestedDependencies.set(true)
+        }
+        archiveClassifier.set("obf")
     }
-    archiveClassifier.set("obf")
 }
 
 val configureRelocationOutput = project.layout.buildDirectory.file("configureRelocation")
@@ -319,9 +332,9 @@ val configureRelocation by tasks.registering {
 }
 
 val bundleJar by tasks.registering(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
-    from((if (platform.isUnobfuscated) tasks.jar else tasks.remapJar).flatMap { it.archiveFile }.map { zipTree(it) })
+    from((if (platform.isUnobfuscated) tasks.jar else tasks.named<RemapJarTask>("remapJar")).flatMap { it.archiveFile }.map { zipTree(it) })
 
-    from((if (platform.isUnobfuscated) jGui.tasks.jar else jGui.tasks.remapJar).flatMap { it.archiveFile }.map { zipTree(it) }) {
+    from((if (platform.isUnobfuscated) jGui.tasks.jar else jGui.tasks.named<RemapJarTask>("remapJar")).flatMap { it.archiveFile }.map { zipTree(it) }) {
         filesMatching("mixins.jgui.json") {
             filter { it.replace("de.johni0702", "com.replaymod.lib.de.johni0702") }
         }

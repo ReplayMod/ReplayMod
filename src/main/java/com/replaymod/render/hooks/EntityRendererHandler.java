@@ -14,7 +14,7 @@ import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 
-//#if MC>=12111
+//#if MC>=12111 && MC < 26.1
 //$$ import net.minecraft.client.render.CameraOverride;
 //$$ import org.joml.Vector3f;
 //#endif
@@ -93,7 +93,8 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
             GameRendererAccessor gameRenderer = (GameRendererAccessor) mc.gameRenderer;
             Screen orgScreen = mc.currentScreen;
             boolean orgPauseOnLostFocus = mc.options.pauseOnLostFocus;
-            //#if MC>=12106
+            //#if MC >= 26.1
+            //#elseif MC>=12106
             //$$ boolean orgRenderHand = mc.gameRenderer.isRenderingPanorama();
             //#else
             boolean orgRenderHand = gameRenderer.getRenderHand();
@@ -103,7 +104,9 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
                 mc.options.pauseOnLostFocus = false; // do not want the pause menu to open if the window is unfocused
                 if (omnidirectional) {
                     // makes no sense, we wouldn't even know where to put it
-                    //#if MC>=12111
+                    //#if MC >= 26.1
+                    //$$ mc.gameRenderer.getMainCamera().enablePanoramicMode();
+                    //#elseif MC>=12111
                     //$$ mc.gameRenderer.setCameraOverride(new CameraOverride(new Vector3f(mc.gameRenderer.getCamera().getHorizontalPlane())));
                     //#elseif MC>=12106
                     //$$ mc.gameRenderer.setRenderingPanorama(false);
@@ -112,7 +115,11 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
                     //#endif
                 }
 
-                //#if MC>=12100
+                //#if MC >= 26.1
+                //$$ mc.gameRenderer.update(mc.getDeltaTracker(), true);
+                //$$ mc.gameRenderer.extract(mc.getDeltaTracker(), true);
+                //$$ mc.gameRenderer.render(mc.getDeltaTracker(), true);
+                //#elseif MC>=12100
                 //$$ mc.gameRenderer.render(mc.getRenderTickCounter(), true);
                 //#elseif MC>=11400
                 mc.gameRenderer.render(partialTicks, finishTimeNano, true);
@@ -127,7 +134,9 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
             } finally {
                 mc.currentScreen = orgScreen;
                 mc.options.pauseOnLostFocus = orgPauseOnLostFocus;
-                //#if MC>=12111
+                //#if MC >= 26.1
+                //$$ mc.gameRenderer.getMainCamera().disablePanoramicMode();
+                //#elseif MC>=12111
                 //$$ mc.gameRenderer.setCameraOverride(null);
                 //#elseif MC>=12106
                 //$$ mc.gameRenderer.setRenderingPanorama(orgRenderHand);

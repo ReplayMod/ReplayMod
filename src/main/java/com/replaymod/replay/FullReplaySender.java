@@ -1420,8 +1420,13 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
         //#if MC>=10904
         if (p instanceof UnloadChunkS2CPacket) {
             UnloadChunkS2CPacket packet = (UnloadChunkS2CPacket) p;
+            //#if MC >= 26.1
+            //$$ int x = packet.pos().x();
+            //$$ int z = packet.pos().z();
+            //#else
             int x = packet.getX();
             int z = packet.getZ();
+            //#endif
         //#else
         //$$ if (p instanceof S21PacketChunkData && ((S21PacketChunkData) p).getExtractedSize() == 0) {
         //$$     S21PacketChunkData packet = (S21PacketChunkData) p;

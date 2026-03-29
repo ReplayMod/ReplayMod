@@ -6,7 +6,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 //#if MC>=12106
 //$$ import net.minecraft.client.gui.render.GuiRenderer;
-//$$ import net.minecraft.client.gui.render.state.GuiRenderState;
 //$$ import net.minecraft.client.render.fog.FogRenderer;
 //$$ import net.minecraft.client.util.Pool;
 //#endif
@@ -25,8 +24,13 @@ public interface GameRendererAccessor {
     //$$ Pool getPool();
     //$$ @Accessor
     //$$ GuiRenderer getGuiRenderer();
+    //#if MC >= 26.1
     //$$ @Accessor
-    //$$ GuiRenderState getGuiState();
+    //$$ net.minecraft.client.renderer.state.GameRenderState getGameRenderState();
+    //#else
+    //$$ @Accessor
+    //$$ net.minecraft.client.gui.render.state.GuiRenderState getGuiState();
+    //#endif
     //$$ @Accessor
     //$$ FogRenderer getFogRenderer();
     //#endif

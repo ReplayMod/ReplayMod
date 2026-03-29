@@ -1,0 +1,32 @@
+net.minecraft.client.Minecraft delayCrash() setCrashReportSupplier()
+net.minecraft.client.gui.components.ChatComponent addClientSystemMessage() addMessage()
+net.minecraft.client.renderer.state.gui.GuiRenderState reset() clear()
+net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState net.minecraft.client.gui.render.state.special.SpecialGuiElementRenderState
+net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState x0() x1()
+net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState x1() x2()
+net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState y0() y1()
+net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState y1() y2()
+net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState scissorArea() comp_4128()
+net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState scale() comp_4133()
+net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState getBounds() createBounds()
+net.minecraft.client.renderer.state.level.QuadParticleRenderState net.minecraft.client.particle.BillboardParticleSubmittable
+com.mojang.blaze3d.platform.WindowEventHandler resizeGui() onResolutionChanged()
+net.minecraft.client.renderer.LevelRenderer lambda$addSkyPass$0() method_62215()
+net.minecraft.client.renderer.state.gui.GuiRenderState net.minecraft.client.gui.render.state.GuiRenderState
+net.minecraft.client.renderer.state.level.CameraRenderState net.minecraft.client.render.state.CameraRenderState
+net.minecraft.client.gui.Gui extractRenderState() render()
+net.minecraft.client.gui.Gui extractItemHotbar() renderHotbar()
+net.minecraft.client.gui.GuiGraphicsExtractor net.minecraft.client.gui.DrawContext
+net.minecraft.client.gui.GuiGraphicsExtractor guiRenderState state
+net.minecraft.client.gui.components.AbstractButton extractContents() drawIcon()
+net.minecraft.client.gui.components.Renderable extractRenderState() render()
+net.minecraft.client.gui.screens.Screen extractRenderStateWithTooltipAndSubtitles() renderWithTooltip()
+
+net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
+net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry clientboundPlay()Lnet/fabricmc/fabric/api/networking/v1/PayloadTypeRegistry; playS2C()
+net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry clientboundConfiguration()Lnet/fabricmc/fabric/api/networking/v1/PayloadTypeRegistry; configurationS2C()
+net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
+net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper registerKeyMapping() registerKeyBinding(Lnet/minecraft/client/option/KeyBinding;)Lnet/minecraft/client/option/KeyBinding;
+net.fabricmc.fabric.api.client.screen.v1.Screens net.fabricmc.fabric.api.client.screen.v1.Screens
+net.fabricmc.fabric.api.client.screen.v1.Screens getWidgets() getButtons(Lnet/minecraft/client/gui/screen/Screen;)Ljava/util/List;
+

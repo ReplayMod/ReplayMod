@@ -817,7 +817,11 @@ public class ReplayHandler {
                 //#endif
                 //#if MC>=12106
                 //$$ GameRendererAccessor gameRenderer = (GameRendererAccessor) mc.gameRenderer;
+                //#if MC >= 26.1
+                //$$ GuiRenderState guiRenderState = gameRenderer.getGameRenderState().guiRenderState;
+                //#else
                 //$$ GuiRenderState guiRenderState = gameRenderer.getGuiState();
+                //#endif
                 //$$ guiRenderState.clear();
                 //#if MC>=12111
                 //$$ int mouseX = (int) mc.mouse.getX() * window.getScaledWidth() / Math.max(window.getWidth(), 1);
@@ -859,7 +863,9 @@ public class ReplayHandler {
                 //#endif
                 popMatrix();
 
-                //#if MC>=12102
+                //#if MC >= 26.1
+                //$$ RenderSystem.flipFrame(null);
+                //#elseif MC>=12102
                 //$$ mc.getWindow().swapBuffers(null);
                 //#elseif MC>=11500
                 mc.getWindow().swapBuffers();

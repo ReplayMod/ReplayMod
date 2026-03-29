@@ -630,10 +630,21 @@ class Patterns {
 
     @Pattern
     private static CrashException crashReportToException(MinecraftClient mc) {
-        //#if MC>=11800
+        //#if MC >= 26.1
+        //$$ return new ReportedException(((com.replaymod.core.mixin.BlockableEventLoopAccessor) mc).getDelayedCrash().get());
+        //#elseif MC>=11800
         //$$ return new CrashException(((MinecraftAccessor) mc).getCrashReporter().get());
         //#else
         return new CrashException(((MinecraftAccessor) mc).getCrashReporter());
+        //#endif
+    }
+
+    @Pattern
+    private static boolean haveDelayedCrash(MinecraftClient mc) {
+        //#if MC >= 26.1
+        //$$ return ((com.replaymod.core.mixin.BlockableEventLoopAccessor) mc).getDelayedCrash() != null;
+        //#else
+        return ((MinecraftAccessor) mc).getCrashReporter() != null;
         //#endif
     }
 
@@ -936,10 +947,7 @@ class Patterns {
         //#endif
     }
 
-    //#if MC>=10904
-    //#if MC>=12006
-    //$$ @Pattern public void getPacketId() {}
-    //#else
+    //#if MC>=10904 && MC<12006
     @Pattern
     public Integer getPacketId(NetworkState state, NetworkSide side, Packet<?> packet) throws Exception {
         //#if MC>=12002
@@ -948,8 +956,11 @@ class Patterns {
         return state.getPacketId(side, packet);
         //#endif
     }
+    //#else
+    //$$ @Pattern public void getPacketId() {}
     //#endif
 
+    //#if MC>=10904 && MC < 26.1
     @Pattern
     public int UnloadChunkPacket_getX(UnloadChunkS2CPacket packet) {
         //#if MC>=12002
@@ -968,7 +979,6 @@ class Patterns {
         //#endif
     }
     //#else
-    //$$ @Pattern public void getPacketId() {}
     //$$ @Pattern public void UnloadChunkPacket_getZ() {}
     //$$ @Pattern public void UnloadChunkPacket_getX() {}
     //#endif

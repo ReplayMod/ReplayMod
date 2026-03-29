@@ -8,13 +8,9 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.ChunkRenderingDataPreparer;
 import net.minecraft.client.render.Frustum;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.chunk.ChunkBuilder;
 import net.minecraft.client.render.chunk.ChunkRendererRegionBuilder;
-import net.minecraft.client.util.math.MatrixStack;
-import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,6 +22,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+//#if MC >= 26.1
+//$$ import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+//$$ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+//#endif
 
 @Mixin(WorldRenderer.class)
 public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
@@ -46,7 +47,8 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
 
     @Shadow @Final private ChunkRenderingDataPreparer field_45615;
 
-    //#if MC>=12109
+    //#if MC >= 26.1
+    //#elseif MC>=12109
     //$$ @Shadow protected abstract void method_74752(Camera par1, Frustum par2, boolean par3);
     //#else
     @Shadow protected abstract void setupTerrain(Camera par1, Frustum par2, boolean par3, boolean par4);
@@ -60,6 +62,10 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
 
     @Shadow protected abstract void applyFrustum(Frustum par1);
 
+    //#if MC >= 26.1
+    //$$ @WrapMethod(method = "update")
+    //$$ private void forceAllChunks(Camera camera, Operation<Void> original) {
+    //#else
     @Inject(method = "render", at = @At(value = "INVOKE", target = SETUP_TERRAIN))
     private void forceAllChunks(
             CallbackInfo ci,
@@ -68,10 +74,11 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
             //#endif
             @Local(argsOnly = true) Camera camera
     ) {
-        if (replayModRender_hook == null) {
-            return;
-        }
-        if (FlawlessFrames.hasSodium()) {
+    //#endif
+        if (replayModRender_hook == null || FlawlessFrames.hasSodium()) {
+            //#if MC >= 26.1
+            //$$ original.call(camera);
+            //#endif
             return;
         }
 
@@ -85,7 +92,9 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
             boolean areWeDoneYet = true;
 
             // Determine which chunks shall be visible
-            //#if MC>=12109
+            //#if MC >= 26.1
+            //$$ original.call(camera);
+            //#elseif MC>=12109
             //$$ method_74752(camera, frustum, this.client.player.isSpectator());
             //#else
             setupTerrain(camera, this.frustum, this.capturedFrustum != null, this.client.player.isSpectator());
@@ -106,11 +115,13 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
                 }
             }
 
+            //#if MC < 26.1
             // If that async processing did change the chunk graph, we need to re-apply the frustum (otherwise this is
             // only done in the next setupTerrain call, which not happen this frame)
             if (renderingData.method_52836()) {
                 this.applyFrustum((new Frustum(frustum)).coverBoxAroundSetPosition(8)); // call based on the one in setupTerrain
             }
+            //#endif
 
             // Schedule all chunks which need rebuilding (we schedule even important rebuilds because we wait for
             // all of them anyway and this way we can take advantage of threading)

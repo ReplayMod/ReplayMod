@@ -40,6 +40,10 @@ import net.minecraft.util.crash.CrashException;
 import net.minecraft.sound.SoundCategory;
 import org.lwjgl.glfw.GLFW;
 
+//#if MC >= 26.1
+//$$ import net.minecraft.client.renderer.state.WindowRenderState;
+//#endif
+
 //#if MC>=12109
 //$$ import net.minecraft.client.gui.screen.Overlay;
 //#endif
@@ -289,11 +293,15 @@ public class VideoRenderer implements RenderInfo {
         //#if MC>=11600
         int elapsedTicks =
         //#endif
+        //#if MC >= 26.1
+        //$$ timer.advanceGameTime(
+        //#else
         timer.beginRenderTick(
+        //#endif
                 //#if MC>=11400
                 MCVer.milliTime()
                 //#endif
-                //#if MC>=12100
+                //#if MC>=12100 && MC < 26.1
                 //$$ , true
                 //#endif
         );
@@ -525,6 +533,9 @@ public class VideoRenderer implements RenderInfo {
             if (GLFW.glfwWindowShouldClose(window.getHandle()) || ((MinecraftAccessor) mc).getCrashReporter() != null) {
                 return false;
             }
+            //#if MC >= 26.1
+            //$$ RenderSystem.pollEvents();
+            //#endif
 
             pushMatrix();
             //#if MC>=12105
@@ -630,7 +641,11 @@ public class VideoRenderer implements RenderInfo {
 
             //#if MC>=12106
             //$$ GameRendererAccessor gameRenderer = (GameRendererAccessor) mc.gameRenderer;
+            //#if MC >= 26.1
+            //$$ GuiRenderState guiRenderState = gameRenderer.getGameRenderState().guiRenderState;
+            //#else
             //$$ GuiRenderState guiRenderState = gameRenderer.getGuiState();
+            //#endif
             //$$ guiRenderState.clear();
             //#if MC>=12111
             //$$ DrawContext drawContext = new DrawContext(mc, guiRenderState, mouseX, mouseY);
@@ -639,6 +654,16 @@ public class VideoRenderer implements RenderInfo {
             //#endif
             //#elseif MC>=12000
             //$$ DrawContext drawContext = new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers());
+            //#endif
+
+            //#if MC >= 26.1
+            //$$ WindowRenderState windowRenderState = gameRenderer.getGameRenderState().windowRenderState;
+            //$$ windowRenderState.width = window.getWidth();
+            //$$ windowRenderState.height = window.getHeight();
+            //$$ windowRenderState.guiScale = window.getGuiScale();
+            //$$ windowRenderState.appropriateLineWidth = window.getAppropriateLineWidth();
+            //$$ windowRenderState.isMinimized = window.isMinimized();
+            //$$ windowRenderState.isResized = false;
             //#endif
 
             if (mc.getOverlay() != null) {
