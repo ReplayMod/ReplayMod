@@ -516,6 +516,10 @@ public class VideoRenderer implements RenderInfo {
     }
 
     private void tick() {
+        //#if MC >= 1.21.11
+        //$$ mc.getTextureManager().tick();
+        //#endif
+
         //#if MC>=10800 && MC<11400
         //$$ try {
         //$$     mc.runTick();
