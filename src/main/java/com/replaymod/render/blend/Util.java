@@ -185,6 +185,8 @@ public class Util {
         }
     }
 
+    //#if MC >= 26.1
+    //#else
     public static String getTileEntityId(BlockEntity tileEntity) {
         //#if MC>=12006
         //$$ return net.minecraft.block.entity.BlockEntityType.getId(tileEntity.getType()).toString();
@@ -202,6 +204,7 @@ public class Util {
         return nbt.getString("id");
         //#endif
     }
+    //#endif
 
     public interface IOCallable<R> {
         R call() throws IOException;

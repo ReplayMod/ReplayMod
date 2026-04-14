@@ -588,7 +588,7 @@ public class GuiHandler extends EventRegistrations {
                             : EMPTY
                     //#endif
                     //#if MC>=11903
-                    //$$ , DEFAULT_NARRATION_SUPPLIER
+                    //$$ , ButtonWidget.DEFAULT_NARRATION_SUPPLIER
                     //#endif
             );
             this.guiScreen = guiScreen;

@@ -24,7 +24,7 @@ import static com.replaymod.core.versions.MCVer.*;
 //#endif
 public abstract class MixinRenderLivingBase {
     //#if FABRIC>=1
-    @Inject(method = "hasLabel", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "hasLabel(Lnet/minecraft/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
     //#else
     //$$ @Inject(method = "canRenderName(Lnet/minecraft/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
     //#endif
@@ -45,7 +45,7 @@ public abstract class MixinRenderLivingBase {
             //#if MC>=12102
             //$$ method = "updateRenderState(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;F)V",
             //#elseif MC>=11500
-            method = "render",
+            method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V",
             //#else
             //$$ method = "render(Lnet/minecraft/entity/LivingEntity;FFFFFF)V",
             //#endif

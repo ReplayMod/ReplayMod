@@ -181,6 +181,9 @@ public class CameraEntity
                 //#endif
                 , false
                 //#endif
+                //#if MC >= 26.1
+                //$$ , mcIn.computeChatAbilities()
+                //#endif
         );
         //#if MC>=10900
         setUuid(CAMERA_UUID);

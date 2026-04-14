@@ -5,11 +5,14 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.textures.GpuTexture;
 import net.minecraft.client.gl.FramebufferManager;
-import net.minecraft.client.gl.GlResourceManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(GlResourceManager.class)
+//#if MC >= 26.1
+//$$ @Mixin(targets = "com.mojang.blaze3d.opengl.GlCommandEncoder")
+//#else
+@Mixin(net.minecraft.client.gl.GlResourceManager.class)
+//#endif
 public class Mixin_FixCopyTextureToBuffer_DepthTexture {
     @WrapOperation(
             //#if MC>=12111

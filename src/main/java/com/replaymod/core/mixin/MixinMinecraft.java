@@ -35,10 +35,6 @@ public abstract class MixinMinecraft
         //#endif
         implements MCVer.MinecraftMethodAccessor {
     //#if MC>=11400
-    public MixinMinecraft(String string_1) { super(string_1); }
-    //#endif
-
-    //#if MC>=11400
     @Shadow protected abstract void handleInputEvents();
 
     @Override
@@ -59,7 +55,9 @@ public abstract class MixinMinecraft
     }
     //#endif
 
-    //#if MC>=12100
+    //#if MC >= 26.1
+    //$$ private static final String GAME_RENDERER_RENDER = "Lnet/minecraft/client/Minecraft;renderFrame(Z)V";
+    //#elseif MC>=12100
     //$$ private static final String GAME_RENDERER_RENDER = "Lnet/minecraft/client/render/GameRenderer;render(Lnet/minecraft/client/render/RenderTickCounter;Z)V";
     //#else
     private static final String GAME_RENDERER_RENDER = "Lnet/minecraft/client/render/GameRenderer;render(FJZ)V";
@@ -135,5 +133,11 @@ public abstract class MixinMinecraft
     //$$     InputReplayTimer.handleScroll(wheel);
     //$$     return wheel;
     //$$ }
+    //#endif
+
+    //#if MC >= 26.1
+    //$$ MixinMinecraft() { super(null, false); }
+    //#elseif MC>=11400
+    MixinMinecraft() { super(null); }
     //#endif
 }

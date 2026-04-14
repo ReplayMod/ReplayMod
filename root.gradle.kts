@@ -1,31 +1,43 @@
 import groovy.json.JsonOutput
 import java.io.ByteArrayOutputStream
+import org.gradle.kotlin.dsl.support.serviceOf
+import org.gradle.process.ExecOperations
 
 plugins {
     id("gg.essential.multi-version.root")
-    id("gg.essential.loom") version "1.7.35" apply false
+    id("gg.essential.loom") version "1.15.48" apply false
+    kotlin("jvm") version "2.3.20" apply false
     id("com.github.hierynomus.license") version "0.15.0"
 }
 
 val latestVersion = file("version.txt").readLines().first()
-var releaseCommit = command("git", "blame", "-p", "-l", "version.txt").first().split(" ").first()
+var releaseCommit = providers.exec {
+    commandLine("git", "blame", "-p", "-l", "version.txt")
+}.standardOutput.asText.map { it.trim().split("/n").first().split(" ").first() }.get()
 if (latestVersion == "2.1.0") { // First version since change from tag-based
     releaseCommit = "35ac26e91689ac9bdf12dbb9902c452464a75108" // git rev-parse 1.12.2-2.1.0
 }
-val currentCommit = command("git", "rev-parse", "HEAD").first()
+val currentCommit = providers.exec {
+    commandLine("git", "rev-parse", "HEAD")
+}.standardOutput.asText.map { it.trim().split("/n").first() }.get()
 if (releaseCommit == currentCommit) {
     version = latestVersion
 } else {
-    val diff = command("git", "log", "--format=oneline", "$releaseCommit..$currentCommit").size
+    val diff = providers.exec {
+        commandLine("git", "log", "--format=oneline", "$releaseCommit..$currentCommit")
+    }.standardOutput.asText.map { it.trim().split("/n").size }.get()
     version = "$latestVersion-$diff-g${currentCommit.substring(0, 7)}"
 }
-if (gitDescribe().endsWith("*")) {
+val dirty = providers.exec {
+    commandLine("git", "describe", "--always", "--dirty=*")
+}.standardOutput.asText.map { it.trim().endsWith("*") }.get()
+if (dirty) {
     version = "$version-dirty"
 }
 
 group = "com.replaymod"
 
-val bundleJar by tasks.creating(Copy::class) {
+val bundleJar by tasks.registering(Copy::class) {
     into("$buildDir/libs")
 }
 
@@ -38,33 +50,23 @@ subprojects {
     if (name == "jGui" || name == "ReplayStudio") {
         return@subprojects
     }
-    val (_, minor) = name.split("-")[0].split(".")
-    val fabric = minor.toInt() >= 14 && !name.endsWith("-forge")
+    val (major, minor, patch) = name.split("-")[0].split(".") + listOf("0")
+    val mcVersion = major.toInt() * 10000 + minor.toInt() * 100 + patch.toInt()
+    val fabric = mcVersion >= 1_14_00 && !name.endsWith("-forge")
     extra.set("loom.platform", if (fabric) "fabric" else "forge")
 
     afterEvaluate {
         val projectBundleJar = project.tasks.findByName("bundleJar")
         if (projectBundleJar != null && projectBundleJar.hasProperty("archivePath") && project.name != "core") {
-            bundleJar.dependsOn(projectBundleJar)
-            bundleJar.from(projectBundleJar.withGroovyBuilder { getProperty("archivePath") })
+            bundleJar.configure {
+                dependsOn(projectBundleJar)
+                from(projectBundleJar.withGroovyBuilder { getProperty("archivePath") })
+            }
         }
     }
 }
 
-fun gitDescribe(): String {
-    try {
-        val stdout = ByteArrayOutputStream()
-        exec {
-            commandLine("git", "describe", "--always", "--dirty=*")
-            standardOutput = stdout
-        }
-        return stdout.toString().trim()
-    } catch (e: Throwable) {
-        return "unknown"
-    }
-}
-
-fun command(vararg cmd: Any): List<String> {
+fun ExecOperations.command(vararg cmd: String): List<String> {
     val stdout = ByteArrayOutputStream()
     exec {
         commandLine(*cmd)
@@ -73,7 +75,10 @@ fun command(vararg cmd: Any): List<String> {
     return stdout.toString().trim().split("\n")
 }
 
-fun generateVersionsJson(): Map<String, Any> {
+fun generateVersionsJson(execOps: ExecOperations): Map<String, Any> {
+    fun command(vararg cmd: String): List<String> =
+        execOps.command(*cmd)
+
     val versionComparator = compareBy<String>(
         { (it.split(".").getOrNull(0) ?: "0").toInt() },
         { (it.split(".").getOrNull(1) ?: "0").toInt() },
@@ -145,18 +150,24 @@ fun generateVersionsJson(): Map<String, Any> {
 }
 
 val writeVersionsJson by tasks.registering {
+    val execOps = project.serviceOf<ExecOperations>()
     doLast {
-        val versionsRoot = generateVersionsJson()
+        val versionsRoot = generateVersionsJson(execOps)
         val versionsJson = JsonOutput.prettyPrint(JsonOutput.toJson(versionsRoot))
         File("versions.json").writeText(versionsJson)
     }
 }
 
 val doRelease by tasks.registering {
+    val execOps = project.serviceOf<ExecOperations>()
+
     doLast {
+        fun command(vararg cmd: String): List<String> =
+            execOps.command(*cmd)
+
         // Parse version
         val version = project.extra["releaseVersion"] as String
-        if (gitDescribe().endsWith("*")) {
+        if (command("git", "describe", "--always", "--dirty=*").first().endsWith("*")) {
             throw InvalidUserDataException("Git working tree is dirty. Make sure to commit all changes.")
         }
         val (modVersion, preVersion) = if ("-b" in version) {
@@ -181,7 +192,7 @@ val doRelease by tasks.registering {
         command("git", "commit", "-m", commitMessage)
 
         // Generate versions.json content
-        val versionsRoot = generateVersionsJson()
+        val versionsRoot = generateVersionsJson(execOps)
         val versionsJson = JsonOutput.prettyPrint(JsonOutput.toJson(versionsRoot))
 
         // Switch to master branch to update versions.json
@@ -191,11 +202,11 @@ val doRelease by tasks.registering {
         File("versions.json").writeText(versionsJson)
 
         // Commit changes
-        project.exec { commandLine("git", "add", "versions.json") }
-        project.exec { commandLine("git", "commit", "-m", "Update versions.json for $version") }
+        command("git", "add", "versions.json")
+        command("git", "commit", "-m", "Update versions.json for $version")
 
         // Return to previous branch
-        project.exec { commandLine("git", "checkout", "-") }
+        command("git", "checkout", "-")
     }
 }
 
@@ -204,6 +215,7 @@ defaultTasks("bundleJar")
 preprocess {
     strictExtraMappings.set(true)
 
+    val mc26_01_00 = createNode("26.1", 26_01_00, "yarn")
     val mc12111 = createNode("1.21.11", 12111, "yarn")
     val mc12110 = createNode("1.21.10", 12110, "yarn")
     val mc12107 = createNode("1.21.7", 12107, "yarn")
@@ -239,6 +251,7 @@ preprocess {
     val mc10800 = createNode("1.8", 10800, "srg")
     val mc10710 = createNode("1.7.10", 10710, "srg")
 
+    mc26_01_00.link(mc12111, file("versions/mapping-fabric-26.1-1.21.11.txt"))
     mc12111.link(mc12110, file("versions/mapping-fabric-1.21.11-1.21.10.txt"))
     mc12110.link(mc12107, file("versions/mapping-fabric-1.21.10-1.21.7.txt"))
     mc12107.link(mc12105)

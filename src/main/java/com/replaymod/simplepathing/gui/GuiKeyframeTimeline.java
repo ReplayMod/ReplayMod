@@ -354,9 +354,9 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     //$$         matrixStack.translate(-state.x2 / 2f, -state.y2, 100);
     //$$         for (Pair<Vector2f, Vector2f> line : state.lines) {
     //#if MC>=12111
-    //$$             emitLine(matrixStack, vertexConsumers.getBuffer(RenderLayers.LINES), line.getLeft(), line.getRight(), state.color, state.lineWidth);
+    //$$             emitLine(matrixStack, this.vertexConsumers.getBuffer(RenderLayers.LINES), line.getLeft(), line.getRight(), state.color, state.lineWidth);
     //#else
-    //$$             emitLine(matrixStack, vertexConsumers.getBuffer(RenderLayer.LINES), line.getLeft(), line.getRight(), state.color, state.lineWidth);
+    //$$             emitLine(matrixStack, this.vertexConsumers.getBuffer(RenderLayer.LINES), line.getLeft(), line.getRight(), state.color, state.lineWidth);
     //#endif
     //$$         }
     //$$     }

@@ -31,8 +31,23 @@ public abstract class MixinRenderManager {
         copy.blockPos = org.blockPos;
         copy.pos = org.pos;
         copy.initialized = org.initialized;
+        //#if MC < 26.1
         copy.entityPos = org.entityPos;
+        //#endif
         copy.orientation.lookAlong((float) dx, (float) dy, (float) dz, 0f, 1f, 0f);
+        //#if MC >= 26.1
+        //$$ copy.xRot = org.xRot;
+        //$$ copy.yRot = org.yRot;
+        //$$ copy.isPanoramicMode = org.isPanoramicMode;
+        //$$ copy.cullFrustum.set(org.cullFrustum);
+        //$$ copy.fogType = org.fogType;
+        //$$ copy.fogData = org.fogData;
+        //$$ copy.hudFov = org.hudFov;
+        //$$ copy.depthFar = org.depthFar;
+        //$$ copy.projectionMatrix.set(org.projectionMatrix);
+        //$$ copy.viewRotationMatrix.set(org.viewRotationMatrix);
+        //$$ copy.entityRenderState = org.entityRenderState;
+        //#endif
         cameraRenderStateRef.set(copy);
     }
 }

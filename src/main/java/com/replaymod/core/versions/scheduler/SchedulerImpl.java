@@ -61,7 +61,11 @@ public class SchedulerImpl implements  Scheduler {
         private final Thread mcThread = Thread.currentThread();
 
         private ReplayModExecutor(String string_1) {
+            //#if MC >= 26.1
+            //$$ super(string_1, false);
+            //#else
             super(string_1);
+            //#endif
         }
 
         @Override public Runnable createTask(Runnable runnable) {

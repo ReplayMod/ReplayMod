@@ -10,7 +10,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(EntityRenderer.class)
 public abstract class Mixin_HideNameTags {
-    //#if MC>=11500
+    //#if MC >= 26.1
+    //$$ @Inject(method = "submitNameDisplay(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;I)V", at = @At("HEAD"), cancellable = true)
+    //#elseif MC>=11500
     @Inject(method = "renderLabelIfPresent", at = @At("HEAD"), cancellable = true)
     //#else
     //#if MC>=11400

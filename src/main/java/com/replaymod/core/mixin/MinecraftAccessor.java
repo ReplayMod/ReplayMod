@@ -57,11 +57,15 @@ public interface MinecraftAccessor {
     //$$ Queue<FutureTask<?>> getScheduledTasks();
     //#endif
 
+    //#if MC >= 26.1
+    //$$ // Now in BlockableEventLoopAccessor
+    //#else
     @Accessor("crashReport")
     //#if MC>=11800
     //$$ Supplier<CrashReport> getCrashReporter();
     //#else
     CrashReport getCrashReporter();
+    //#endif
     //#endif
 
     //#if MC<11400

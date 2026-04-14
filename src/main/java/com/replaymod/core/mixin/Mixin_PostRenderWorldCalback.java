@@ -20,10 +20,11 @@ public class Mixin_PostRenderWorldCalback {
     //$$ private void postRenderWorld(CallbackInfo ci) {
     //$$     MatrixStack matrixStack = new MatrixStack();
     //#else
-    @Inject(method = "render", at = @At("RETURN"))
     //#if MC>=11500
+    @Inject(method = "render", at = @At("RETURN"))
     private void postRenderWorld(CallbackInfo ci, @Local(argsOnly = true) MatrixStack matrixStack) {
     //#else
+    //$$ @Inject(method = "render", at = @At("RETURN"))
     //$$ private void postRenderWorld(CallbackInfo ci) {
     //$$     MatrixStack matrixStack = new MatrixStack();
     //#endif
