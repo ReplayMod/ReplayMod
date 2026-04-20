@@ -133,6 +133,24 @@ public class ReplayModReplay implements Module {
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.resettilt", Keyboard.KEY_K, () -> {
             Optional.ofNullable(replayHandler).map(ReplayHandler::getCameraEntity).ifPresent(c -> c.roll = 0);
         }, true);
+
+        registry.registerKeyBinding("replaymod.input.skip", Keyboard.KEY_RIGHT, new Runnable() {
+            @Override
+            public void run() {
+                if (replayHandler != null) {
+                    replayHandler.relativeJumpButton(true);
+                }
+            }
+        }, true);
+
+        registry.registerKeyBinding("replaymod.input.rewind", Keyboard.KEY_LEFT, new Runnable() {
+            @Override
+            public void run() {
+                if (replayHandler != null) {
+                    replayHandler.relativeJumpButton(false);
+                }
+            }
+        }, true);
     }
 
     @Override
