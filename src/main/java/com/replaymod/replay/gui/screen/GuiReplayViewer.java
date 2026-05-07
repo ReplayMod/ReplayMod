@@ -267,9 +267,9 @@ public class GuiReplayViewer extends GuiScreen {
             loadButton.setTooltip(new GuiTooltip().setText(tooltipLines));
             loadButton.setEnabled(!jobs.isEmpty());
 
-            String[] compatError = VideoRenderer.checkCompat(jobs.stream().map(RenderJob::getSettings));
+            java.util.List<String> compatError = VideoRenderer.checkCompat(jobs.stream().map(RenderJob::getSettings));
             if (compatError != null) {
-                loadButton.setDisabled().setTooltip(new GuiTooltip().setText(compatError));
+                loadButton.setDisabled().setTooltip(new GuiTooltip().setText(String.join("\n", compatError)));
             }
         } else {
             loadButton.setI18nLabel("replaymod.gui.load");

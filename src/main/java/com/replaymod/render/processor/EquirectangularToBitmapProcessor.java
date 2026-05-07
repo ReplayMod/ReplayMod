@@ -113,7 +113,6 @@ public class EquirectangularToBitmapProcessor extends AbstractFrameProcessor<Cub
                 rawFrame.getLeft().getByteBuffer(), rawFrame.getRight().getByteBuffer(),
                 rawFrame.getTop().getByteBuffer(), rawFrame.getBottom().getByteBuffer()
         };
-        byte[] pixel = new byte[bpp];
         byte[] image;
         int[] imageX, imageY;
         for (int y = 0; y < height; y++) {
@@ -122,9 +121,10 @@ public class EquirectangularToBitmapProcessor extends AbstractFrameProcessor<Cub
             imageY = this.imageY[y];
             for (int x = 0; x < width; x++) {
                 ByteBuffer source = images[image[x]];
-                source.position((imageX[x] + imageY[x] * frameSize) * bpp);
-                source.get(pixel);
-                result.put(pixel);
+                int offset = (imageX[x] + imageY[x] * frameSize) * bpp;
+                for (int i = 0; i < bpp; i++) {
+                    result.put(source.get(offset + i));
+                }
             }
         }
         result.rewind();

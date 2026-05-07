@@ -43,6 +43,8 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     private final RandomAccessReplay replay;
     private final EventHandler eventHandler = new EventHandler();
     private Channel channel;
+    private boolean disabledDueToError;
+    private boolean errorLogged;
 
     private int currentTimeStamp;
     private double replaySpeed = 1;
@@ -63,6 +65,10 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
             @Override
             protected void dispatch(com.replaymod.replaystudio.protocol.Packet packet) {
+                if (disabledDueToError) {
+                    packet.release();
+                    return;
+                }
                 // Convert ReplayStudio-Netty buffer into MC-Netty buffer
                 com.github.steveice10.netty.buffer.ByteBuf byteBuf = packet.getBuf();
                 int size = byteBuf.readableBytes();
@@ -90,6 +96,16 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
     public void unregister() {
         eventHandler.unregister();
+    }
+
+    public void disableAfterError(Throwable throwable) {
+        disabledDueToError = true;
+        asyncMode = false;
+        unregister();
+        if (!errorLogged) {
+            errorLogged = true;
+            LOGGER.error("Quick Mode replay state is incompatible with this replay or modpack. Disabling Quick Mode.", throwable);
+        }
     }
 
     public void setChannel(Channel channel) {
@@ -153,6 +169,8 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     }
 
     public void restart() {
+        disabledDueToError = false;
+        errorLogged = false;
         replay.reset();
     }
 
@@ -224,11 +242,18 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
     @Override
     public void sendPacketsTill(int replayTime) {
+        if (disabledDueToError) {
+            return;
+        }
         ensureInitialized(() -> {
+            if (disabledDueToError) {
+                return;
+            }
             try {
                 replay.seek(replayTime);
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (Throwable e) {
+                disableAfterError(e);
+                return;
             }
             currentTimeStamp = replayTime;
         });

@@ -175,6 +175,9 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
 
     { on(ReplayClosingCallback.EVENT, replayHandler -> onReplayClosing()); }
     private void onReplayClosing() {
+        if (guiPathing != null) {
+            guiPathing.cancelEntityTrackerLoading();
+        }
         saveService.shutdown();
         try {
             saveService.awaitTermination(1, TimeUnit.MINUTES);

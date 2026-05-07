@@ -166,6 +166,7 @@ public class ReplayHandler {
     //#if MC>=10800
     private final QuickReplaySender quickReplaySender;
     private boolean quickMode = false;
+    private boolean networkExceptionLogged = false;
     //#else
     //$$ private static final String QUICK_MODE_MIN_MC = "1.8";
     //#endif
@@ -312,7 +313,15 @@ public class ReplayHandler {
         ClientConnection networkManager = new ClientConnection(NetworkSide.CLIENTBOUND) {
             @Override
             public void exceptionCaught(ChannelHandlerContext ctx, Throwable t) {
-                t.printStackTrace();
+                if (!networkExceptionLogged) {
+                    networkExceptionLogged = true;
+                    LOGGER.error("Replay packet handling failed. Further packet errors in this replay will be suppressed.", t);
+                }
+                //#if MC>=10800
+                if (quickMode) {
+                    quickReplaySender.disableAfterError(t);
+                }
+                //#endif
             }
         };
         //#else
@@ -675,6 +684,7 @@ public class ReplayHandler {
             for (Entity entity : mc.world.getEntities()) {
                 skipTeleportInterpolation(entity);
             }
+            moveCameraToTargetPosition();
             return;
         }
         //#endif

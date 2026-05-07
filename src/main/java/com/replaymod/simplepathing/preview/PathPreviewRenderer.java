@@ -142,14 +142,18 @@ public class PathPreviewRenderer extends EventRegistrations {
                 Interpolator interpolator = segment.getInterpolator();
                 Keyframe start = segment.getStartKeyframe();
                 Keyframe end = segment.getEndKeyframe();
-                long diff = (int) (end.getTime() - start.getTime());
+                long diff = end.getTime() - start.getTime();
+                if (diff <= 0) {
+                    continue;
+                }
 
                 boolean spectator = interpolator.getKeyframeProperties().contains(SpectatorProperty.PROPERTY);
                 if (spectator && entityTracker == null) {
                     continue; // Cannot render spectator positions when entity tracker is not yet loaded
                 }
-                // Spectator segments have 20 lines per second (at least 10) whereas normal segments have a fixed 100
-                long steps = spectator ? Math.max(diff / 50, 10) : 100;
+                // Keep preview detail proportional to segment length; dense short segments otherwise dominate frame time.
+                long steps = spectator ? Math.max(diff / 50, 10) : Math.max(2, Math.min(100, diff / 50));
+                double millisPerStep = diff / (double) steps;
                 Vector3f prevPos = null;
                 for (int i = 0; i <= steps; i++) {
                     long time = start.getTime() + diff * i / steps;
@@ -173,7 +177,7 @@ public class PathPreviewRenderer extends EventRegistrations {
                             Vector3f pos = optPos.get();
                             if (prevPos != null) {
                                 double distance = Math.sqrt(distanceSquared(prevPos, pos));
-                                double speed = Math.min(distance / (diff / steps), FASTEST_PATH_SPEED);
+                                double speed = Math.min(distance / millisPerStep, FASTEST_PATH_SPEED);
                                 double speedFraction = speed / FASTEST_PATH_SPEED;
                                 int color = interpolateColor(SLOW_PATH_COLOR, FAST_PATH_COLOR, speedFraction);
                                 drawConnection(viewPos, prevPos, pos, (color << 8) | 0xff, renderDistanceSquared);
@@ -264,7 +268,10 @@ public class PathPreviewRenderer extends EventRegistrations {
     }
 
     private static double distanceSquared(Vector3f p1, Vector3f p2) {
-        return Vector3f.sub(p1, p2, null).lengthSquared();
+        double x = p1.x - p2.x;
+        double y = p1.y - p2.y;
+        double z = p1.z - p2.z;
+        return x * x + y * y + z * z;
     }
 
     private void drawConnection(Vector3f view, Vector3f pos1, Vector3f pos2, int color, int renderDistanceSquared) {

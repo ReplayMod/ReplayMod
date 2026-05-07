@@ -39,6 +39,7 @@ import net.minecraft.client.resource.language.I18n;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
@@ -286,7 +287,7 @@ public abstract class GuiEditKeyframe<T extends GuiEditKeyframe<T>> extends Abst
 
                 dropdown = new GuiDropdownMenu<InterpolatorType>()
                         .setToString(s -> I18n.translate(s.getI18nName()))
-                        .setValues(InterpolatorType.values()).setHeight(20)
+                        .setValues(Arrays.asList(InterpolatorType.values())).setHeight(20)
                         .onSelection(i -> setSettingsPanel(dropdown.getSelectedValue()));
 
                 // set hover tooltips

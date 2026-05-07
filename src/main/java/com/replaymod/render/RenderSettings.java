@@ -61,26 +61,30 @@ public class RenderSettings {
     }
 
     public enum EncodingPreset {
-        MP4_CUSTOM("-an -c:v libx264 -b:v %BITRATE% -pix_fmt yuv420p \"%FILENAME%\"", "mp4"),
+        MP4_HARDWARE("-an %HARDWARE_H264% \"%FILENAME%\"", "mp4", "MP4 - H.264 Hardware"),
 
-        MP4_POTATO("-an -c:v libx264 -preset ultrafast -crf 51 -pix_fmt yuv420p \"%FILENAME%\"", "mp4"),
+        MP4_CUSTOM("-an -c:v libx264 -preset veryfast -threads %THREADS% -b:v %BITRATE% -pix_fmt yuv420p \"%FILENAME%\"", "mp4", "MP4 - H.264 CPU"),
 
-        WEBM_CUSTOM("-an -c:v libvpx -b:v %BITRATE% -pix_fmt yuv420p \"%FILENAME%\"", "webm"),
+        MP4_POTATO("-an -c:v libx264 -preset ultrafast -threads %THREADS% -crf 51 -pix_fmt yuv420p \"%FILENAME%\"", "mp4", "MP4 - Very Low Quality"),
 
-        MKV_LOSSLESS("-an -c:v libx264 -preset ultrafast -qp 0 \"%FILENAME%\"", "mkv"),
+        WEBM_CUSTOM("-an -c:v libvpx -threads %THREADS% -b:v %BITRATE% -pix_fmt yuv420p \"%FILENAME%\"", "webm", "WebM - VP8"),
 
-        BLEND(null, "blend"),
+        MKV_LOSSLESS("-an -c:v libx264 -preset ultrafast -threads %THREADS% -qp 0 \"%FILENAME%\"", "mkv", "MKV - Lossless"),
 
-        EXR(null, "exr"),
+        BLEND(null, "blend", "Blend"),
 
-        PNG(null, "png");
+        EXR(null, "exr", "OpenEXR"),
+
+        PNG(null, "png", "PNG Sequence");
 
         private final String preset;
         private final String fileExtension;
+        private final String fallbackName;
 
-        EncodingPreset(String preset, String fileExtension) {
+        EncodingPreset(String preset, String fileExtension, String fallbackName) {
             this.preset = preset;
             this.fileExtension = fileExtension;
+            this.fallbackName = fallbackName;
         }
 
         public String getValue() {
@@ -99,7 +103,9 @@ public class RenderSettings {
 
         @Override
         public String toString() {
-            return I18n.translate("replaymod.gui.rendersettings.presets." + name().replace('_', '.').toLowerCase());
+            String key = "replaymod.gui.rendersettings.presets." + name().replace('_', '.').toLowerCase();
+            String translated = I18n.translate(key);
+            return key.equals(translated) ? fallbackName : translated;
         }
 
         public boolean isSupported() {
@@ -171,7 +177,7 @@ public class RenderSettings {
     public RenderSettings() {
         this(
                 RenderSettings.RenderMethod.DEFAULT,
-                RenderSettings.EncodingPreset.MP4_CUSTOM,
+                RenderSettings.EncodingPreset.MP4_HARDWARE,
                 1920,
                 1080,
                 60,
@@ -190,7 +196,7 @@ public class RenderSettings {
                 false,
                 RenderSettings.AntiAliasing.NONE,
                 "",
-                RenderSettings.EncodingPreset.MP4_CUSTOM.getValue(),
+                RenderSettings.EncodingPreset.MP4_HARDWARE.getValue(),
                 false
         );
     }
@@ -467,6 +473,39 @@ public class RenderSettings {
 
     public boolean isHighPerformance() {
         return highPerformance;
+    }
+
+    public int getEncoderThreadCount() {
+        if (highPerformance || !usesCpuBoundEncoder()) {
+            return 0;
+        }
+
+        int processors = Runtime.getRuntime().availableProcessors();
+        return Math.max(1, Math.min(processors / 2, processors - 2));
+    }
+
+    public int getRenderWorkerThreadCount() {
+        int processors = Runtime.getRuntime().availableProcessors();
+        if (processors <= 2) {
+            return 1;
+        }
+        if (highPerformance || !usesCpuBoundEncoder()) {
+            return Math.max(1, processors - 2);
+        }
+        return Math.max(1, processors - getEncoderThreadCount() - 1);
+    }
+
+    public boolean usesCpuBoundEncoder() {
+        if (encodingPreset == EncodingPreset.PNG || encodingPreset == EncodingPreset.EXR || encodingPreset == EncodingPreset.BLEND) {
+            return false;
+        }
+
+        String args = exportArguments == null && encodingPreset != null ? encodingPreset.getValue() : exportArguments;
+        if (args == null) {
+            return false;
+        }
+        String lowerArgs = args.toLowerCase();
+        return lowerArgs.contains("libx264") || lowerArgs.contains("libvpx");
     }
 
     @Override

@@ -11,6 +11,15 @@ import java.nio.ByteBuffer;
 import static com.replaymod.render.utils.Utils.openGlBytesToBitmap;
 
 public class OpenGlToBitmapProcessor extends AbstractFrameProcessor<OpenGlFrame, BitmapFrame> {
+    private final boolean flipVertical;
+
+    public OpenGlToBitmapProcessor() {
+        this(true);
+    }
+
+    public OpenGlToBitmapProcessor(boolean flipVertical) {
+        this.flipVertical = flipVertical;
+    }
 
     @Override
     public BitmapFrame process(OpenGlFrame rawFrame) {
@@ -18,6 +27,9 @@ public class OpenGlToBitmapProcessor extends AbstractFrameProcessor<OpenGlFrame,
         int width = size.getWidth();
         int height = size.getHeight();
         int bpp = rawFrame.getBytesPerPixel();
+        if (!flipVertical) {
+            return new BitmapFrame(rawFrame.getFrameId(), new Dimension(width, height), bpp, rawFrame.getByteBuffer());
+        }
         ByteBuffer result = ByteBufferPool.allocate(width * height * bpp);
         openGlBytesToBitmap(rawFrame, 0, 0, result, width);
         ByteBufferPool.release(rawFrame.getByteBuffer());

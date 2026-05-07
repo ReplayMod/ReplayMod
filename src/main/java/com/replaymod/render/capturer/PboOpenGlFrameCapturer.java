@@ -27,6 +27,7 @@ import java.util.Map;
 public abstract class PboOpenGlFrameCapturer<F extends Frame, D extends Enum<D> & CaptureData>
         extends OpenGlFrameCapturer<F, D> {
     private final boolean withDepth;
+    private final boolean preferHeapReadBuffers;
     private final D[] data;
     //#if MC>=12105
     //$$ private GpuBuffer pbo, otherPBO;
@@ -35,9 +36,14 @@ public abstract class PboOpenGlFrameCapturer<F extends Frame, D extends Enum<D> 
     //#endif
 
     public PboOpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo, Class<D> type, int framePixels) {
+        this(worldRenderer, renderInfo, type, framePixels, false);
+    }
+
+    public PboOpenGlFrameCapturer(WorldRenderer worldRenderer, RenderInfo renderInfo, Class<D> type, int framePixels, boolean preferHeapReadBuffers) {
         super(worldRenderer, renderInfo);
 
         withDepth = renderInfo.getRenderSettings().isDepthMap();
+        this.preferHeapReadBuffers = preferHeapReadBuffers;
         data = type.getEnumConstants();
         int bufferSize = framePixels * (4 /* bgra */ + (withDepth ? 4 /* float */ : 0)) * data.length;
         //#if MC>=12106
@@ -73,7 +79,9 @@ public abstract class PboOpenGlFrameCapturer<F extends Frame, D extends Enum<D> 
         OpenGlFrame[] frames = new OpenGlFrame[data.length];
         int frameBufferSize = getFrameWidth() * getFrameHeight() * bytesPerPixel;
         for (int i = 0; i < frames.length; i++) {
-            ByteBuffer frameBuffer = ByteBufferPool.allocate(frameBufferSize);
+            ByteBuffer frameBuffer = preferHeapReadBuffers
+                    ? ByteBufferPool.allocateHeap(frameBufferSize)
+                    : ByteBufferPool.allocate(frameBufferSize);
             pboBuffer.limit(pboBuffer.position() + frameBufferSize);
             if (swapRB) {
                 for (int j = 0; j < frameBufferSize; j += 4) {
