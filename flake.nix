@@ -11,7 +11,7 @@
       in {
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
-            jdk17
+            jdk21
             gradle
             ffmpeg-full
             vulkan-tools
@@ -23,7 +23,7 @@
           ];
 
           shellHook = ''
-            export JAVA_HOME=${pkgs.jdk17}
+            export JAVA_HOME=${pkgs.jdk21}
             export PATH=$JAVA_HOME/bin:$PATH
             echo "ReplayMod dev shell - Java: $(java -version 2>&1 | head -1)"
             echo "CPUs: $(nproc)  |  DRI: $(ls /dev/dri/ 2>/dev/null | tr '\n' ' ')"
