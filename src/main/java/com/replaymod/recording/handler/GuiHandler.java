@@ -21,6 +21,8 @@ import net.minecraft.client.gui.screen.world.SelectWorldScreen;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.resource.language.I18n;
 
+import java.util.Arrays;
+
 public class GuiHandler extends EventRegistrations {
 
     private final ReplayMod mod;
@@ -62,11 +64,11 @@ public class GuiHandler extends EventRegistrations {
                 Boolean state = serverInfoExt.getAutoRecording();
                 GuiToggleButton<String> autoRecording = new GuiToggleButton<String>()
                         .setI18nLabel("replaymod.gui.settings.autostartrecording")
-                        .setValues(
+                        .setValues(Arrays.asList(
                                 I18n.translate("replaymod.gui.settings.default"),
                                 I18n.translate("options.off"),
                                 I18n.translate("options.on")
-                        )
+                        ))
                         .setSelected(state == null ? 0 : state ? 2 : 1);
                 autoRecording.onClick(() -> {
                     int selected = autoRecording.getSelected();

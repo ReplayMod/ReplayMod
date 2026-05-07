@@ -156,6 +156,11 @@ public class SPTimeline implements PathingRegistry {
         return keyframe != null && keyframe.getValue(SpectatorProperty.PROPERTY).isPresent();
     }
 
+    public boolean hasSpectatorKeyframes() {
+        return positionPath.getKeyframes().stream()
+                .anyMatch(keyframe -> keyframe.getValue(SpectatorProperty.PROPERTY).isPresent());
+    }
+
     public void addPositionKeyframe(long time, double posX, double posY, double posZ,
                                     float yaw, float pitch, float roll, int spectated) {
         LOGGER.debug("Adding position keyframe at {} pos {}/{}/{} rot {}/{}/{} entId {}",
@@ -490,7 +495,7 @@ public class SPTimeline implements PathingRegistry {
             }
 
             // New interpolator, make sure it hasn't been used before
-            if (!used.add(interpolator)) {
+            if (!used.add(currentInterpolator)) {
                 // It has been used before, we need to clone it and use the clone instead
                 // This will create a new interpolator for each segment which will be merged later
                 currentInterpolator = cloneInterpolator(currentInterpolator);

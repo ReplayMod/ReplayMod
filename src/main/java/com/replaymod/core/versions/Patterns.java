@@ -182,6 +182,8 @@ class Patterns {
     private static int getX(AbstractButtonWidget button) {
         //#if MC>=11903
         //$$ return button.getX();
+        //#elseif MC>=11400
+        //$$ return button.x;
         //#else
         return button.x;
         //#endif
@@ -200,6 +202,8 @@ class Patterns {
     private static void setX(AbstractButtonWidget button, int value) {
         //#if MC>=11903
         //$$ button.setX(value);
+        //#elseif MC>=11400
+        //$$ button.x = value;
         //#else
         button.x = value;
         //#endif
@@ -620,7 +624,7 @@ class Patterns {
     @Pattern
     private static void setCrashReport(MinecraftClient mc, CrashReport report) {
         //#if MC>=11900
-        //$$ mc.setCrashReportSupplier(report);
+        //$$ mc.setCrashReportSupplier((report));
         //#elseif MC>=11800
         //$$ mc.setCrashReportSupplier(() -> report);
         //#else

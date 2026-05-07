@@ -13,10 +13,12 @@ import com.replaymod.render.PNGWriter;
 import com.replaymod.render.RenderSettings;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.render.FFmpegWriter;
+import com.replaymod.render.NativeOpenGlEncoder;
 import com.replaymod.render.blend.BlendState;
 import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.events.ReplayRenderCallback;
 import com.replaymod.render.frame.BitmapFrame;
+import com.replaymod.render.frame.OpenGlTextureFrame;
 import com.replaymod.render.gui.GuiRenderingDone;
 import com.replaymod.render.gui.GuiVideoRenderer;
 import com.replaymod.render.gui.progress.VirtualWindow;
@@ -95,8 +97,9 @@ import java.util.concurrent.CompletableFuture;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.Future;
@@ -117,8 +120,9 @@ public class VideoRenderer implements RenderInfo {
     private final RenderSettings settings;
     private final ReplayHandler replayHandler;
     private final Timeline timeline;
-    private final Pipeline renderingPipeline;
+    private final RenderPipeline renderingPipeline;
     private final FFmpegWriter ffmpegWriter;
+    private final NativeOpenGlEncoder nativeOpenGlEncoder;
     private final CameraPathExporter cameraPathExporter;
 
     private int fps;
@@ -152,45 +156,62 @@ public class VideoRenderer implements RenderInfo {
 
             this.renderingPipeline = Pipelines.newBlendPipeline(this);
             this.ffmpegWriter = null;
+            this.nativeOpenGlEncoder = null;
         } else {
-            FrameConsumer<BitmapFrame> frameConsumer;
-            if (settings.getEncodingPreset() == RenderSettings.EncodingPreset.EXR) {
-                frameConsumer = EXRWriter.create(settings.getOutputFile().toPath(), settings.isIncludeAlphaChannel());
-            } else if (settings.getEncodingPreset() == RenderSettings.EncodingPreset.PNG) {
-                frameConsumer = new PNGWriter(settings.getOutputFile().toPath(), settings.isIncludeAlphaChannel());
-            } else {
-                frameConsumer = new FFmpegWriter(this);
-            }
-            ffmpegWriter = frameConsumer instanceof FFmpegWriter ? (FFmpegWriter) frameConsumer : null;
-            FrameConsumer<BitmapFrame> previewingFrameConsumer = new FrameConsumer<BitmapFrame>() {
-                private int lastFrameId = -1;
+            boolean useRawDefaultOpenGlFrames = settings.getRenderMethod() == RenderSettings.RenderMethod.DEFAULT
+                    && !settings.isDepthMap()
+                    && settings.getAntiAliasing() == RenderSettings.AntiAliasing.NONE
+                    && settings.getEncodingPreset() != RenderSettings.EncodingPreset.EXR
+                    && settings.getEncodingPreset() != RenderSettings.EncodingPreset.PNG;
 
-                @Override
-                public void consume(Map<Channel, BitmapFrame> channels) {
-                    BitmapFrame bgra = channels.get(Channel.BRGA);
-                    if (bgra != null) {
-                        synchronized (this) {
-                            int frameId = bgra.getFrameId();
-                            if (lastFrameId < frameId) {
-                                lastFrameId = frameId;
-                                gui.updatePreview(bgra.getByteBuffer(), bgra.getSize());
+            NativeOpenGlEncoder nativeEncoder = NativeOpenGlEncoder.createIfAvailable(this);
+            if (nativeEncoder != null) {
+                FrameConsumer<OpenGlTextureFrame> textureFrameConsumer = nativeEncoder;
+                this.renderingPipeline = Pipelines.newNativeOpenGlEncoderPipeline(this, textureFrameConsumer);
+                this.ffmpegWriter = null;
+                this.nativeOpenGlEncoder = nativeEncoder;
+            } else {
+                FrameConsumer<BitmapFrame> frameConsumer;
+                if (settings.getEncodingPreset() == RenderSettings.EncodingPreset.EXR) {
+                    frameConsumer = EXRWriter.create(settings.getOutputFile().toPath(), settings.isIncludeAlphaChannel());
+                } else if (settings.getEncodingPreset() == RenderSettings.EncodingPreset.PNG) {
+                    frameConsumer = new PNGWriter(settings.getOutputFile().toPath(), settings.isIncludeAlphaChannel());
+                } else {
+                    frameConsumer = new FFmpegWriter(this, useRawDefaultOpenGlFrames);
+                }
+                ffmpegWriter = frameConsumer instanceof FFmpegWriter ? (FFmpegWriter) frameConsumer : null;
+                nativeOpenGlEncoder = null;
+                FrameConsumer<BitmapFrame> previewingFrameConsumer = new FrameConsumer<BitmapFrame>() {
+                    private int lastFrameId = -1;
+                    private final int previewFrameInterval = Math.max(1, settings.getFramesPerSecond() * 2);
+
+                    @Override
+                    public void consume(Map<Channel, BitmapFrame> channels) {
+                        BitmapFrame bgra = channels.get(Channel.BRGA);
+                        if (bgra != null) {
+                            synchronized (this) {
+                                int frameId = bgra.getFrameId();
+                                if (lastFrameId < 0 || frameId - lastFrameId >= previewFrameInterval) {
+                                    lastFrameId = frameId;
+                                    gui.updatePreview(bgra.getByteBuffer(), bgra.getSize(), useRawDefaultOpenGlFrames);
+                                }
                             }
                         }
+                        frameConsumer.consume(channels);
                     }
-                    frameConsumer.consume(channels);
-                }
 
-                @Override
-                public void close() throws IOException {
-                    frameConsumer.close();
-                }
+                    @Override
+                    public void close() throws IOException {
+                        frameConsumer.close();
+                    }
 
-                @Override
-                public boolean isParallelCapable() {
-                    return frameConsumer.isParallelCapable();
-                }
-            };
-            this.renderingPipeline = Pipelines.newPipeline(settings.getRenderMethod(), this, previewingFrameConsumer);
+                    @Override
+                    public boolean isParallelCapable() {
+                        return frameConsumer.isParallelCapable();
+                    }
+                };
+                this.renderingPipeline = Pipelines.newPipeline(settings.getRenderMethod(), this, previewingFrameConsumer, useRawDefaultOpenGlFrames);
+            }
         }
 
         if (settings.isCameraPathExport()) {
@@ -443,7 +464,11 @@ public class VideoRenderer implements RenderInfo {
             //#endif
         }
         for (Map.Entry<SoundCategory, Float> entry : originalSoundLevels.entrySet()) {
+            //#if MC>=11903
+            //$$ mc.options.getSoundVolumeOption(entry.getKey()).setValue((double) entry.getValue());
+            //#else
             mc.options.setSoundVolume(entry.getKey(), entry.getValue());
+            //#endif
         }
         mc.openScreen(null);
         forceChunkLoadingHook.uninstall();
@@ -490,7 +515,8 @@ public class VideoRenderer implements RenderInfo {
             CompletableFuture<Void> resourceReloadFuture = ((MinecraftAccessor) mc).getResourceReloadFuture();
             if (resourceReloadFuture != null) {
                 ((MinecraftAccessor) mc).setResourceReloadFuture(null);
-                mc.reloadResources().thenRun(() -> resourceReloadFuture.complete(null));
+                mc.reloadResources();
+                resourceReloadFuture.complete(null);
                 continue;
             }
             break;
@@ -760,11 +786,11 @@ public class VideoRenderer implements RenderInfo {
     }
 
     public void cancel() {
+        this.cancelled = true;
+        renderingPipeline.cancel();
         if (ffmpegWriter != null) {
             ffmpegWriter.abort();
         }
-        this.cancelled = true;
-        renderingPipeline.cancel();
     }
 
     public boolean hasFailed() {
@@ -792,27 +818,34 @@ public class VideoRenderer implements RenderInfo {
         }
     }
 
-    public static String[] checkCompat(Stream<RenderSettings> settings) {
-        return settings.map(VideoRenderer::checkCompat).filter(Objects::nonNull).findFirst().orElse(null);
+    public static List<String> checkCompat(Stream<RenderSettings> settings) {
+        Iterator<RenderSettings> iterator = settings.iterator();
+        while (iterator.hasNext()) {
+            List<String> result = checkCompat(iterator.next());
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
     }
 
-    public static String[] checkCompat(RenderSettings settings) {
+    public static List<String> checkCompat(RenderSettings settings) {
         //#if FABRIC>=1
         if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("sodium") && !FlawlessFrames.hasSodium()) {
-            return new String[] {
+            return java.util.Arrays.asList(
                     "Rendering is not supported with your Sodium version.",
                     "It is missing support for the FREX Flawless Frames API.",
-                    "Either use the Sodium build from replaymod.com or uninstall Sodium before rendering!",
-            };
+                    "Either use the Sodium build from replaymod.com or uninstall Sodium before rendering!"
+            );
         }
         //#if MC>=11700
         //$$ if (settings.getRenderMethod() == RenderSettings.RenderMethod.ODS
         //$$         && !net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("iris")) {
-        //$$     return new String[] {
+        //$$     return java.util.Arrays.asList(
         //$$             "ODS export requires Iris to be installed for Minecraft 1.17 and above.",
         //$$             "Note that it is nevertheless incompatible with other shaders and will simply replace them.",
-        //$$             "Get it from: https://modrinth.com/mod/iris",
-        //$$     };
+        //$$             "Get it from: https://modrinth.com/mod/iris"
+        //$$     );
         //$$ }
         //#endif
         //#endif

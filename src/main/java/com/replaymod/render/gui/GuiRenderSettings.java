@@ -43,6 +43,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 
@@ -67,12 +68,12 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
                         if (renderMethodDropdown.getSelectedValue() == RenderSettings.RenderMethod.BLEND) {
                             encodingPresetDropdown.setSelected(RenderSettings.EncodingPreset.BLEND);
                         } else {
-                            encodingPresetDropdown.setSelected(RenderSettings.EncodingPreset.MP4_CUSTOM);
+                            encodingPresetDropdown.setSelected(RenderSettings.EncodingPreset.MP4_HARDWARE);
                         }
                     }
                     updateInputs();
                 }
-            }).setMinSize(new Dimension(0, 20)).setValues(RenderSettings.RenderMethod.getSupported());
+            }).setMinSize(new Dimension(0, 20)).setValues(Arrays.asList(RenderSettings.RenderMethod.getSupported()));
 
     {
         for (Map.Entry<RenderSettings.RenderMethod, IGuiClickable> entry :
@@ -99,7 +100,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
                     }
                     updateInputs();
                 }
-            }).setMinSize(new Dimension(0, 20)).setValues(RenderSettings.EncodingPreset.getSupported());
+            }).setMinSize(new Dimension(0, 20)).setValues(Arrays.asList(RenderSettings.EncodingPreset.getSupported()));
 
     public final GuiNumberField videoWidth = new GuiNumberField().setSize(50, 20).setMinValue(1).setValidateOnFocusChange(true);
     public final GuiNumberField videoHeight = new GuiNumberField().setSize(50, 20).setMinValue(1).setValidateOnFocusChange(true);
@@ -116,7 +117,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
 
     public final GuiNumberField bitRateField = new GuiNumberField().setValue(10).setSize(50, 20).setValidateOnFocusChange(true);
     public final GuiDropdownMenu<String> bitRateUnit = new GuiDropdownMenu<String>()
-            .setSize(50, 20).setValues("bps", "kbps", "mbps").setSelected("mbps");
+            .setSize(50, 20).setValues(Arrays.asList("bps", "kbps", "mbps")).setSelected("mbps");
 
     public final GuiButton outputFileButton = new GuiButton().setMinSize(new Dimension(0, 20)).onClick(new Runnable() {
         @Override
@@ -188,7 +189,7 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
             .setI18nLabel("replaymod.gui.rendersettings.camerapath");
 
     public final GuiDropdownMenu<RenderSettings.AntiAliasing> antiAliasingDropdown = new GuiDropdownMenu<RenderSettings.AntiAliasing>()
-            .setSize(200, 20).setValues(RenderSettings.AntiAliasing.values()).setSelected(RenderSettings.AntiAliasing.NONE);
+            .setSize(200, 20).setValues(Arrays.asList(RenderSettings.AntiAliasing.values())).setSelected(RenderSettings.AntiAliasing.NONE);
 
     public final GuiPanel advancedPanel = new GuiPanel().setLayout(new VerticalLayout().setSpacing(15))
             .addElements(null, nametagCheckbox, alphaCheckbox, new GuiPanel().setLayout(
@@ -350,11 +351,11 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
             videoHeight.setTextColor(Colors.RED);
         }
 
-        String[] compatError = VideoRenderer.checkCompat(save(false, false));
+        java.util.List<String> compatError = VideoRenderer.checkCompat(save(false, false));
         if (resolutionError != null) {
             renderButton.setDisabled().setTooltip(new GuiTooltip().setI18nText(resolutionError));
         } else if (compatError != null) {
-            renderButton.setDisabled().setTooltip(new GuiTooltip().setText(compatError));
+            renderButton.setDisabled().setTooltip(new GuiTooltip().setText(String.join("\n", compatError)));
         } else {
             renderButton.setEnabled().setTooltip(null);
         }
@@ -497,6 +498,10 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         if (invalidEncodingPreset) {
             encodingPreset = new RenderSettings().getEncodingPreset();
         }
+        if (encodingPreset == RenderSettings.EncodingPreset.MP4_CUSTOM
+                && RenderSettings.EncodingPreset.MP4_CUSTOM.getValue().equals(settings.getExportArguments())) {
+            encodingPreset = RenderSettings.EncodingPreset.MP4_HARDWARE;
+        }
         encodingPresetDropdown.setSelected(encodingPreset);
         videoWidth.setValue(settings.getTargetVideoWidth());
         videoHeight.setValue(settings.getTargetVideoHeight());
@@ -547,6 +552,8 @@ public class GuiRenderSettings extends AbstractGuiPopup<GuiRenderSettings> {
         if (exportArguments == null || settings.getEncodingPreset() == null || invalidEncodingPreset) {
             // backwards compat, see RenderSettings#exportArguments
             exportArguments = encodingPreset.getValue();
+        } else if (RenderSettings.EncodingPreset.MP4_CUSTOM.getValue().equals(exportArguments)) {
+            exportArguments = RenderSettings.EncodingPreset.MP4_HARDWARE.getValue();
         }
         this.exportArguments.setText(exportArguments);
 

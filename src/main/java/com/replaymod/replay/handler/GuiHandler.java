@@ -141,8 +141,8 @@ public class GuiHandler extends EventRegistrations {
                     addButton(guiScreen, new InjectedButton(
                             guiScreen,
                             BUTTON_EXIT_REPLAY,
-                            b.x,
-                            b.y,
+                            getX(b),
+                            getY(b),
                             b.getWidth(),
                             b.getHeight(),
                             "replaymod.gui.exit",
@@ -172,14 +172,14 @@ public class GuiHandler extends EventRegistrations {
                 }
                 if (remove) {
                     // Moving the button far off-screen is easier to do cross-version than actually removing it
-                    b.x = -1000;
-                    b.y = -1000;
+                    setX(b, -1000);
+                    setY(b, -1000);
                 }
             }
             if (achievements != null && stats != null) {
                 moveAllButtonsInRect(buttonList,
-                        achievements.x, stats.x + stats.getWidth(),
-                        achievements.y, Integer.MAX_VALUE,
+                        getX(achievements), getX(stats) + stats.getWidth(),
+                        getY(achievements), Integer.MAX_VALUE,
                         -24);
             }
             // In 1.13+ Forge, the Options button shares one row with the Open to LAN button
@@ -216,10 +216,68 @@ public class GuiHandler extends EventRegistrations {
             int moveBy
     ) {
         buttons.stream()
-                .filter(button -> button.x <= xEnd && button.x + button.getWidth() >= xStart)
-                .filter(button -> button.y <= yEnd && button.y + button.getHeight() >= yStart)
+                .filter(button -> getX(button) <= xEnd && getX(button) + button.getWidth() >= xStart)
+                .filter(button -> getY(button) <= yEnd && getY(button) + button.getHeight() >= yStart)
                 // FIXME remap bug: needs the {} to recognize the setter (it also doesn't understand +=)
-                .forEach(button -> { button.y = button.y + moveBy; });
+                .forEach(button -> { setY(button, getY(button) + moveBy); });
+    }
+
+    private static int getX(
+            //#if MC>=11400
+            AbstractButtonWidget button
+            //#else
+            //$$ GuiButton button
+            //#endif
+    ) {
+        //#if MC>=11903
+        //$$ return button.getX();
+        //#else
+        return button.x;
+        //#endif
+    }
+
+    private static void setX(
+            //#if MC>=11400
+            AbstractButtonWidget button,
+            //#else
+            //$$ GuiButton button,
+            //#endif
+            int value
+    ) {
+        //#if MC>=11903
+        //$$ button.setX(value);
+        //#else
+        button.x = value;
+        //#endif
+    }
+
+    private static void setY(
+            //#if MC>=11400
+            AbstractButtonWidget button,
+            //#else
+            //$$ GuiButton button,
+            //#endif
+            int value
+    ) {
+        //#if MC>=11903
+        //$$ button.setY(value);
+        //#else
+        button.y = value;
+        //#endif
+    }
+
+    private static int getY(
+            //#if MC>=11400
+            AbstractButtonWidget button
+            //#else
+            //$$ GuiButton button
+            //#endif
+    ) {
+        //#if MC>=11903
+        //$$ return button.getY();
+        //#else
+        return button.y;
+        //#endif
     }
 
     { on(InitScreenCallback.EVENT, (screen, buttons) -> ensureReplayStopped(screen)); }
@@ -285,7 +343,7 @@ public class GuiHandler extends EventRegistrations {
 
             int y = targetButton
                     // if we found some button, put our button at its position (we'll move it out of the way shortly)
-                    .map(it -> it.y)
+                    .map(GuiHandler::getY)
                     // and if we can't even find that one, then just guess
                     .orElse(screen.height / 4 + 10 + 4 * 24);
 
@@ -326,7 +384,7 @@ public class GuiHandler extends EventRegistrations {
                 //#elseif MC>=12000
                 //$$ public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
                 //$$     super.renderButton(context, mouseX, mouseY, delta);
-                //#elseif MC>=11904
+                //#elseif MC>=11700
                 //$$ public void renderButton(MatrixStack context, int mouseX, int mouseY, float delta) {
                 //$$     super.renderButton(context, mouseX, mouseY, delta);
                 //#else
@@ -337,9 +395,9 @@ public class GuiHandler extends EventRegistrations {
                     MinecraftGuiRenderer renderer = new MinecraftGuiRenderer(context);
                     renderer.bindTexture(GuiReplayButton.ICON);
                     renderer.drawTexturedRect(
-                            this.x + 3, this.y + 3,
+                            GuiHandler.getX(this) + 3, GuiHandler.getY(this) + 3,
                             0, 0,
-                            this.width - 6, this.height - 6,
+                            this.getWidth() - 6, this.getHeight() - 6,
                             1, 1,
                             1, 1
                     );
@@ -400,7 +458,7 @@ public class GuiHandler extends EventRegistrations {
                 // or, if someone removed the realms button, we'll alternatively take the multiplayer one
                 .orElse(findButton(buttonList, "menu.multiplayer", 2))
                 // if we found some button, put our button at its position (we'll move it out of the way shortly)
-                .map(it -> it.y)
+                .map(GuiHandler::getY)
                 // and if we can't even find that one, then just guess
                 .orElse(guiScreen.height / 4 + 10 + 4 * 24);
 
@@ -450,15 +508,15 @@ public class GuiHandler extends EventRegistrations {
                     .flatMap(it -> it.map(Stream::of).orElseGet(Stream::empty))
                     // skip buttons which already have something next to them
                     .filter(it -> buttonList.stream().noneMatch(button ->
-                            button.x <= it.x + it.getWidth() + 4 + 20
-                                    && button.y <= it.y + it.getHeight()
-                                    && button.x + button.getWidth() >= it.x + it.getWidth() + 4
-                                    && button.y + button.getHeight() >= it.y
+                            getX(button) <= getX(it) + it.getWidth() + 4 + 20
+                                    && getY(button) <= getY(it) + it.getHeight()
+                                    && getX(button) + button.getWidth() >= getX(it) + it.getWidth() + 4
+                                    && getY(button) + button.getHeight() >= getY(it)
                     ))
                     // then take the bottom-most and if there's two, the right-most
-                    .max(Comparator.<AbstractButtonWidget>comparingInt(it -> it.y).thenComparingInt(it -> it.x))
+                    .max(Comparator.<AbstractButtonWidget>comparingInt(GuiHandler::getY).thenComparingInt(GuiHandler::getX))
                     // and place ourselves next to it
-                    .map(it -> new Point(it.x + it.getWidth() + 4, it.y))
+                    .map(it -> new Point(getX(it) + it.getWidth() + 4, getY(it)))
                     // if all fails, just go with TOP_RIGHT
                     .orElse(topRight);
         } else {
@@ -484,12 +542,12 @@ public class GuiHandler extends EventRegistrations {
                     case LEFT_OF_MULTIPLAYER:
                     case LEFT_OF_REALMS:
                     case LEFT_OF_MODS:
-                        return new Point(button.x - 4 - 20, button.y);
+                        return new Point(getX(button) - 4 - 20, getY(button));
                     case RIGHT_OF_MODS:
                     case RIGHT_OF_SINGLEPLAYER:
                     case RIGHT_OF_MULTIPLAYER:
                     case RIGHT_OF_REALMS:
-                        return new Point(button.x + button.getWidth() + 4, button.y);
+                        return new Point(getX(button) + button.getWidth() + 4, getY(button));
                 }
                 throw new RuntimeException();
             }).orElse(topRight);
@@ -502,12 +560,12 @@ public class GuiHandler extends EventRegistrations {
 
         int index = 0;
         for (AbstractButtonWidget other : buttons) {
-            if (other.y > button.y || other.y == button.y && other.x > button.x) {
+            if (getY(other) > getY(button) || getY(other) == getY(button) && getX(other) > getX(button)) {
                 index++;
                 continue;
             }
 
-            if (best == null || other.y > best.y || other.y == best.y && other.x > best.x) {
+            if (best == null || getY(other) > getY(best) || getY(other) == getY(best) && getX(other) > getX(best)) {
                 best = other;
                 bestIndex = index + 1;
             }

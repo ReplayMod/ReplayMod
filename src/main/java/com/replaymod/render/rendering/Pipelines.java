@@ -7,6 +7,7 @@ import com.replaymod.render.capturer.CubicPboOpenGlFrameCapturer;
 import com.replaymod.render.capturer.ODSFrameCapturer;
 import com.replaymod.render.capturer.RenderInfo;
 import com.replaymod.render.capturer.SimpleOpenGlFrameCapturer;
+import com.replaymod.render.capturer.SimpleOpenGlTextureFrameCapturer;
 import com.replaymod.render.capturer.SimplePboOpenGlFrameCapturer;
 import com.replaymod.render.capturer.StereoscopicOpenGlFrameCapturer;
 import com.replaymod.render.capturer.StereoscopicPboOpenGlFrameCapturer;
@@ -15,6 +16,7 @@ import com.replaymod.render.frame.CubicOpenGlFrame;
 import com.replaymod.render.frame.ODSOpenGlFrame;
 import com.replaymod.render.frame.OpenGlFrame;
 import com.replaymod.render.frame.BitmapFrame;
+import com.replaymod.render.frame.OpenGlTextureFrame;
 import com.replaymod.render.frame.StereoscopicOpenGlFrame;
 import com.replaymod.render.hooks.EntityRendererHandler;
 import com.replaymod.render.processor.CubicToBitmapProcessor;
@@ -29,9 +31,13 @@ import java.util.Map;
 
 public class Pipelines {
     public static Pipeline newPipeline(RenderSettings.RenderMethod method, RenderInfo renderInfo, FrameConsumer<BitmapFrame> consumer) {
+        return newPipeline(method, renderInfo, consumer, false);
+    }
+
+    public static Pipeline newPipeline(RenderSettings.RenderMethod method, RenderInfo renderInfo, FrameConsumer<BitmapFrame> consumer, boolean useRawDefaultOpenGlFrames) {
         switch (method) {
             case DEFAULT:
-                return newDefaultPipeline(renderInfo, consumer);
+                return newDefaultPipeline(renderInfo, consumer, useRawDefaultOpenGlFrames);
             case STEREOSCOPIC:
                 return newStereoscopicPipeline(renderInfo, consumer);
             case CUBIC:
@@ -47,15 +53,30 @@ public class Pipelines {
     }
 
     public static Pipeline<OpenGlFrame, BitmapFrame> newDefaultPipeline(RenderInfo renderInfo, FrameConsumer<BitmapFrame> consumer) {
+        return newDefaultPipeline(renderInfo, consumer, false);
+    }
+
+    public static Pipeline<OpenGlFrame, BitmapFrame> newDefaultPipeline(RenderInfo renderInfo, FrameConsumer<BitmapFrame> consumer, boolean useRawOpenGlFrames) {
         RenderSettings settings = renderInfo.getRenderSettings();
         WorldRenderer worldRenderer = new EntityRendererHandler(settings, renderInfo);
         FrameCapturer<OpenGlFrame> capturer;
         if (PixelBufferObject.SUPPORTED || settings.isDepthMap()) {
-            capturer = new SimplePboOpenGlFrameCapturer(worldRenderer, renderInfo);
+            capturer = new SimplePboOpenGlFrameCapturer(worldRenderer, renderInfo, useRawOpenGlFrames);
         } else {
             capturer = new SimpleOpenGlFrameCapturer(worldRenderer, renderInfo);
         }
-        return new Pipeline<>(worldRenderer, capturer, new OpenGlToBitmapProcessor(), consumer);
+        if (useRawOpenGlFrames) {
+            com.replaymod.render.ReplayModRender.LOGGER.info("Using raw OpenGL frame fast path; vertical flip will be handled by FFmpeg.");
+        }
+        return new Pipeline<>(settings, worldRenderer, capturer, new OpenGlToBitmapProcessor(!useRawOpenGlFrames), consumer);
+    }
+
+    public static RenderPipeline newNativeOpenGlEncoderPipeline(RenderInfo renderInfo, FrameConsumer<OpenGlTextureFrame> consumer) {
+        RenderSettings settings = renderInfo.getRenderSettings();
+        WorldRenderer worldRenderer = new EntityRendererHandler(settings, renderInfo);
+        SimpleOpenGlTextureFrameCapturer capturer = new SimpleOpenGlTextureFrameCapturer(worldRenderer, renderInfo);
+        com.replaymod.render.ReplayModRender.LOGGER.info("Using native OpenGL texture encoder pipeline; frames stay on the GPU until NVENC consumes them.");
+        return new DirectOpenGlEncoderPipeline(settings, worldRenderer, capturer, consumer);
     }
 
     public static Pipeline<StereoscopicOpenGlFrame, BitmapFrame> newStereoscopicPipeline(RenderInfo renderInfo, FrameConsumer<BitmapFrame> consumer) {
@@ -67,7 +88,7 @@ public class Pipelines {
         } else {
             capturer = new StereoscopicOpenGlFrameCapturer(worldRenderer, renderInfo);
         }
-        return new Pipeline<>(worldRenderer, capturer, new StereoscopicToBitmapProcessor(), consumer);
+        return new Pipeline<>(settings, worldRenderer, capturer, new StereoscopicToBitmapProcessor(), consumer);
     }
 
     public static Pipeline<CubicOpenGlFrame, BitmapFrame> newCubicPipeline(RenderInfo renderInfo, FrameConsumer<BitmapFrame> consumer) {
@@ -79,7 +100,7 @@ public class Pipelines {
         } else {
             capturer = new CubicOpenGlFrameCapturer(worldRenderer, renderInfo, settings.getVideoWidth() / 4);
         }
-        return new Pipeline<>(worldRenderer, capturer, new CubicToBitmapProcessor(), consumer);
+        return new Pipeline<>(settings, worldRenderer, capturer, new CubicToBitmapProcessor(), consumer);
     }
 
     public static Pipeline<CubicOpenGlFrame, BitmapFrame> newEquirectangularPipeline(RenderInfo renderInfo, FrameConsumer<BitmapFrame> consumer) {
@@ -95,7 +116,7 @@ public class Pipelines {
         } else {
             capturer = new CubicOpenGlFrameCapturer(worldRenderer, renderInfo, processor.getFrameSize());
         }
-        return new Pipeline<>(worldRenderer, capturer, processor, consumer);
+        return new Pipeline<>(settings, worldRenderer, capturer, processor, consumer);
     }
 
     public static Pipeline<ODSOpenGlFrame, BitmapFrame> newODSPipeline(RenderInfo renderInfo, FrameConsumer<BitmapFrame> consumer) {
@@ -113,7 +134,7 @@ public class Pipelines {
         //#else
         //$$ FrameCapturer<ODSOpenGlFrame> capturer = new ODSFrameCapturer(worldRenderer, renderInfo, processor.getFrameSize());
         //#endif
-        return new Pipeline<>(worldRenderer, capturer, processor, consumer);
+        return new Pipeline<>(settings, worldRenderer, capturer, processor, consumer);
     }
 
     public static Pipeline<BitmapFrame, BitmapFrame> newBlendPipeline(RenderInfo renderInfo) {
@@ -134,6 +155,6 @@ public class Pipelines {
                 return true;
             }
         };
-        return new Pipeline<>(worldRenderer, capturer, new DummyProcessor<>(), consumer);
+        return new Pipeline<>(settings, worldRenderer, capturer, new DummyProcessor<>(), consumer);
     }
 }

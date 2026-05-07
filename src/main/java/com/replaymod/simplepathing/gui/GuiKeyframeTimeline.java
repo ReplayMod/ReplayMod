@@ -510,7 +510,10 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
             }
         }
         if (actuallyDragging) {
-            if (!gui.loadEntityTracker(() -> mouseDrag(click))) return true;
+            if (gui.moveKeyframeNeedsEntityTracker(lastClickedPath, lastClickedKeyframe)
+                    && !gui.loadEntityTracker(() -> mouseDrag(click))) {
+                return true;
+            }
             // Threshold passed
             SPTimeline timeline = gui.getMod().getCurrentTimeline();
             Point mouse = new Point(click);

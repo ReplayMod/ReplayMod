@@ -13,6 +13,10 @@ public final class Setting<T> extends SettingsRegistry.SettingKeys<T> {
             new SettingsRegistry.MultipleChoiceSettingKeys<>(
                     "replay", "camera", "replaymod.gui.settings.camera", "replaymod.camera.classic");
     public static final Setting<Boolean> LEGACY_MAIN_MENU_BUTTON = new Setting<>("legacyMainMenuButton", false);
+    public static final Setting<Boolean> OPTIMIZED_QUICK_MODE_INITIALIZATION =
+            new Setting<>("optimizedQuickModeInitialization", true);
+    public static final Setting<Boolean> HIDE_DISPLAY_ENTITIES =
+            make("hideDisplayEntities", "hidedisplayentities", true);
     public static final SettingsRegistry.MultipleChoiceSettingKeys<String> MAIN_MENU_BUTTON =
             new SettingsRegistry.MultipleChoiceSettingKeys<>(
                     "replay", "mainMenuButton", null, MainMenuButtonPosition.DEFAULT.name());

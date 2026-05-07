@@ -40,6 +40,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
+import java.util.Arrays;
 
 import static com.replaymod.extras.ReplayModExtras.LOGGER;
 import static java.util.Arrays.asList;
@@ -110,7 +111,7 @@ public class GuiYoutubeUpload extends GuiScreen {
     }).addElements(null, nameField, descriptionField, tagsField, progressBar);
 
     public final GuiDropdownMenu<VideoVisibility> visibilityDropdown = new GuiDropdownMenu<VideoVisibility>()
-            .setSize(200, 20).setValues(VideoVisibility.values()).setSelected(VideoVisibility.PUBLIC);
+            .setSize(200, 20).setValues(Arrays.asList(VideoVisibility.values())).setSelected(VideoVisibility.PUBLIC);
 
     public final GuiButton thumbnailButton = new GuiButton().onClick(new Runnable() {
         @Override

@@ -170,12 +170,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.replaymod.core.utils.Utils.DEFAULT_MS_PER_TICK;
 import static com.replaymod.core.versions.MCVer.*;
+import static com.replaymod.replay.ReplayModReplay.LOGGER;
 import static com.replaymod.replaystudio.util.Utils.readInt;
 
 /**
@@ -269,6 +272,11 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
      * This is required as some actions such as jumping to a specified timestamp have to peek at the next packet.
      */
     protected PacketData nextPacket;
+
+    /**
+     * The next packet being read and converted on the replay worker pool.
+     */
+    private CompletableFuture<PacketData> prefetchedPacket;
 
     /**
      * Which protocol (state) we're currently in.
@@ -381,6 +389,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
         synchronized (this) {
             // This will wait for the worker thread to leave the synchronized code part
         }
+        cancelPacketDataPrefetch();
     }
 
     /**
@@ -406,6 +415,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
             return;
         }
         terminate = true;
+        cancelPacketDataPrefetch();
         syncSender.shutdown();
         events.unregister();
         try {
@@ -606,8 +616,13 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                         mc.openScreen(new NoticeScreen(
                                 //#if MC>=11400
                                 () -> mc.openScreen(null),
+                                //#if MC>=11900
+                                //$$ Text.translatable("replaymod.error.unknownrestriction1"),
+                                //$$ Text.translatable("replaymod.error.unknownrestriction2", unknown)
+                                //#else
                                 new TranslatableText("replaymod.error.unknownrestriction1"),
                                 new TranslatableText("replaymod.error.unknownrestriction2", unknown)
+                                //#endif
                                 //#else
                                 //$$ I18n.format("replaymod.error.unknownrestriction1"),
                                 //$$ I18n.format("replaymod.error.unknownrestriction2", unknown)
@@ -1099,10 +1114,11 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
 
                                 // Read the next packet if we don't already have one
                                 if (nextPacket == null) {
-                                    nextPacket = new PacketData(replayIn);
+                                    nextPacket = readPacketData();
                                 }
 
                                 int nextTimeStamp = nextPacket.timestamp;
+                                schedulePacketDataPrefetch();
 
                                 // If we aren't jumping and the world has already been loaded (no dirt-screens) then wait
                                 // the required amount to get proper packet timing
@@ -1159,7 +1175,8 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                                 }
                                 break;
                             } catch (IOException e) {
-                                e.printStackTrace();
+                                LOGGER.error("Error reading replay packet. Stopping replay sender to avoid repeated log spam.", e);
+                                break REPLAY_LOOP;
                             }
                         }
 
@@ -1170,6 +1187,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                         registry = getPacketTypeRegistry(State.LOGIN);
                         startFromBeginning = false;
                         nextPacket = null;
+                        cancelPacketDataPrefetch();
                         realTimeStart = System.currentTimeMillis();
                         if (replayIn != null) {
                             replayIn.close();
@@ -1300,6 +1318,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                     hasWorldLoaded = false;
                     inBundle = false;
                     lastTimeStamp = 0;
+                    cancelPacketDataPrefetch();
                     if (replayIn != null) {
                         replayIn.close();
                         replayIn = null;
@@ -1323,7 +1342,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                             nextPacket = null;
                         } else {
                             // Otherwise read one from the input stream
-                            pd = new PacketData(replayIn);
+                            pd = readPacketData();
                         }
 
                         int nextTimeStamp = pd.timestamp;
@@ -1334,6 +1353,7 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                         }
 
                         // Process packet
+                        schedulePacketDataPrefetch();
                         if (pd.type == PacketType.Bundle) inBundle = !inBundle;
                         channel.pipeline().fireChannelRead(Unpooled.wrappedBuffer(pd.bytes));
 
@@ -1353,7 +1373,8 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                         replayIn = null;
                         break;
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        LOGGER.error("Error reading replay packet. Aborting this seek to avoid repeated log spam.", e);
+                        break;
                     }
                 }
 
@@ -1387,6 +1408,61 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
         //$$ }
         //#endif
         ReplayMod.instance.runTasks();
+    }
+
+    private PacketData readPacketData() throws IOException {
+        CompletableFuture<PacketData> future = prefetchedPacket;
+        if (future == null) {
+            return new PacketData(replayIn);
+        }
+        prefetchedPacket = null;
+        try {
+            return future.get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted while reading replay packet", e);
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof PacketReadException) {
+                throw ((PacketReadException) cause).getCause();
+            }
+            if (cause instanceof IOException) {
+                throw (IOException) cause;
+            }
+            throw new IOException("Failed to read replay packet", cause);
+        }
+    }
+
+    private void schedulePacketDataPrefetch() {
+        if (!asyncMode || isHurrying() || prefetchedPacket != null || replayIn == null) {
+            return;
+        }
+        // THREADING: one packet read/conversion is prefetched on REPLAY_POOL; it is consumed by the sender thread.
+        prefetchedPacket = CompletableFuture.supplyAsync(() -> {
+            try {
+                return new PacketData(replayIn);
+            } catch (IOException e) {
+                throw new PacketReadException(e);
+            }
+        }, ReplayExecutors.REPLAY_POOL);
+    }
+
+    private void cancelPacketDataPrefetch() {
+        if (prefetchedPacket != null) {
+            prefetchedPacket.cancel(true);
+            prefetchedPacket = null;
+        }
+    }
+
+    private static final class PacketReadException extends RuntimeException {
+        private PacketReadException(IOException cause) {
+            super(cause);
+        }
+
+        @Override
+        public synchronized IOException getCause() {
+            return (IOException) super.getCause();
+        }
     }
 
     /**

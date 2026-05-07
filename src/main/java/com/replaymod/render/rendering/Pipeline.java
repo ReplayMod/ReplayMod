@@ -2,6 +2,7 @@ package com.replaymod.render.rendering;
 
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.core.versions.MCVer;
+import com.replaymod.render.RenderSettings;
 import com.replaymod.render.capturer.WorldRenderer;
 import com.replaymod.render.frame.BitmapFrame;
 import com.replaymod.render.processor.GlToAbsoluteDepthProcessor;
@@ -17,11 +18,14 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static com.replaymod.core.versions.MCVer.getMinecraft;
+import static com.replaymod.render.ReplayModRender.LOGGER;
 
-public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
+public class Pipeline<R extends Frame, P extends Frame> implements RenderPipeline {
 
+    private final RenderSettings settings;
     private final WorldRenderer worldRenderer;
     private final FrameCapturer<R> capturer;
     private final FrameProcessor<R, P> processor;
@@ -29,8 +33,15 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
     private final FrameConsumer<P> consumer;
 
     private volatile boolean abort;
+    private final AtomicLong captureCalls = new AtomicLong();
+    private final AtomicLong capturedFrames = new AtomicLong();
+    private final AtomicLong captureNanos = new AtomicLong();
+    private final AtomicLong processedFrames = new AtomicLong();
+    private final AtomicLong processNanos = new AtomicLong();
+    private final AtomicLong consumeNanos = new AtomicLong();
 
-    public Pipeline(WorldRenderer worldRenderer, FrameCapturer<R> capturer, FrameProcessor<R, P> processor, FrameConsumer<P> consumer) {
+    public Pipeline(RenderSettings settings, WorldRenderer worldRenderer, FrameCapturer<R> capturer, FrameProcessor<R, P> processor, FrameConsumer<P> consumer) {
+        this.settings = settings;
         this.worldRenderer = worldRenderer;
         this.capturer = capturer;
         this.processor = processor;
@@ -43,11 +54,11 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
 
     @Override
     public synchronized void run() {
-        int processors = Runtime.getRuntime().availableProcessors();
-        int processThreads = Math.max(1, processors - 2); // One processor for the main thread and one for ffmpeg, sorry OS :(
+        long pipelineStartNanos = System.nanoTime();
+        int processThreads = settings.getRenderWorkerThreadCount();
         ExecutorService processService = new ThreadPoolExecutor(processThreads, processThreads,
                 0L, TimeUnit.MILLISECONDS,
-                new ArrayBlockingQueue<Runnable>(2) {
+                new ArrayBlockingQueue<Runnable>(Math.max(2, processThreads)) {
                     @Override
                     public boolean offer(Runnable runnable) {
                         try {
@@ -66,8 +77,12 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
                 processService.shutdown();
                 return;
             }
+            long captureStartNanos = System.nanoTime();
             Map<Channel, R> rawFrame = capturer.process();
+            captureCalls.incrementAndGet();
+            captureNanos.addAndGet(System.nanoTime() - captureStartNanos);
             if (rawFrame != null) {
+                capturedFrames.incrementAndGet();
                 processService.submit(new ProcessTask(rawFrame));
             }
         }
@@ -79,6 +94,8 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
             Thread.currentThread().interrupt();
         }
 
+        logPipelineBenchmark(pipelineStartNanos, System.nanoTime(), processThreads);
+
         try {
             worldRenderer.close();
             capturer.close();
@@ -88,6 +105,45 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
             CrashReport crashReport = CrashReport.create(t, "Cleaning up rendering pipeline");
             throw new CrashException(crashReport);
         }
+    }
+
+    private void logPipelineBenchmark(long pipelineStartNanos, long pipelineEndNanos, int processThreads) {
+        long captures = capturedFrames.get();
+        long processed = processedFrames.get();
+        double wallSeconds = nanosToSeconds(Math.max(1, pipelineEndNanos - pipelineStartNanos));
+        double videoSeconds = processed / (double) settings.getFramesPerSecond();
+        long totalCaptureNanos = captureNanos.get();
+        long totalProcessNanos = processNanos.get();
+        long totalConsumeNanos = consumeNanos.get();
+        LOGGER.info("Render pipeline benchmark: frames={}, captureCalls={}, workers={}, wall={}, videoTime={}, realtime={}x, captureAvg={}, processAvg={}, consumeAvg={}, captureTotal={}, processWorkerTotal={}, consumeWorkerTotal={}",
+                processed,
+                captureCalls.get(),
+                processThreads,
+                formatSeconds(wallSeconds),
+                formatSeconds(videoSeconds),
+                formatDecimal(videoSeconds / wallSeconds),
+                formatMillis(totalCaptureNanos / Math.max(1L, captureCalls.get())),
+                formatMillis(totalProcessNanos / Math.max(1L, captures)),
+                formatMillis(totalConsumeNanos / Math.max(1L, processed)),
+                formatSeconds(nanosToSeconds(totalCaptureNanos)),
+                formatSeconds(nanosToSeconds(totalProcessNanos)),
+                formatSeconds(nanosToSeconds(totalConsumeNanos)));
+    }
+
+    private static double nanosToSeconds(long nanos) {
+        return nanos / 1_000_000_000.0;
+    }
+
+    private static String formatMillis(long nanos) {
+        return String.format(java.util.Locale.ROOT, "%.3fms", nanos / 1_000_000.0);
+    }
+
+    private static String formatSeconds(double seconds) {
+        return String.format(java.util.Locale.ROOT, "%.3fs", seconds);
+    }
+
+    private static String formatDecimal(double value) {
+        return String.format(java.util.Locale.ROOT, "%.2f", value);
     }
 
     public void cancel() {
@@ -105,6 +161,7 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
         public void run() {
             try {
                 Map<Channel, P> processedChannels = new HashMap<>();
+                long processStartNanos = System.nanoTime();
                 for (Map.Entry<Channel, R> entry : rawChannels.entrySet()) {
                     P processedFrame = processor.process(entry.getValue());
                     if (entry.getKey() == Channel.DEPTH && processedFrame instanceof BitmapFrame) {
@@ -112,10 +169,14 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
                     }
                     processedChannels.put(entry.getKey(), processedFrame);
                 }
+                processNanos.addAndGet(System.nanoTime() - processStartNanos);
                 if (processedChannels.isEmpty()) {
                     return;
                 }
+                long consumeStartNanos = System.nanoTime();
                 consumer.consume(processedChannels);
+                consumeNanos.addAndGet(System.nanoTime() - consumeStartNanos);
+                processedFrames.incrementAndGet();
             } catch (Throwable t) {
                 CrashReport crashReport = CrashReport.create(t, "Processing frame");
                 MCVer.getMinecraft().setCrashReport(crashReport);

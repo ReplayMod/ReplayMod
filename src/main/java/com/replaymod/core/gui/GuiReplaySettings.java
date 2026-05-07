@@ -16,6 +16,7 @@ import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.resource.language.I18n;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class GuiReplaySettings extends AbstractGuiScreen<GuiReplaySettings> {
@@ -43,7 +44,7 @@ public class GuiReplaySettings extends AbstractGuiScreen<GuiReplaySettings> {
                     final SettingsRegistry.SettingKey<Boolean> booleanKey = (SettingsRegistry.SettingKey<Boolean>) key;
                     final GuiToggleButton button = new GuiToggleButton<>().setSize(150, 20)
                             .setI18nLabel(key.getDisplayString()).setSelected(settingsRegistry.get(booleanKey) ? 0 : 1)
-                            .setValues(I18n.translate("options.on"), I18n.translate("options.off"));
+                            .setValues(Arrays.asList(I18n.translate("options.on"), I18n.translate("options.off")));
                     element = button.onClick(new Runnable() {
                         @Override
                         public void run() {
@@ -76,7 +77,7 @@ public class GuiReplaySettings extends AbstractGuiScreen<GuiReplaySettings> {
                                 return size;
                             }
                         }
-                    }.setSize(150, 20).setValues(entries);
+                    }.setSize(150, 20).setValues(Arrays.asList(entries));
                     menu.setSelected(selected).onSelection(new Consumer<Integer>() {
                         @Override
                         public void consume(Integer obj) {

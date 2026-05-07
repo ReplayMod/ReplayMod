@@ -281,6 +281,10 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
     }
 
     public void updatePreview(ByteBuffer buffer, ReadableDimension size) {
+        updatePreview(buffer, size, false);
+    }
+
+    public void updatePreview(ByteBuffer buffer, ReadableDimension size, boolean flipVertical) {
         if (previewCheckbox.isChecked() && previewTexture != null) {
             buffer.mark();
             synchronized (this) {
@@ -294,7 +298,11 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
                 //       we only want to initialize the first third and since we use our frame size, not the array size,
                 //       we're good to go.
                 int width = size.getWidth();
-                for (int y = 0; y < size.getHeight(); y++) {
+                int height = size.getHeight();
+                for (int y = 0; y < height; y++) {
+                    if (flipVertical) {
+                        buffer.position((height - y - 1) * width * 4);
+                    }
                     for (int x = 0; x < width; x++) {
                         int b = buffer.get() & 0xff;
                         int g = buffer.get() & 0xff;

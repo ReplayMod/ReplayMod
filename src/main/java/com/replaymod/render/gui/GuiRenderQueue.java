@@ -45,6 +45,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -129,7 +130,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
             list.getListPanel().addElements(null, new Entry(renderJob));
         }
 
-        addButton.onClick(() -> addButtonClicked().ifErr(lines -> GuiInfoPopup.open(container, lines)));
+        addButton.onClick(() -> addButtonClicked().ifErr(lines -> GuiInfoPopup.openLines(container, Arrays.asList(lines))));
 
         editButton.onClick(() -> {
             Entry job = selectedEntries.iterator().next();
@@ -307,7 +308,7 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
     public void open() {
         if (jobs.isEmpty() && timelineSupplier != null) {
             addButtonClicked().ifErr(lines ->
-                    GuiInfoPopup.open(container, lines).onClosed(this::close));
+                    GuiInfoPopup.openLines(container, Arrays.asList(lines)).onClosed(this::close));
             return;
         }
 
@@ -336,9 +337,9 @@ public class GuiRenderQueue extends AbstractGuiPopup<GuiRenderQueue> implements 
         renderButton.setEnabled(jobs.size() > 0);
         renderButton.setI18nLabel("replaymod.gui.renderqueue.render" + (selected > 0 ? "selected" : "all"));
 
-        String[] compatError = VideoRenderer.checkCompat(jobs.stream().map(RenderJob::getSettings));
+        java.util.List<String> compatError = VideoRenderer.checkCompat(jobs.stream().map(RenderJob::getSettings));
         if (compatError != null) {
-            renderButton.setDisabled().setTooltip(new GuiTooltip().setText(compatError));
+            renderButton.setDisabled().setTooltip(new GuiTooltip().setText(String.join("\n", compatError)));
         }
     }
 

@@ -43,6 +43,8 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     private final RandomAccessReplay replay;
     private final EventHandler eventHandler = new EventHandler();
     private Channel channel;
+    private boolean disabledDueToError;
+    private boolean errorLogged;
 
     private int currentTimeStamp;
     private double replaySpeed = 1;
@@ -63,6 +65,10 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
             @Override
             protected void dispatch(com.replaymod.replaystudio.protocol.Packet packet) {
+                if (disabledDueToError) {
+                    packet.release();
+                    return;
+                }
                 // Convert ReplayStudio-Netty buffer into MC-Netty buffer
                 com.github.steveice10.netty.buffer.ByteBuf byteBuf = packet.getBuf();
                 int size = byteBuf.readableBytes();
@@ -92,6 +98,16 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         eventHandler.unregister();
     }
 
+    public void disableAfterError(Throwable throwable) {
+        disabledDueToError = true;
+        asyncMode = false;
+        unregister();
+        if (!errorLogged) {
+            errorLogged = true;
+            LOGGER.error("Quick Mode replay state is incompatible with this replay or modpack. Disabling Quick Mode.", throwable);
+        }
+    }
+
     public void setChannel(Channel channel) {
         this.channel = channel;
     }
@@ -106,7 +122,9 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         }
         SettableFuture<Void> promise = SettableFuture.create();
         initPromise = promise;
-        new Thread(() -> {
+        // PLAN: SEEK-02 keeps QuickMode cache analysis off the UI thread and routes it through the shared replay
+        // worker pool, so future packet-range/index work can use all replay workers without creating ad-hoc threads.
+        Runnable loadQuickMode = () -> {
             try {
                 long start = System.currentTimeMillis();
                 replay.load(progress);
@@ -120,7 +138,15 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 return;
             }
             mod.getCore().runLaterWithoutLock(() -> promise.set(null));
-        }).start();
+        };
+        if (mod.getCore().getSettingsRegistry().get(Setting.OPTIMIZED_QUICK_MODE_INITIALIZATION)) {
+            ReplayExecutors.REPLAY_POOL.execute(loadQuickMode);
+        } else {
+            // THREADING: compatibility path uses one daemon worker for the lifetime of this initialization only.
+            Thread thread = new Thread(loadQuickMode, "replaymod-quickmode-init");
+            thread.setDaemon(true);
+            thread.start();
+        }
         return promise;
     }
 
@@ -143,6 +169,8 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
     }
 
     public void restart() {
+        disabledDueToError = false;
+        errorLogged = false;
         replay.reset();
     }
 
@@ -214,11 +242,18 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
 
     @Override
     public void sendPacketsTill(int replayTime) {
+        if (disabledDueToError) {
+            return;
+        }
         ensureInitialized(() -> {
+            if (disabledDueToError) {
+                return;
+            }
             try {
                 replay.seek(replayTime);
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (Throwable e) {
+                disableAfterError(e);
+                return;
             }
             currentTimeStamp = replayTime;
         });

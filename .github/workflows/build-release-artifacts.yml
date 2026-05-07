@@ -1,0 +1,75 @@
+name: Build release artifacts
+
+on:
+  push:
+    branches:
+      - stable
+      - codex/gpu-render-optimizations
+    tags:
+      - "*"
+  release:
+    types:
+      - published
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Build ReplayMod jars
+        run: |
+          rm -rf versions/1.19.4/build/libs versions/1.21.4/build/libs
+          nix develop --command bash -lc './gradlew --no-daemon $REPLAYMOD_GRADLE_TOOLCHAINS :1.19.4:bundleJar :1.21.4:bundleJar'
+
+      - name: Build native Windows encoder
+        run: nix develop --command native/replaymod-native-encoder/build-windows.sh
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p ci-artifacts
+          find versions/1.19.4/build/libs versions/1.21.4/build/libs -maxdepth 1 -type f \
+            -name '*.jar' ! -name '*-sources.jar' ! -name '*-obf.jar' \
+            -exec cp {} ci-artifacts/ \;
+          cp native/replaymod-native-encoder/build/windows/replaymod_native_encoder.dll ci-artifacts/
+          test "$(find ci-artifacts -type f | wc -l)" -eq 3
+          ls -lh ci-artifacts
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: replaymod-release-artifacts
+          path: ci-artifacts/*
+          if-no-files-found: error
+
+      - name: Resolve release tag
+        id: release
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            echo "tag=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+          elif [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish release assets
+        if: steps.release.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ steps.release.outputs.tag }}"
+          gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" --title "$tag" --notes "Automated ReplayMod build artifacts for $tag."
+          gh release upload "$tag" ci-artifacts/* --clobber
