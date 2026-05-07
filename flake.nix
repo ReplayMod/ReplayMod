@@ -18,6 +18,8 @@
             jdk17
             jdk21
             unstablePkgs.jdk25
+            pkgsCross.mingwW64.stdenv.cc
+            nv-codec-headers
             gradle
             ffmpeg-full
             vulkan-tools
@@ -36,6 +38,8 @@
             export JDK17_HOME=${pkgs.jdk17}/lib/openjdk
             export JDK21_HOME=${pkgs.jdk21}/lib/openjdk
             export JDK25_HOME=${unstablePkgs.jdk25}/lib/openjdk
+            export FFNV_CODEC_HEADERS=${pkgs.nv-codec-headers}/include
+            export JAVA_INCLUDE=$JDK21_HOME/include
             export REPLAYMOD_GRADLE_TOOLCHAINS="-Dorg.gradle.java.installations.fromEnv=JDK8_HOME,JDK16_HOME,JDK17_HOME,JDK21_HOME,JDK25_HOME -Dorg.gradle.java.installations.paths=$JDK8_HOME,$JDK16_HOME,$JDK17_HOME,$JDK21_HOME,$JDK25_HOME"
             export GRADLE_OPTS="$REPLAYMOD_GRADLE_TOOLCHAINS ''${GRADLE_OPTS:-}"
             export JAVA_OPTS="$REPLAYMOD_GRADLE_TOOLCHAINS ''${JAVA_OPTS:-}"

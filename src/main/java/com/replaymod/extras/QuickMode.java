@@ -39,7 +39,29 @@ public class QuickMode extends EventRegistrations implements Extra {
     }
 
     {
-        on(ReplayOpenedCallback.EVENT, replayHandler -> updateIndicator(replayHandler.getOverlay(), replayHandler.isQuickMode()));
+        on(ReplayOpenedCallback.EVENT, replayHandler -> {
+            updateIndicator(replayHandler.getOverlay(), replayHandler.isQuickMode());
+            enableByDefault(replayHandler);
+        });
+    }
+
+    private void enableByDefault(ReplayHandler replayHandler) {
+        module.getCore().runLaterWithoutLock(() -> {
+            if (module.getReplayHandler() != replayHandler
+                    || replayHandler.isQuickMode()
+                    || !replayHandler.getReplaySender().isAsyncMode()) {
+                return;
+            }
+            replayHandler.getReplaySender().setSyncModeAndWait();
+            replayHandler.ensureQuickModeInitialized(() -> {
+                if (module.getReplayHandler() != replayHandler || replayHandler.isQuickMode()) {
+                    return;
+                }
+                updateIndicator(replayHandler.getOverlay(), true);
+                replayHandler.setQuickMode(true);
+                replayHandler.getReplaySender().setAsyncMode(true);
+            });
+        });
     }
 
     private void updateIndicator(GuiReplayOverlay overlay, boolean enabled) {

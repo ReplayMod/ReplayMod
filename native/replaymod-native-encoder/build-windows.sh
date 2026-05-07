@@ -12,22 +12,38 @@ elif [[ -d /tmp/nv-codec-headers-12/include ]]; then
 elif [[ -d /tmp/nv-codec-headers/include ]]; then
   DEFAULT_FFNV_CODEC_HEADERS=/tmp/nv-codec-headers/include
 else
-  DEFAULT_FFNV_CODEC_HEADERS=/nix/store/z1n98l14crhcbmimvsr3b56f30r3xcyb-nv-codec-headers-9.1.23.1/include
+  DEFAULT_FFNV_CODEC_HEADERS=
 fi
 
 : "${FFNV_CODEC_HEADERS:=$DEFAULT_FFNV_CODEC_HEADERS}"
-: "${JAVA_INCLUDE:=/nix/store/k95pqfzyvrna93hc9a4cg5csl7l4fh0d-openjdk-21.0.7+6/include}"
-: "${MCFGTHREAD:=/nix/store/kr1jwy18b77v1bd27yqyiykabi6c81kx-mcfgthread-x86_64-w64-mingw32-2.3.2}"
-: "${CXX:=x86_64-w64-mingw32-g++}"
+: "${JAVA_INCLUDE:=${JAVA_HOME:-}/include}"
+if [[ -z "${CXX:-}" || "$(basename "$CXX")" != *w64-mingw32* ]]; then
+  CXX=x86_64-w64-mingw32-g++
+fi
+
+if [[ -z "$FFNV_CODEC_HEADERS" || ! -f "$FFNV_CODEC_HEADERS/ffnvcodec/nvEncodeAPI.h" ]]; then
+  echo "FFNV_CODEC_HEADERS must point to nv-codec-headers/include" >&2
+  exit 1
+fi
+
+if [[ -z "$JAVA_INCLUDE" || ! -f "$JAVA_INCLUDE/jni.h" ]]; then
+  echo "JAVA_INCLUDE must point to a JDK include directory" >&2
+  exit 1
+fi
+
+EXTRA_LDFLAGS=()
+if [[ -n "${MCFGTHREAD:-}" && -d "$MCFGTHREAD/lib" ]]; then
+  EXTRA_LDFLAGS+=("-L$MCFGTHREAD/lib")
+fi
 
 "$CXX" \
   -std=c++17 -O2 -DNOMINMAX -DWIN32_LEAN_AND_MEAN -shared \
   -I"$FFNV_CODEC_HEADERS" \
   -I"$JAVA_INCLUDE" \
   -I"$JAVA_INCLUDE/linux" \
-  -L"$MCFGTHREAD/lib" \
   "$ROOT/replaymod_native_encoder.cpp" \
   -o "$OUT/replaymod_native_encoder.dll" \
+  "${EXTRA_LDFLAGS[@]}" \
   -static -static-libgcc -static-libstdc++ \
   -Wl,--out-implib,"$OUT/libreplaymod_native_encoder.a"
 
