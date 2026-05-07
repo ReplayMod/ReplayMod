@@ -173,14 +173,17 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
         }.run();
     }
 
-    { on(ReplayClosingCallback.EVENT, replayHandler -> onReplayClosing()); }
-    private void onReplayClosing() {
+    { on(ReplayClosingCallback.EVENT, this::onReplayClosing); }
+    private void onReplayClosing(ReplayHandler replayHandler) {
         if (guiPathing != null) {
             guiPathing.cancelEntityTrackerLoading();
         }
+        flushTimelineSave(replayHandler.getReplayFile());
         saveService.shutdown();
         try {
-            saveService.awaitTermination(1, TimeUnit.MINUTES);
+            if (!saveService.awaitTermination(5, TimeUnit.SECONDS)) {
+                LOGGER.warn("Timed out waiting for stale timeline auto-save tasks while closing replay.");
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -237,6 +240,8 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
         if (!save) {
             lastTimeline = newTimeline;
             lastChange = newTimeline.getTimeline().peekUndoStack();
+            lastSavedTimeline = lastTimeline;
+            lastSavedChange = lastChange;
         }
         updateDefaultInterpolatorType();
     }
@@ -265,13 +270,17 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
 
     private final AtomicInteger lastSaveId = new AtomicInteger();
     private ExecutorService saveService;
-    private SPTimeline lastTimeline;
-    private Change lastChange;
+    private volatile SPTimeline lastTimeline;
+    private volatile Change lastChange;
+    private volatile SPTimeline lastSavedTimeline;
+    private volatile Change lastSavedChange;
     private void maybeSaveTimeline(ReplayFile replayFile) {
         SPTimeline spTimeline = currentTimeline;
         if (spTimeline == null || saveService == null) {
             lastTimeline = null;
             lastChange = null;
+            lastSavedTimeline = null;
+            lastSavedChange = null;
             return;
         }
 
@@ -300,10 +309,42 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
             }
             try {
                 saveTimeline(replayFile, spTimeline, timeline);
+                if (lastSaveId.get() == id) {
+                    lastSavedTimeline = spTimeline;
+                    lastSavedChange = latestChange;
+                }
             } catch (IOException e) {
                 LOGGER.error("Auto-saving timeline:", e);
             }
         });
+    }
+
+    private void flushTimelineSave(ReplayFile replayFile) {
+        SPTimeline spTimeline = currentTimeline;
+        if (spTimeline == null) {
+            return;
+        }
+        Change latestChange = spTimeline.getTimeline().peekUndoStack();
+        if (spTimeline == lastSavedTimeline && latestChange == lastSavedChange) {
+            lastSaveId.incrementAndGet();
+            return;
+        }
+
+        int id = lastSaveId.incrementAndGet();
+        try {
+            TimelineSerialization serialization = new TimelineSerialization(spTimeline, null);
+            String serialized = serialization.serialize(Collections.singletonMap("", spTimeline.getTimeline()));
+            Timeline timeline = serialization.deserialize(serialized).get("");
+            saveTimeline(replayFile, spTimeline, timeline);
+            if (lastSaveId.get() == id) {
+                lastTimeline = spTimeline;
+                lastChange = latestChange;
+                lastSavedTimeline = spTimeline;
+                lastSavedChange = latestChange;
+            }
+        } catch (IOException e) {
+            LOGGER.error("Saving timeline while closing replay:", e);
+        }
     }
 
     private void saveTimeline(ReplayFile replayFile, PathingRegistry pathingRegistry, Timeline timeline) throws IOException {
