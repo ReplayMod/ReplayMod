@@ -1,0 +1,271 @@
+---- Minecraft Crash Report ----
+// Uh... Did I do that?
+
+Time: 2026-05-08 06:32:19
+Description: mouseClicked event handler
+
+java.lang.OutOfMemoryError: Java heap space
+	at java.base/java.util.Arrays.copyOf(Arrays.java:3482)
+	at java.base/java.util.ArrayList.grow(ArrayList.java:237)
+	at java.base/java.util.ArrayList.grow(ArrayList.java:244)
+	at java.base/java.util.ArrayList.add(ArrayList.java:483)
+	at java.base/java.util.ArrayList.add(ArrayList.java:496)
+	at knot//net.minecraft.class_1937.method_31594(class_1937.java:471)
+	at knot//net.minecraft.class_2818.method_31719(class_2818.java:685)
+	at knot//net.minecraft.class_2818$$Lambda/0x00000008016b9670.apply(Unknown Source)
+	at knot//it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap.compute(Object2ObjectOpenHashMap.java:466)
+	at knot//net.minecraft.class_2818.method_31723(class_2818.java:677)
+	at knot//net.minecraft.class_2818.method_12216(class_2818.java:382)
+	at knot//net.minecraft.class_1937.method_8438(class_1937.java:587)
+	at knot//net.minecraft.class_2665.method_11481(class_2665.java:362)
+	at knot//net.minecraft.class_2665.method_9592(class_2665.java:244)
+	at knot//net.minecraft.class_4970$class_4971.method_26177(class_4970.java:1149)
+	at knot//net.minecraft.class_1937.method_8427(class_1937.java:773)
+	at knot//net.minecraft.class_634.method_11158(class_634.java:1414)
+	at knot//net.minecraft.class_2623.method_11297(class_2623.java:49)
+	at knot//net.minecraft.class_2623.method_65081(class_2623.java:12)
+	at knot//net.minecraft.class_2600.method_11072(class_2600.java:27)
+	at knot//net.minecraft.class_2600$$Lambda/0x0000000801526f88.run(Unknown Source)
+	at knot//net.minecraft.class_1255.method_18859(class_1255.java:164)
+	at knot//net.minecraft.class_4093.method_18859(class_4093.java:23)
+	at knot//net.minecraft.class_1255.method_16075(class_1255.java:138)
+	at knot//net.minecraft.class_1255.method_5383(class_1255.java:123)
+	at knot//net.minecraft.class_310.replayModExecuteTaskQueue(class_310.java:18595)
+	at knot//com.replaymod.replay.FullReplaySender.executeTaskQueue(FullReplaySender.java:1392)
+	at knot//com.replaymod.replay.FullReplaySender.sendPacketsTill(FullReplaySender.java:1295)
+	at knot//com.replaymod.replay.ReplayHandler.doJump(ReplayHandler.java:885)
+	at knot//com.replaymod.replay.gui.overlay.GuiReplayOverlay$7.run(GuiReplayOverlay.java:132)
+	at knot//com.replaymod.lib.de.johni0702.minecraft.gui.element.advanced.AbstractGuiTimeline.onClick(AbstractGuiTimeline.java:198)
+	at knot//com.replaymod.lib.de.johni0702.minecraft.gui.element.advanced.AbstractGuiTimeline.mouseClick(AbstractGuiTimeline.java:281)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- Head --
+Thread: Render thread
+Stacktrace:
+	at java.base/java.util.Arrays.copyOf(Arrays.java:3482)
+	at java.base/java.util.ArrayList.grow(ArrayList.java:237)
+	at java.base/java.util.ArrayList.grow(ArrayList.java:244)
+	at java.base/java.util.ArrayList.add(ArrayList.java:483)
+	at java.base/java.util.ArrayList.add(ArrayList.java:496)
+	at knot//net.minecraft.class_1937.method_31594(class_1937.java:471)
+	at knot//net.minecraft.class_2818.method_31719(class_2818.java:685)
+	at knot//net.minecraft.class_2818$$Lambda/0x00000008016b9670.apply(Unknown Source)
+	at knot//it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap.compute(Object2ObjectOpenHashMap.java:466)
+	at knot//net.minecraft.class_2818.method_31723(class_2818.java:677)
+	at knot//net.minecraft.class_2818.method_12216(class_2818.java:382)
+	at knot//net.minecraft.class_1937.method_8438(class_1937.java:587)
+	at knot//net.minecraft.class_2665.method_11481(class_2665.java:362)
+
+-- Affected screen --
+Details:
+	Screen name: com.replaymod.lib.de.johni0702.minecraft.gui.container.AbstractGuiOverlay.UserInputGuiScreen
+Stacktrace:
+	at knot//net.minecraft.class_312.method_1601(class_312.java:119)
+	at knot//net.minecraft.class_312.method_22686(class_312.java:215)
+	at knot//net.minecraft.class_1255.execute(class_1255.java:110)
+	at knot//net.minecraft.class_312.method_22684(class_312.java:215)
+	at knot//org.lwjgl.glfw.GLFWMouseButtonCallbackI.callback(GLFWMouseButtonCallbackI.java:43)
+	at knot//org.lwjgl.system.JNI.invokeV(Native Method)
+	at knot//org.lwjgl.glfw.GLFW.glfwPollEvents(GLFW.java:3438)
+	at knot//com.mojang.blaze3d.systems.RenderSystem.pollEvents(RenderSystem.java:149)
+	at knot//com.mojang.blaze3d.systems.RenderSystem.flipFrame(RenderSystem.java:170)
+	at knot//net.minecraft.class_1041.method_15998(class_1041.java:318)
+	at knot//net.minecraft.class_310.method_1523(class_310.java:1361)
+	at knot//net.minecraft.class_310.method_1514(class_310.java:922)
+	at knot//net.minecraft.client.main.Main.main(Main.java:267)
+	at net.fabricmc.loader.impl.game.minecraft.MinecraftGameProvider.launch(MinecraftGameProvider.java:514)
+	at net.fabricmc.loader.impl.launch.knot.Knot.launch(Knot.java:72)
+	at net.fabricmc.loader.impl.launch.knot.KnotClient.main(KnotClient.java:23)
+	at org.prismlauncher.launcher.impl.StandardLauncher.launch(StandardLauncher.java:105)
+	at org.prismlauncher.EntryPoint.listen(EntryPoint.java:129)
+	at org.prismlauncher.EntryPoint.main(EntryPoint.java:70)
+
+-- Mouse --
+Details:
+	Scaled X: 1261.0
+	Scaled Y: 20.514974433893354
+	Button: 0
+
+-- Uptime --
+Details:
+	JVM uptime: 3287.626s
+	Wall uptime: 3277.357s
+	High-res time: 3275.536s
+	Client ticks: 10247 ticks / 512.350s
+
+-- Affected level --
+Details:
+	All players: 8 total; [CameraEntity['-ChunkRecorder-'/-1789435, l='ClientLevel', x=963.70, y=173.83, z=-1419.69], class_745['-ChunkRecorder-'/83162366, l='ClientLevel', x=1048.00, y=129.00, z=-1288.00], class_745['minato_mine'/83114513, l='ClientLevel', x=1040.66, y=152.00, z=-1215.10], class_745['loader.1'/83167827, l='ClientLevel', x=936.44, y=139.97, z=-1192.78], class_745['loader.2'/83168611, l='ClientLevel', x=935.44, y=132.75, z=-1416.22], class_745['loader.3'/83169253, l='ClientLevel', x=1159.52, y=135.62, z=-1416.97], class_745['loader.4'/83169963, l='ClientLevel', x=1161.73, y=132.72, z=-1193.32], class_745['WTTC_RS'/86668331, l='ClientLevel', x=1035.82, y=151.00, z=-1217.15]]
+	Chunk stats: 2809, 2208 F: 0 L: 0 U: 4936 C: 0
+	Level dimension: minecraft:the_nether
+	Level spawn location: World: (0,57,0), Section: (at 0,9,0 in 0,3,0; chunk contains blocks 0,0,0 to 15,255,15), Region: (0,0; contains chunks 0,0 to 31,31, blocks 0,0,0 to 511,255,511)
+	Level time: 869643496 game time, 9750 day time
+	Server brand: fabric
+	Server type: Non-integrated multiplayer server
+	Tracked entity count: 2237
+
+-- Last reload --
+Details:
+	Reload number: 2
+	Reload reason: manual
+	Finished: Yes
+	Packs: vanilla, fabric, bobby, chat_heads, conditional-mixin, continuity, entityculling, fabric-api, fabric-api-base, fabric-api-lookup-api-v1, fabric-biome-api-v1, fabric-block-api-v1, fabric-block-view-api-v2, fabric-blockrenderlayer-v1, fabric-client-tags-api-v1, fabric-command-api-v1, fabric-command-api-v2, fabric-commands-v0, fabric-content-registries-v0, fabric-convention-tags-v1, fabric-convention-tags-v2, fabric-crash-report-info-v1, fabric-data-attachment-api-v1, fabric-data-generation-api-v1, fabric-dimensions-v1, fabric-entity-events-v1, fabric-events-interaction-v0, fabric-game-rule-api-v1, fabric-item-api-v1, fabric-item-group-api-v1, fabric-key-binding-api-v1, fabric-keybindings-v0, fabric-language-kotlin, fabric-lifecycle-events-v1, fabric-loot-api-v2, fabric-loot-api-v3, fabric-message-api-v1, fabric-model-loading-api-v1, fabric-networking-api-v1, fabric-object-builder-api-v1, fabric-particles-v1, fabric-recipe-api-v1, fabric-registry-sync-v0, fabric-renderer-api-v1, fabric-renderer-indigo, fabric-rendering-data-attachment-v1, fabric-rendering-fluids-v1, fabric-rendering-v1, fabric-resource-conditions-api-v1, fabric-resource-loader-v0, fabric-screen-api-v1, fabric-screen-handler-api-v1, fabric-sound-api-v1, fabric-tag-api-v1, fabric-transfer-api-v1, fabric-transitive-access-wideners-v1, fabricloader, iris, krypton, lithium, malilib, modmenu, placeholder-api, reeses-sodium-options, replaymod, skinlayers3d, sodium, sodium-extra, trender, tweakermore, tweakeroo, continuity:default, continuity:glass_pane_culling_fix, file/Better Bedrock.zip, file/AST_NoMoreBats.zip, file/Clear_Glass_Pack_1.19.4, file/MFP-JH-1424J.zip, replaymod_lang
+
+-- System Details --
+Details:
+	Minecraft Version: 1.21.4
+	Minecraft Version ID: 1.21.4
+	Operating System: Windows 11 (amd64) version 10.0
+	Java Version: 21.0.3, Microsoft
+	Java VM Version: OpenJDK 64-Bit Server VM (mixed mode), Microsoft
+	Memory: 838743440 bytes (799 MiB) / 25165824000 bytes (24000 MiB) up to 25165824000 bytes (24000 MiB)
+	CPUs: 16
+	Processor Vendor: AuthenticAMD
+	Processor Name: AMD Ryzen 7 5700X 8-Core Processor             
+	Identifier: AuthenticAMD Family 25 Model 33 Stepping 2
+	Microarchitecture: Zen 3
+	Frequency (GHz): 3.39
+	Number of physical packages: 1
+	Number of physical CPUs: 8
+	Number of logical CPUs: 16
+	Graphics card #0 name: NVIDIA GeForce GTX 1660 SUPER
+	Graphics card #0 vendor: NVIDIA
+	Graphics card #0 VRAM (MiB): 6144.00
+	Graphics card #0 deviceId: VideoController1
+	Graphics card #0 versionInfo: 32.0.15.9186
+	Memory slot #0 capacity (MiB): 16384.00
+	Memory slot #0 clockSpeed (GHz): 3.20
+	Memory slot #0 type: DDR4
+	Memory slot #1 capacity (MiB): 16384.00
+	Memory slot #1 clockSpeed (GHz): 3.20
+	Memory slot #1 type: DDR4
+	Virtual memory max (MiB): 57231.30
+	Virtual memory used (MiB): 48418.83
+	Swap memory total (MiB): 24576.00
+	Swap memory used (MiB): 1493.33
+	Space in storage for jna.tmpdir (MiB): <path not set>
+	Space in storage for org.lwjgl.system.SharedLibraryExtractPath (MiB): <path not set>
+	Space in storage for io.netty.native.workdir (MiB): <path not set>
+	Space in storage for java.io.tmpdir (MiB): available: 332947.47, total: 1952623.00
+	Space in storage for workdir (MiB): available: 332947.47, total: 1952623.00
+	JVM Flags: 3 total; -XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump -Xms512m -Xmx24000m
+	Fabric Mods: 
+		bobby: Bobby 5.2.6+mc1.21.4
+			com_typesafe_config: config 1.4.2
+			io_leangen_geantyref_geantyref: geantyref 1.3.13
+			org_spongepowered_configurate-core: configurate-core 4.1.2
+			org_spongepowered_configurate-hocon: configurate-hocon 4.1.2
+		chat_heads: Chat Heads 0.15.1
+		continuity: Continuity 3.0.0+1.21.4
+		entityculling: EntityCulling 1.10.1
+			transition: TRansition 1.0.17
+			trender: TRender 1.0.12
+		fabric-api: Fabric API 0.119.4+1.21.4
+			fabric-api-base: Fabric API Base 0.4.54+b47eab6b04
+			fabric-api-lookup-api-v1: Fabric API Lookup API (v1) 1.6.86+b1caf1e904
+			fabric-biome-api-v1: Fabric Biome API (v1) 15.0.6+b1c29d8e04
+			fabric-block-api-v1: Fabric Block API (v1) 1.0.31+7feeb73304
+			fabric-block-view-api-v2: Fabric BlockView API (v2) 1.0.20+9c49cc8c04
+			fabric-blockrenderlayer-v1: Fabric BlockRenderLayer Registration (v1) 2.0.8+7feeb73304
+			fabric-client-tags-api-v1: Fabric Client Tags 1.1.29+20ea1e2304
+			fabric-command-api-v1: Fabric Command API (v1) 1.2.62+f71b366f04
+			fabric-command-api-v2: Fabric Command API (v2) 2.2.41+e496eb1504
+			fabric-commands-v0: Fabric Commands (v0) 0.2.79+df3654b304
+			fabric-content-registries-v0: Fabric Content Registries (v0) 9.1.19+25d1a67604
+			fabric-convention-tags-v1: Fabric Convention Tags 2.1.20+7f945d5b04
+			fabric-convention-tags-v2: Fabric Convention Tags (v2) 2.14.1+aebda09404
+			fabric-crash-report-info-v1: Fabric Crash Report Info (v1) 0.3.6+7feeb73304
+			fabric-data-attachment-api-v1: Fabric Data Attachment API (v1) 1.6.2+e99da0f704
+			fabric-data-generation-api-v1: Fabric Data Generation API (v1) 22.3.1+0f4e5f5504
+			fabric-dimensions-v1: Fabric Dimensions API (v1) 4.0.10+7feeb73304
+			fabric-entity-events-v1: Fabric Entity Events (v1) 2.0.15+62245bef04
+			fabric-events-interaction-v0: Fabric Events Interaction (v0) 4.0.4+a4eebcf004
+			fabric-game-rule-api-v1: Fabric Game Rule API (v1) 1.0.63+7d48d43904
+			fabric-item-api-v1: Fabric Item API (v1) 11.4.0+189dd6fe04
+			fabric-item-group-api-v1: Fabric Item Group API (v1) 4.2.2+fcb9601404
+			fabric-key-binding-api-v1: Fabric Key Binding API (v1) 1.0.57+7d48d43904
+			fabric-keybindings-v0: Fabric Key Bindings (v0) 0.2.55+df3654b304
+			fabric-lifecycle-events-v1: Fabric Lifecycle Events (v1) 2.5.4+bf2a60eb04
+			fabric-loot-api-v2: Fabric Loot API (v2) 3.0.38+3f89f5a504
+			fabric-loot-api-v3: Fabric Loot API (v3) 1.0.26+203e6b2304
+			fabric-message-api-v1: Fabric Message API (v1) 6.0.26+238a33c004
+			fabric-model-loading-api-v1: Fabric Model Loading API (v1) 4.3.0+ae23723504
+			fabric-networking-api-v1: Fabric Networking API (v1) 4.4.0+db5e668204
+			fabric-object-builder-api-v1: Fabric Object Builder API (v1) 18.0.14+38b0d59804
+			fabric-particles-v1: Fabric Particles (v1) 4.0.14+7feeb73304
+			fabric-recipe-api-v1: Fabric Recipe API (v1) 8.1.1+640e77ae04
+			fabric-registry-sync-v0: Fabric Registry Sync (v0) 6.1.11+4a9c1ece04
+			fabric-renderer-api-v1: Fabric Renderer API (v1) 5.0.3+50f0feb204
+			fabric-renderer-indigo: Fabric Renderer - Indigo 2.0.3+50f0feb204
+			fabric-rendering-data-attachment-v1: Fabric Rendering Data Attachment (v1) 0.3.58+73761d2e04
+			fabric-rendering-fluids-v1: Fabric Rendering Fluids (v1) 3.1.19+7feeb73304
+			fabric-rendering-v1: Fabric Rendering (v1) 10.2.1+0d31b09f04
+			fabric-resource-conditions-api-v1: Fabric Resource Conditions API (v1) 5.0.13+203e6b2304
+			fabric-resource-loader-v0: Fabric Resource Loader (v0) 3.1.1+360374ac04
+			fabric-screen-api-v1: Fabric Screen API (v1) 2.0.38+7feeb73304
+			fabric-screen-handler-api-v1: Fabric Screen Handler API (v1) 1.3.118+7feeb73304
+			fabric-sound-api-v1: Fabric Sound API (v1) 1.0.32+7feeb73304
+			fabric-tag-api-v1: Fabric Tag API (v1) 1.0.7+7d48d43904
+			fabric-transfer-api-v1: Fabric Transfer API (v1) 5.4.9+efa825c904
+			fabric-transitive-access-wideners-v1: Fabric Transitive Access Wideners (v1) 6.3.2+56e78b9b04
+		fabric-language-kotlin: Fabric Language Kotlin 1.13.11+kotlin.2.3.21
+			org_jetbrains_kotlin_kotlin-reflect: kotlin-reflect 2.3.21
+			org_jetbrains_kotlin_kotlin-stdlib: kotlin-stdlib 2.3.21
+			org_jetbrains_kotlin_kotlin-stdlib-jdk7: kotlin-stdlib-jdk7 2.3.21
+			org_jetbrains_kotlin_kotlin-stdlib-jdk8: kotlin-stdlib-jdk8 2.3.21
+			org_jetbrains_kotlinx_atomicfu-jvm: atomicfu-jvm 0.32.1
+			org_jetbrains_kotlinx_kotlinx-coroutines-core-jvm: kotlinx-coroutines-core-jvm 1.10.2
+			org_jetbrains_kotlinx_kotlinx-coroutines-jdk8: kotlinx-coroutines-jdk8 1.10.2
+			org_jetbrains_kotlinx_kotlinx-datetime-jvm: kotlinx-datetime-jvm 0.7.1
+			org_jetbrains_kotlinx_kotlinx-io-bytestring-jvm: kotlinx-io-bytestring-jvm 0.9.0
+			org_jetbrains_kotlinx_kotlinx-io-core-jvm: kotlinx-io-core-jvm 0.9.0
+			org_jetbrains_kotlinx_kotlinx-serialization-cbor-jvm: kotlinx-serialization-cbor-jvm 1.11.0
+			org_jetbrains_kotlinx_kotlinx-serialization-core-jvm: kotlinx-serialization-core-jvm 1.11.0
+			org_jetbrains_kotlinx_kotlinx-serialization-json-jvm: kotlinx-serialization-json-jvm 1.11.0
+		fabricloader: Fabric Loader 0.19.2
+			mixinextras: MixinExtras 0.5.4
+		ferritecore: FerriteCore 7.1.3
+		iris: Iris 1.8.8+mc1.21.4
+			io_github_douira_glsl-transformer: glsl-transformer 2.0.1
+			org_anarres_jcpp: jcpp 1.4.14
+			org_antlr_antlr4-runtime: antlr4-runtime 4.13.1
+		java: OpenJDK 64-Bit Server VM 21
+		krypton: Krypton 0.2.8
+			com_velocitypowered_velocity-native: velocity-native 3.3.0-SNAPSHOT
+		lithium: Lithium 0.15.3+mc1.21.4
+		malilib: MaLiLib 0.23.5
+		minecraft: Minecraft 1.21.4
+		modmenu: Mod Menu 13.0.4
+		placeholder-api: Placeholder API 2.5.2+1.21.3
+		reeses-sodium-options: Reese's Sodium Options 1.8.3+mc1.21.4
+		replaymod: Replay Mod 1.21.4-2.6.26-1-g50ef322-dirty
+		skinlayers3d: 3d-Skin-Layers 1.11.1
+		sodium: Sodium 0.6.13+mc1.21.4
+		sodium-extra: Sodium Extra 0.6.1+mc1.21.4
+		tweakermore: TweakerMore 3.30.0
+			conditional-mixin: conditional mixin 0.6.4
+		tweakeroo: Tweakeroo 0.23.6
+	Loaded Shaderpack: photon_v1.1.zip
+		Profile: Custom (+29 options changed by user)
+	Launched Version: 1.21.4
+	Launcher name: PrismLauncher
+	Backend library: LWJGL version 3.3.3-snapshot
+	Backend API: NVIDIA GeForce GTX 1660 SUPER/PCIe/SSE2 GL version 3.2.0 NVIDIA 591.86, NVIDIA Corporation
+	Window size: 2560x1369
+	GFLW Platform: win32
+	GL Caps: Using framebuffer using OpenGL 3.2
+	GL debug messages: 
+	Is Modded: Definitely; Client brand changed to 'fabric'
+	Universe: 400921fb54442d18
+	Type: Client (map_client.txt)
+	Graphics mode: fancy
+	Render Distance: 52/52 chunks
+	Resource Packs: vanilla, fabric, bobby, chat_heads, conditional-mixin, continuity, entityculling, fabric-api, fabric-api-base, fabric-api-lookup-api-v1, fabric-biome-api-v1, fabric-block-api-v1, fabric-block-view-api-v2, fabric-blockrenderlayer-v1, fabric-client-tags-api-v1, fabric-command-api-v1, fabric-command-api-v2, fabric-commands-v0, fabric-content-registries-v0, fabric-convention-tags-v1, fabric-convention-tags-v2, fabric-crash-report-info-v1, fabric-data-attachment-api-v1, fabric-data-generation-api-v1, fabric-dimensions-v1, fabric-entity-events-v1, fabric-events-interaction-v0, fabric-game-rule-api-v1, fabric-item-api-v1, fabric-item-group-api-v1, fabric-key-binding-api-v1, fabric-keybindings-v0, fabric-language-kotlin, fabric-lifecycle-events-v1, fabric-loot-api-v2, fabric-loot-api-v3, fabric-message-api-v1, fabric-model-loading-api-v1, fabric-networking-api-v1, fabric-object-builder-api-v1, fabric-particles-v1, fabric-recipe-api-v1, fabric-registry-sync-v0, fabric-renderer-api-v1, fabric-renderer-indigo, fabric-rendering-data-attachment-v1, fabric-rendering-fluids-v1, fabric-rendering-v1, fabric-resource-conditions-api-v1, fabric-resource-loader-v0, fabric-screen-api-v1, fabric-screen-handler-api-v1, fabric-sound-api-v1, fabric-tag-api-v1, fabric-transfer-api-v1, fabric-transitive-access-wideners-v1, fabricloader, iris, krypton, lithium, malilib, modmenu, placeholder-api, reeses-sodium-options, replaymod (incompatible), skinlayers3d, sodium, sodium-extra, trender, tweakermore, tweakeroo (incompatible), continuity:default, continuity:glass_pane_culling_fix, file/Better Bedrock.zip, file/AST_NoMoreBats.zip (incompatible), file/Clear_Glass_Pack_1.19.4 (incompatible), file/MFP-JH-1424J.zip
+	Current Language: ja_jp
+	Locale: en_JP
+	System encoding: MS932
+	File encoding: UTF-8
+	CPU: 16x AMD Ryzen 7 5700X 8-Core Processor 
