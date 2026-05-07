@@ -106,7 +106,9 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
         }
         SettableFuture<Void> promise = SettableFuture.create();
         initPromise = promise;
-        new Thread(() -> {
+        // PLAN: SEEK-02 keeps QuickMode cache analysis off the UI thread and routes it through the shared replay
+        // worker pool, so future packet-range/index work can use all replay workers without creating ad-hoc threads.
+        Runnable loadQuickMode = () -> {
             try {
                 long start = System.currentTimeMillis();
                 replay.load(progress);
@@ -120,7 +122,15 @@ public class QuickReplaySender extends ChannelHandlerAdapter implements ReplaySe
                 return;
             }
             mod.getCore().runLaterWithoutLock(() -> promise.set(null));
-        }).start();
+        };
+        if (mod.getCore().getSettingsRegistry().get(Setting.OPTIMIZED_QUICK_MODE_INITIALIZATION)) {
+            ReplayExecutors.REPLAY_POOL.execute(loadQuickMode);
+        } else {
+            // THREADING: compatibility path uses one daemon worker for the lifetime of this initialization only.
+            Thread thread = new Thread(loadQuickMode, "replaymod-quickmode-init");
+            thread.setDaemon(true);
+            thread.start();
+        }
         return promise;
     }
 
