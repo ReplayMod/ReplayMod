@@ -50,7 +50,36 @@ public class NativeOpenGlEncoder implements FrameConsumer<OpenGlTextureFrame> {
         if (mode == null || mode.trim().isEmpty()) {
             mode = System.getenv(ENABLE_ENV);
         }
-        return mode == null || mode.trim().isEmpty() || Boolean.parseBoolean(mode);
+        if (mode != null && !mode.trim().isEmpty()) {
+            return Boolean.parseBoolean(mode);
+        }
+        // On hybrid systems where the OpenGL renderer is not NVIDIA, the native NVENC
+        // path will always fail in CUDA<->GL interop. Skip it silently so we go through
+        // the FFmpeg path, which can still use VAAPI or NVENC via PCI on some setups.
+        if (!isLikelyNvidiaGlRenderer()) {
+            LOGGER.info("Native OpenGL/NVENC encoder skipped: OpenGL renderer is not NVIDIA. " +
+                    "Set -Dreplaymod.nativeEncoder=true to force the attempt.");
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean isLikelyNvidiaGlRenderer() {
+        try {
+            String renderer = org.lwjgl.opengl.GL11.glGetString(org.lwjgl.opengl.GL11.GL_RENDERER);
+            String vendor = org.lwjgl.opengl.GL11.glGetString(org.lwjgl.opengl.GL11.GL_VENDOR);
+            String combined = ((renderer == null ? "" : renderer) + " " + (vendor == null ? "" : vendor))
+                    .toLowerCase(Locale.ROOT);
+            if (combined.isEmpty()) {
+                // Could not query the renderer (no GL context yet); be permissive and let the native
+                // path try. The C++ side will probe cuGLGetDevices and bail out cleanly if needed.
+                return true;
+            }
+            return combined.contains("nvidia") || combined.contains("geforce") || combined.contains("quadro")
+                    || combined.contains("rtx") || combined.contains("gtx") || combined.contains("tesla");
+        } catch (Throwable t) {
+            return true;
+        }
     }
 
     public static NativeOpenGlEncoder createIfAvailable(VideoRenderer renderer) throws UnavailableException {

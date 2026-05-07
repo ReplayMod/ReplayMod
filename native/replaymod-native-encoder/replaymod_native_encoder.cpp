@@ -451,12 +451,51 @@ struct Encoder {
 
     void createCudaContext() {
         checkCu(cu.cuInit(0), "cuInit");
-        CUdevice device = 0;
+
+        CUdevice device = (CUdevice) -1;
         unsigned int count = 0;
-        CUresult glDeviceResult = cu.cuGLGetDevices(&count, &device, 1, CU_GL_DEVICE_LIST_CURRENT_FRAME);
-        if (glDeviceResult != CUDA_SUCCESS || count == 0) {
-            checkCu(cu.cuDeviceGet(&device, 0), "cuDeviceGet");
+        CUdevice glDevices[8] = {};
+
+        // The NVENC encoder must run on the same NVIDIA device that owns the current OpenGL
+        // context, otherwise cuGraphicsGLRegisterImage will fail later. Probe (in order)
+        // CURRENT_FRAME, NEXT_FRAME and ALL to find a valid CUDA<->GL interop device.
+        const CUGLDeviceList probes[] = {
+                CU_GL_DEVICE_LIST_CURRENT_FRAME,
+                CU_GL_DEVICE_LIST_NEXT_FRAME,
+                CU_GL_DEVICE_LIST_ALL,
+        };
+        std::string probeReport;
+        for (CUGLDeviceList probe : probes) {
+            count = 0;
+            CUresult result = cu.cuGLGetDevices(&count, glDevices,
+                                                 (unsigned int) (sizeof(glDevices) / sizeof(glDevices[0])),
+                                                 probe);
+            if (result == CUDA_SUCCESS && count > 0) {
+                device = glDevices[0];
+                break;
+            }
+            if (!probeReport.empty()) probeReport += ", ";
+            probeReport += "list=" + std::to_string((int) probe)
+                    + " result=" + std::to_string((int) result)
+                    + " count=" + std::to_string((int) count);
         }
+
+        if (device == (CUdevice) -1) {
+            // We deliberately do NOT fall back to cuDeviceGet(0) here: when the OpenGL
+            // context is owned by a non-NVIDIA GPU (AMD/Intel iGPU on hybrid machines),
+            // the resulting CUcontext can be created, but cuGraphicsGLRegisterImage will
+            // crash the JVM later. Surface a clean failure and let Java fall back to FFmpeg.
+            std::string msg = "no NVIDIA CUDA device matches the current OpenGL context";
+            if (!probeReport.empty()) {
+                msg += " (probes: " + probeReport + ")";
+            }
+            msg += ". The native NVENC path requires NVIDIA to be the OpenGL renderer; "
+                   "on hybrid AMD/Intel + NVIDIA systems set Windows graphics preference "
+                   "for Minecraft (java.exe/javaw.exe) to High performance, or disable "
+                   "the native encoder via -Dreplaymod.nativeEncoder=false.";
+            throw std::runtime_error(msg);
+        }
+
         checkCu(cu.cuCtxCreate(&cudaContext, CU_CTX_SCHED_BLOCKING_SYNC, device), "cuCtxCreate");
     }
 
@@ -537,6 +576,10 @@ struct Encoder {
         return true;
     }
 
+    // Apply a minimal H.264 configuration on top of the preset that NVENC returned.
+    // Older drivers and recent Blackwell drivers reject some combinations that older
+    // ReplayMod releases set unconditionally (explicit bit depths, outputAUD, etc.) so
+    // we only override the rate-control essentials and leave the rest at preset defaults.
     void applyH264Config(NV_ENC_CONFIG &config, uint32_t frameRate, uint32_t bitrate, bool constQp) {
         config.profileGUID = NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID;
         config.gopLength = frameRate * 2;
@@ -557,18 +600,20 @@ struct Encoder {
             config.rcParams.constQP.qpInterP = 23;
             config.rcParams.constQP.qpInterB = 23;
         } else {
-            config.rcParams.rateControlMode = NV_ENC_PARAMS_RC_CBR;
+            config.rcParams.rateControlMode = NV_ENC_PARAMS_RC_VBR;
             config.rcParams.averageBitRate = bitrate;
-            config.rcParams.maxBitRate = bitrate;
-            config.rcParams.vbvBufferSize = std::max<uint32_t>(1, bitrate / std::max<uint32_t>(1, frameRate));
-            config.rcParams.vbvInitialDelay = config.rcParams.vbvBufferSize;
+            config.rcParams.maxBitRate = bitrate * 2;
+            config.rcParams.vbvBufferSize = std::max<uint32_t>(1, bitrate / std::max<uint32_t>(1, frameRate)) * 2;
+            config.rcParams.vbvInitialDelay = config.rcParams.vbvBufferSize / 2;
         }
         config.encodeCodecConfig.h264Config.level = NV_ENC_LEVEL_AUTOSELECT;
         config.encodeCodecConfig.h264Config.idrPeriod = frameRate * 2;
-        config.encodeCodecConfig.h264Config.outputAUD = 1;
         config.encodeCodecConfig.h264Config.repeatSPSPPS = 1;
         config.encodeCodecConfig.h264Config.chromaFormatIDC = 1;
+        // outputAUD is intentionally NOT set - Blackwell drivers reject it for H.264.
 #ifdef NV_ENC_BIT_DEPTH_8
+        // NVENC API ≥ 12 introduced explicit bit-depth fields; the default value is
+        // NV_ENC_BIT_DEPTH_INVALID (0) which the driver rejects, so always set 8-bit.
         config.encodeCodecConfig.h264Config.inputBitDepth = NV_ENC_BIT_DEPTH_8;
         config.encodeCodecConfig.h264Config.outputBitDepth = NV_ENC_BIT_DEPTH_8;
 #endif
