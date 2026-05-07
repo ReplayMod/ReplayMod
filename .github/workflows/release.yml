@@ -1,0 +1,100 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to (re)publish (e.g. v1.21.4-2.6.27)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Resolve release tag
+        id: release
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            tag="${{ github.event.inputs.tag }}"
+          else
+            tag="${GITHUB_REF_NAME}"
+          fi
+          if [[ -z "$tag" ]]; then
+            echo "Could not resolve release tag" >&2
+            exit 1
+          fi
+          if [[ "$tag" != v* ]]; then
+            echo "Release workflow expects a v-prefixed tag, got '$tag'" >&2
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Build ReplayMod jars (1.19.4 + 1.21.4)
+        run: |
+          rm -rf versions/1.19.4/build/libs versions/1.21.4/build/libs
+          nix develop --command bash -lc './gradlew --no-daemon $REPLAYMOD_GRADLE_TOOLCHAINS :1.19.4:bundleJar :1.21.4:bundleJar'
+
+      - name: Build native Windows encoder DLL
+        run: nix develop --command native/replaymod-native-encoder/build-windows.sh
+
+      - name: Collect release artifacts
+        id: collect
+        shell: bash
+        run: |
+          mkdir -p ci-artifacts
+          # Pick up only the publishable, non-sources, non-obf jars for the two
+          # targeted Minecraft versions.
+          find versions/1.19.4/build/libs versions/1.21.4/build/libs -maxdepth 1 -type f \
+            -name '*.jar' ! -name '*-sources.jar' ! -name '*-obf.jar' \
+            -exec cp {} ci-artifacts/ \;
+          cp native/replaymod-native-encoder/build/windows/replaymod_native_encoder.dll ci-artifacts/
+          # Sanity check: 1.19.4 jar + 1.21.4 jar + native dll
+          count="$(find ci-artifacts -type f | wc -l)"
+          if [[ "$count" -ne 3 ]]; then
+            echo "Expected exactly 3 release artifacts (1.19.4 jar, 1.21.4 jar, dll) but found $count:" >&2
+            ls -lh ci-artifacts >&2
+            exit 1
+          fi
+          ls -lh ci-artifacts
+
+      - name: Upload workflow artifacts (for debugging / manual download)
+        uses: actions/upload-artifact@v4
+        with:
+          name: replaymod-${{ steps.release.outputs.tag }}
+          path: ci-artifacts/*
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ steps.release.outputs.tag }}"
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" \
+              --title "$tag" \
+              --notes "Automated ReplayMod release for $tag.
+
+This release contains:
+- ReplayMod jar for Minecraft 1.19.4 (Fabric)
+- ReplayMod jar for Minecraft 1.21.4 (Fabric)
+- Native Windows encoder DLL (\`replaymod_native_encoder.dll\`)"
+          fi
+          gh release upload "$tag" ci-artifacts/* --clobber

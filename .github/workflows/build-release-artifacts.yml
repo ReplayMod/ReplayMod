@@ -6,7 +6,10 @@ on:
       - stable
       - codex/gpu-render-optimizations
     tags:
+      # Release-style tags (v*) are handled by release.yml; we only want this
+      # branch-build workflow to react to other ad-hoc tags (e.g. snapshots).
       - "*"
+      - "!v*"
   release:
     types:
       - published

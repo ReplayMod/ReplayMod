@@ -1408,6 +1408,36 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
         //$$ }
         //#endif
         ReplayMod.instance.runTasks();
+        drainPendingBlockEntityTickers();
+    }
+
+    // The world's pendingBlockEntityTickers list is normally cleared once per tick by
+    // World#tickBlockEntities. During synchronous packet processing (sendPacketsTill /
+    // VideoRenderer / large jumps) the world is not ticked between packets, so any
+    // packet that adds or removes a block entity (piston events, chunk loads, block
+    // updates, ...) keeps appending to this list without ever draining it. Over a long
+    // jump this can grow to hundreds of millions of entries and cause OOM
+    // (see logs/clash1.txt).
+    private void drainPendingBlockEntityTickers() {
+        //#if MC>=11700
+        //$$ ClientWorld world = mc.world;
+        //$$ if (world == null) {
+        //$$     return;
+        //$$ }
+        //$$ com.replaymod.replay.mixin.WorldAccessor accessor = (com.replaymod.replay.mixin.WorldAccessor) world;
+        //$$ java.util.List<net.minecraft.world.chunk.BlockEntityTickInvoker> pending =
+        //$$         accessor.getPendingBlockEntityTickers();
+        //$$ // Threshold avoids paying the drain cost on every queue flush; the active list
+        //$$ // also gets compacted whenever we drain so its growth stays bounded too.
+        //$$ if (pending.size() < 1024) {
+        //$$     return;
+        //$$ }
+        //$$ java.util.List<net.minecraft.world.chunk.BlockEntityTickInvoker> active =
+        //$$         accessor.getBlockEntityTickers();
+        //$$ active.addAll(pending);
+        //$$ pending.clear();
+        //$$ active.removeIf(net.minecraft.world.chunk.BlockEntityTickInvoker::isRemoved);
+        //#endif
     }
 
     private PacketData readPacketData() throws IOException {
