@@ -5,15 +5,24 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 OUT="$ROOT/build/windows"
 mkdir -p "$OUT"
 
-if [[ -d /tmp/nv-codec-headers-11/include ]]; then
-  DEFAULT_FFNV_CODEC_HEADERS=/tmp/nv-codec-headers-11/include
-elif [[ -d /tmp/nv-codec-headers-12/include ]]; then
-  DEFAULT_FFNV_CODEC_HEADERS=/tmp/nv-codec-headers-12/include
-elif [[ -d /tmp/nv-codec-headers/include ]]; then
-  DEFAULT_FFNV_CODEC_HEADERS=/tmp/nv-codec-headers/include
-else
-  DEFAULT_FFNV_CODEC_HEADERS=
-fi
+# Prefer the newest nv-codec-headers checkout we can find. NVENC API ≥ 12 is
+# required to address Blackwell (RTX 50 series) drivers, which reject older
+# NVENCAPI_VERSION values with NV_ENC_ERR_INVALID_PARAM during initialization.
+DEFAULT_FFNV_CODEC_HEADERS=
+for candidate in \
+    /tmp/nv-codec-headers-13/include \
+    /tmp/nv-codec-headers-12/include \
+    /mnt/wslg/distro/tmp/nv-codec-headers-12/include \
+    /tmp/nv-codec-headers-11/include \
+    /mnt/wslg/distro/tmp/nv-codec-headers-11/include \
+    /tmp/nv-codec-headers/include \
+    /mnt/wslg/distro/tmp/nv-codec-headers/include
+do
+  if [[ -f "$candidate/ffnvcodec/nvEncodeAPI.h" ]]; then
+    DEFAULT_FFNV_CODEC_HEADERS="$candidate"
+    break
+  fi
+done
 
 : "${FFNV_CODEC_HEADERS:=$DEFAULT_FFNV_CODEC_HEADERS}"
 : "${JAVA_INCLUDE:=${JAVA_HOME:-}/include}"

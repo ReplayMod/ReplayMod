@@ -22,6 +22,9 @@
     //#endif
     "MixinKeyboardListener",
     "MixinMinecraft",
+    //#if MC>=11400
+    "Mixin_LiftReplayTickRateCap",
+    //#endif
     "GuiScreenAccessor",
     "KeyBindingAccessor",
     "MinecraftAccessor",

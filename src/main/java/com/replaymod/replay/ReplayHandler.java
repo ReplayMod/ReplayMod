@@ -738,6 +738,16 @@ public class ReplayHandler {
                     replaySender.jumpToTime(targetTime);
                 }
             } else { // We either have to restart the replay or send a significant amount of packets
+                // Kick off Quick Mode initialization in the background so subsequent large jumps
+                // can use the O(log n) seek path even if Quick Mode wasn't enabled by the user.
+                //#if MC>=10800
+                if (!ReplayMod.isMinimalMode() && quickReplaySender != null
+                        && quickReplaySender.getInitializationPromise() == null) {
+                    quickReplaySender.initialize(progress -> {});
+                    LOGGER.info("Triggered background Quick Mode initialization due to large replay jump.");
+                }
+                //#endif
+
                 // Render our please-wait-screen
                 GuiScreen guiScreen = new GuiScreen();
                 guiScreen.setBackground(AbstractGuiScreen.Background.DIRT);
