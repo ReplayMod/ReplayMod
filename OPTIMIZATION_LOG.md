@@ -4,7 +4,7 @@
 |-------------|-------------|---------------------------------------|--------|-------|-------|--------|
 | SEEK-01     | IN_PROGRESS | Keyframe index seek                   | -      | -     | -     | -      |
 | SEEK-02     | SKIP        | QuickMode parallel index scan         | Stateful ReplayInputStream scan | Benchmark task missing | n/a | - |
-| PARALLEL-01 | DONE        | Shared ForkJoinPool + IO_POOL         | ad-hoc quick init thread | shared REPLAY_POOL/IO_POOL | n/a | 0519cc9d |
+| PARALLEL-01 | DONE        | Shared ForkJoinPool + IO_POOL         | ad-hoc quick init thread | shared REPLAY_POOL/IO_POOL | n/a | 637d4b1f |
 | PARALLEL-02 | PENDING     | Async chunk deserialization           | -      | -     | -     | -      |
 | PARALLEL-03 | PENDING     | Dirty-flag chunk rebuild              | -      | -     | -     | -      |
 | GPU-01      | PENDING     | Multi-threaded mesh build             | -      | -     | -     | -      |
