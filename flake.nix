@@ -11,6 +11,8 @@
       in {
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
+            jdk8
+            jdk17
             jdk21
             gradle
             ffmpeg-full
@@ -25,6 +27,7 @@
           shellHook = ''
             export JAVA_HOME=${pkgs.jdk21}
             export PATH=$JAVA_HOME/bin:$PATH
+            export GRADLE_OPTS="-Dorg.gradle.java.installations.paths=${pkgs.jdk8},${pkgs.jdk17},${pkgs.jdk21} ''${GRADLE_OPTS:-}"
             echo "ReplayMod dev shell - Java: $(java -version 2>&1 | head -1)"
             echo "CPUs: $(nproc)  |  DRI: $(ls /dev/dri/ 2>/dev/null | tr '\n' ' ')"
           '';
