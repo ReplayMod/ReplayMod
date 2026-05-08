@@ -88,13 +88,7 @@ jobs:
         run: |
           tag="${{ steps.release.outputs.tag }}"
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" \
-              --title "$tag" \
-              --notes "Automated ReplayMod release for $tag.
-
-This release contains:
-- ReplayMod jar for Minecraft 1.19.4 (Fabric)
-- ReplayMod jar for Minecraft 1.21.4 (Fabric)
-- Native Windows encoder DLL (\`replaymod_native_encoder.dll\`)"
+            printf 'Automated ReplayMod release for %s.\n\nThis release contains:\n- ReplayMod jar for Minecraft 1.19.4 (Fabric)\n- ReplayMod jar for Minecraft 1.21.4 (Fabric)\n- Native Windows encoder DLL (`replaymod_native_encoder.dll`)\n' "$tag" > release-notes.md
+            gh release create "$tag" --title "$tag" --notes-file release-notes.md
           fi
           gh release upload "$tag" ci-artifacts/* --clobber
