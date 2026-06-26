@@ -78,6 +78,11 @@ public class RecordingEventHandler extends EventRegistrations {
     private final MinecraftClient mc = getMinecraft();
     private final PacketListener packetListener;
 
+    // Sending a position update every frame causes the interpolation code to never reach its target
+    // so we'll record one only every other tick (this matches what the vanilla server does for player entities)
+    private static final int POS_UPDATE_FREQUENCY = 2;
+    private int ticksSinceLastPosUpdate;
+
     //#if MC>=10904
     private static final int TRACKED_POSITION_RESOLUTION = 4096;
     //#else
@@ -203,7 +208,7 @@ public class RecordingEventHandler extends EventRegistrations {
             //$$ final double maxRelDist = 4.0 * TRACKED_POSITION_RESOLUTION;
             //#endif
 
-            Packet packet;
+            Packet packet = null;
             if (force || Math.abs(dx) > maxRelDist || Math.abs(dy) > maxRelDist || Math.abs(dz) > maxRelDist) {
                 //#if MC>=12102
                 //$$ packet = new EntityPositionSyncS2CPacket(player.getId(), PlayerPosition.fromEntity(player), player.isOnGround());
@@ -228,7 +233,8 @@ public class RecordingEventHandler extends EventRegistrations {
                 lastX = player.getX();
                 lastY = player.getY();
                 lastZ = player.getZ();
-            } else {
+            } else if (++ticksSinceLastPosUpdate >= POS_UPDATE_FREQUENCY) {
+                ticksSinceLastPosUpdate = 0;
                 byte newYaw = (byte) ((int) (player.yaw * 256.0F / 360.0F));
                 byte newPitch = (byte) ((int) (player.pitch * 256.0F / 360.0F));
 
@@ -258,7 +264,9 @@ public class RecordingEventHandler extends EventRegistrations {
                 lastZ += (double) dz / TRACKED_POSITION_RESOLUTION;
             }
 
-            packetListener.save(packet);
+            if (packet != null) {
+                packetListener.save(packet);
+            }
 
             //HEAD POS
             int rotationYawHead = ((int)(player.headYaw * 256.0F / 360.0F));
