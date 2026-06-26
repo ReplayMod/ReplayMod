@@ -78,7 +78,13 @@ public class RecordingEventHandler extends EventRegistrations {
     private final MinecraftClient mc = getMinecraft();
     private final PacketListener packetListener;
 
+    //#if MC>=10904
+    private static final int TRACKED_POSITION_RESOLUTION = 4096;
+    //#else
+    //$$ private static final int TRACKED_POSITION_RESOLUTION = 32;
+    //#endif
     private Double lastX, lastY, lastZ;
+
     //#if MC>=10904
     private static final int EQUIPMENT_SLOTS = EquipmentSlot.values().length;
     //#else
@@ -187,18 +193,14 @@ public class RecordingEventHandler extends EventRegistrations {
                 force = true;
             }
 
-            double dx = player.getX() - lastX;
-            double dy = player.getY() - lastY;
-            double dz = player.getZ() - lastZ;
-
-            lastX = player.getX();
-            lastY = player.getY();
-            lastZ = player.getZ();
+            long dx = Math.round((player.getX() - lastX) * TRACKED_POSITION_RESOLUTION);
+            long dy = Math.round((player.getY() - lastY) * TRACKED_POSITION_RESOLUTION);
+            long dz = Math.round((player.getZ() - lastZ) * TRACKED_POSITION_RESOLUTION);
 
             //#if MC>=10904
-            final double maxRelDist = 8.0;
+            final double maxRelDist = 8.0 * TRACKED_POSITION_RESOLUTION;
             //#else
-            //$$ final double maxRelDist = 4.0;
+            //$$ final double maxRelDist = 4.0 * TRACKED_POSITION_RESOLUTION;
             //#endif
 
             Packet packet;
@@ -223,6 +225,9 @@ public class RecordingEventHandler extends EventRegistrations {
                 //$$         teleportPacket.func_149447_h()
                 //$$ );
                 //#endif
+                lastX = player.getX();
+                lastY = player.getY();
+                lastZ = player.getZ();
             } else {
                 byte newYaw = (byte) ((int) (player.yaw * 256.0F / 360.0F));
                 byte newPitch = (byte) ((int) (player.pitch * 256.0F / 360.0F));
@@ -234,9 +239,9 @@ public class RecordingEventHandler extends EventRegistrations {
                 //#endif
                         player.getEntityId(),
                         //#if MC>=10904
-                        (short) Math.round(dx * 4096), (short) Math.round(dy * 4096), (short) Math.round(dz * 4096),
+                        (short) dx, (short) dy, (short) dz,
                         //#else
-                        //$$ (byte) Math.round(dx * 32), (byte) Math.round(dy * 32), (byte) Math.round(dz * 32),
+                        //$$ (byte) dx, (byte) dy, (byte) dz,
                         //#endif
                         newYaw, newPitch
                         //#if MC>=11600
@@ -247,6 +252,10 @@ public class RecordingEventHandler extends EventRegistrations {
                         //#endif
                         //#endif
                 );
+
+                lastX += (double) dx / TRACKED_POSITION_RESOLUTION;
+                lastY += (double) dy / TRACKED_POSITION_RESOLUTION;
+                lastZ += (double) dz / TRACKED_POSITION_RESOLUTION;
             }
 
             packetListener.save(packet);
