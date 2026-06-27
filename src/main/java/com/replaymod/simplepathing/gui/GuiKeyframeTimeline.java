@@ -34,9 +34,6 @@ import java.util.Comparator;
 import java.util.Optional;
 
 import static com.replaymod.core.versions.MCVer.emitLine;
-import static de.johni0702.minecraft.gui.versions.MCVer.popScissorState;
-import static de.johni0702.minecraft.gui.versions.MCVer.pushScissorState;
-import static de.johni0702.minecraft.gui.versions.MCVer.setScissorDisabled;
 
 //#if MC>=12111
 //$$ import net.minecraft.client.render.RenderLayers;
@@ -143,6 +140,10 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
 
         SPTimeline timeline = mod.getCurrentTimeline();
 
+        ReadablePoint screenOffset = renderer.getOpenGlOffset();
+        ReadableDimension screenSize = gui.overlay.getMaxSize();
+        renderer.pushScissor(-screenOffset.getX(), -screenOffset.getY(), screenSize.getWidth(), screenSize.getHeight());
+
         timeline.getTimeline().getPaths().stream().flatMap(path -> path.getKeyframes().stream()).forEach(keyframe -> {
             if (keyframe.getTime() >= startTime && keyframe.getTime() <= endTime) {
                 double relativeTime = keyframe.getTime() - startTime;
@@ -230,9 +231,6 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     emitLine(matrixStack, buffer, p2, p3, color, lineWidth);
                     emitLine(matrixStack, buffer, p3, p4, color, lineWidth);
 
-                    pushScissorState();
-                    setScissorDisabled();
-
                     //#if MC>=12105
                     //$$ immediate.draw();
                     //#else
@@ -256,8 +254,6 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                     GL11.glDisable(GL11.GL_LINE_SMOOTH);
                     //#endif
                     //#endif
-
-                    popScissorState();
                     //#endif
                 }
             }
@@ -275,13 +271,12 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
         //$$
         //$$     Pool pool = ((GameRendererAccessor) mc.gameRenderer).getPool();
         //$$     TimeTimelineLinesRenderer linesRenderer = pool.acquire(TimeTimelineLinesRenderer.FACTORY);
-        //$$     pushScissorState();
-        //$$     setScissorDisabled();
         //$$     linesRenderer.render(linesRenderState, ((DrawContextAccessor) renderer.getContext()).getState(), scale);
-        //$$     popScissorState();
         //$$     pool.release(TimeTimelineLinesRenderer.FACTORY, linesRenderer); // Note: Assumes we only render one per frame
         //$$ }
         //#endif
+
+        renderer.popScissor();
 
         // Draw colored quads on spectator path segments
         for (PathSegment segment : timeline.getPositionPath().getSegments()) {
