@@ -55,6 +55,10 @@ import net.minecraft.util.math.Vec3d;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
+//#if MC >= 26.2
+//$$ import net.minecraft.world.entity.EntityTypes;
+//#endif
+
 //#if MC>=12109
 //$$ import net.minecraft.network.ClientConnection;
 //$$ import net.minecraft.network.listener.PacketListener;
@@ -604,8 +608,9 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                             e.printStackTrace();
                         }
                         mc.openScreen(new NoticeScreen(
+                                // FIXME remap bug: openScreen pattern doesn't apply properly without {}
                                 //#if MC>=11400
-                                () -> mc.openScreen(null),
+                                () -> { mc.openScreen(null); },
                                 new TranslatableText("replaymod.error.unknownrestriction1"),
                                 new TranslatableText("replaymod.error.unknownrestriction2", unknown)
                                 //#else
@@ -707,6 +712,9 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                     //$$ packet.showDeathScreen(),
                     //$$ packet.doLimitedCrafting(),
                     //$$ withSpectatorMode(packet.commonPlayerSpawnInfo())
+                    //#if MC >= 26.2
+                    //$$ , packet.onlineMode()
+                    //#endif
                     //#if MC>=12006
                     //$$ , packet.enforcesSecureChat()
                     //#endif
@@ -1232,7 +1240,9 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
 
             if(p instanceof EntitySpawnS2CPacket) {
                 EntitySpawnS2CPacket pso = (EntitySpawnS2CPacket)p;
-                //#if MC>=11400
+                //#if MC >= 26.2
+                //$$ if (pso.getType() == EntityTypes.FIREWORK_ROCKET) return null;
+                //#elseif MC>=11400
                 if (pso.getEntityTypeId() == EntityType.FIREWORK_ROCKET) return null;
                 //#else
                 //$$ int type = pso.getType();

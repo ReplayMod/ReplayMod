@@ -205,6 +205,10 @@ public class ConnectionEventHandler {
         }
     }
 
+    public RecordingEventHandler getRecordingEventHandler() {
+        return recordingEventHandler;
+    }
+
     public PacketListener getPacketListener() {
         return packetListener;
     }

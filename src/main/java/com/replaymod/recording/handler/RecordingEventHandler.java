@@ -105,21 +105,6 @@ public class RecordingEventHandler extends EventRegistrations {
         this.packetListener = packetListener;
     }
 
-    @Override
-    public void register() {
-        super.register();
-        ((RecordingEventSender) mc.worldRenderer).setRecordingEventHandler(this);
-    }
-
-    @Override
-    public void unregister() {
-        super.unregister();
-        RecordingEventSender recordingEventSender = ((RecordingEventSender) mc.worldRenderer);
-        if (recordingEventSender.getRecordingEventHandler() == this) {
-            recordingEventSender.setRecordingEventHandler(null);
-        }
-    }
-
     //#if MC>=10904
     public void onPacket(Packet<?> packet) {
         packetListener.save(packet);
@@ -391,10 +376,5 @@ public class RecordingEventHandler extends EventRegistrations {
                 packetListener.setServerWasPaused();
             }
         }
-    }
-
-    public interface RecordingEventSender {
-        void setRecordingEventHandler(RecordingEventHandler recordingEventHandler);
-        RecordingEventHandler getRecordingEventHandler();
     }
 }

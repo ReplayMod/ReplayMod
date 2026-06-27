@@ -551,7 +551,11 @@ public class VideoRenderer implements RenderInfo {
             //#if MC>=12105
             //$$ RenderSystem.getDevice()
             //$$         .createCommandEncoder()
-            //$$         .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+                    //#if MC >= 26.2
+                    //$$ .clearColorAndDepthTextures(mc.gameRenderer.mainRenderTarget().getColorTexture(), new org.joml.Vector4f(), mc.gameRenderer.mainRenderTarget().getDepthTexture(), 0);
+                    //#else
+                    //$$ .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+                    //#endif
             //#else
             GlStateManager.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
                     //#if MC>=11400 && MC<12102
@@ -568,7 +572,11 @@ public class VideoRenderer implements RenderInfo {
             //#if MC>=12105
             //$$ RenderSystem.getDevice()
             //$$         .createCommandEncoder()
-            //$$         .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+                    //#if MC >= 26.2
+                    //$$ .clearColorAndDepthTextures(mc.gameRenderer.mainRenderTarget().getColorTexture(), new org.joml.Vector4f(), mc.gameRenderer.mainRenderTarget().getDepthTexture(), 0);
+                    //#else
+                    //$$ .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+                    //#endif
             //#else
             //#if MC>=12102
             //$$ RenderSystem.clear(256);
@@ -673,7 +681,9 @@ public class VideoRenderer implements RenderInfo {
             //$$ windowRenderState.guiScale = window.getGuiScale();
             //$$ windowRenderState.appropriateLineWidth = window.getAppropriateLineWidth();
             //$$ windowRenderState.isMinimized = window.isMinimized();
+            //#if MC < 26.2
             //$$ windowRenderState.isResized = false;
+            //#endif
             //#endif
 
             if (mc.getOverlay() != null) {
@@ -708,7 +718,11 @@ public class VideoRenderer implements RenderInfo {
             //$$ var orgFog = RenderSystem.getShaderFog();
             //$$ var orgProjBuf = RenderSystem.getProjectionMatrixBuffer();
             //$$ var orgProjType = RenderSystem.getProjectionType();
+            //#if MC >= 26.2
+            //$$ gameRenderer.getGuiRenderer().render();
+            //#else
             //$$ gameRenderer.getGuiRenderer().render(gameRenderer.getFogRenderer().getFogBuffer(FogRenderer.FogType.NONE));
+            //#endif
             //$$ RenderSystem.setShaderFog(orgFog);
             //$$ RenderSystem.setProjectionMatrix(orgProjBuf, orgProjType);
             //#elseif MC>=12000

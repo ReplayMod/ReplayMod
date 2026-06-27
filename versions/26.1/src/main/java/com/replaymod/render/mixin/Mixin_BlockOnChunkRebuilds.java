@@ -29,7 +29,12 @@ public abstract class Mixin_BlockOnChunkRebuilds implements ForceChunkLoadingHoo
     @Unique
     private long doneTasks = 0;
 
-    @Inject(method = "schedule", at = @At(value = "INVOKE", target = "Lnet/minecraft/TracingExecutor;execute(Ljava/lang/Runnable;)V"))
+    @Inject(method = {
+            "schedule"
+            //#if MC >= 26.2
+            //$$ , "runTask"
+            //#endif
+    }, at = @At(value = "INVOKE", target = "Lnet/minecraft/TracingExecutor;execute(Ljava/lang/Runnable;)V"))
     private void incrementScheduledTasks(CallbackInfo ci) {
         newMainThreadWorkLock.lock();
         try {

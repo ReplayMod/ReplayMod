@@ -11,6 +11,10 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
+//#if MC >= 26.2
+//$$ import org.joml.Vector3fc;
+//#endif
+
 //#if MC>=12005
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import org.joml.Matrix4f;
@@ -29,17 +33,15 @@ import static org.joml.Math.PI_f;
 
 @Mixin(Camera.class)
 public abstract class Mixin_Omnidirectional_Rotation {
-    @Shadow
-    @Final
-    private static Vector3f FORWARDS;
-
-    @Shadow
-    @Final
-    private static Vector3f UP;
-
-    @Shadow
-    @Final
-    private static Vector3f LEFT;
+    //#if MC >= 26.2
+    //$$ @Shadow @Final private static Vector3fc FORWARDS;
+    //$$ @Shadow @Final private static Vector3fc UP;
+    //$$ @Shadow @Final private static Vector3fc LEFT;
+    //#else
+    @Shadow @Final private static Vector3f FORWARDS;
+    @Shadow @Final private static Vector3f UP;
+    @Shadow @Final private static Vector3f LEFT;
+    //#endif
 
     @Shadow
     @Final

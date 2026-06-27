@@ -44,6 +44,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+//#if MC >= 26.2
+//$$ import net.minecraft.world.entity.EntityTypes;
+//#endif
+
 //#if MC>=12006
 //$$ import com.replaymod.recording.mixin.DecoderHandlerAccessor;
 //$$ import net.minecraft.network.NetworkState;
@@ -527,7 +531,11 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             }
 
             //#if MC>=12002
+            //#if MC >= 26.2
+            //$$ if (msg instanceof ClientboundAddEntityPacket packet && packet.getType() == EntityTypes.PLAYER) {
+            //#else
             //$$ if (msg instanceof EntitySpawnS2CPacket packet && packet.getEntityType() == EntityType.PLAYER) {
+            //#endif
             //$$     UUID uuid = packet.getUuid();
             //#else
             if (msg instanceof PlayerSpawnS2CPacket) {

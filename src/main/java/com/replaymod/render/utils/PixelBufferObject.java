@@ -37,7 +37,10 @@ public class PixelBufferObject implements AutoCloseable {
         }
     }
 
-    //#if MC>=11400
+    //#if MC >= 1.21.5
+    //$$ public static final boolean SUPPORTED = true;
+    //$$ private static final boolean arb = false;
+    //#elseif MC>=11400
     public static final boolean SUPPORTED = GL.getCapabilities().GL_ARB_pixel_buffer_object || GL.getCapabilities().OpenGL15;
     private static final boolean arb = !GL.getCapabilities().OpenGL15;
     //#else

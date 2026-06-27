@@ -25,11 +25,11 @@ import net.minecraft.client.render.WorldRenderer;
 //$$ @Mixin(GameRenderer.class)
 //#endif
 public abstract class Mixin_ChromaKeyForceSky {
-    @Shadow @Final private MinecraftClient client;
-
     //#if MC>=11700
     //$$ // Sky appears to be rendered unconditionally now
     //#else
+    @Shadow @Final private MinecraftClient client;
+
     //#if MC>=11500
     @ModifyConstant(method = "render", constant = @Constant(intValue = 4))
     //#elseif MC>=11400

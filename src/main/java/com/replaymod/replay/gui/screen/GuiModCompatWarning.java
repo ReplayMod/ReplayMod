@@ -78,7 +78,10 @@ public class GuiModCompatWarning extends AbstractGuiScreen<GuiModCompatWarning> 
             }
         }
 
-        cancelButton.onClick(() -> getMinecraft().openScreen(null));
+        // FIXME remap bug: openScreen pattern doesn't apply properly without {}
+        cancelButton.onClick(() -> {
+            getMinecraft().openScreen(null);
+        });
     }
 
     @Override

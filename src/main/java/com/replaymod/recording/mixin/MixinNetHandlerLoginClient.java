@@ -2,7 +2,7 @@ package com.replaymod.recording.mixin;
 
 import com.replaymod.core.versions.MCVer;
 import com.replaymod.recording.ReplayModRecording;
-import com.replaymod.recording.handler.RecordingEventHandler.RecordingEventSender;
+import com.replaymod.recording.packet.PacketListener;
 import net.minecraft.client.network.ClientLoginNetworkHandler;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.Packet;
@@ -32,13 +32,13 @@ public abstract class MixinNetHandlerLoginClient {
     }
 
     private void initiateRecording(Packet<?> packet) {
-        RecordingEventSender eventSender = (RecordingEventSender) MCVer.getMinecraft().worldRenderer;
-        if (eventSender.getRecordingEventHandler() != null) {
+        if (ReplayModRecording.instance.getConnectionEventHandler().getPacketListener() != null) {
             return; // already recording
         }
         ReplayModRecording.instance.initiateRecording(this.connection);
-        if (eventSender.getRecordingEventHandler() != null) {
-            eventSender.getRecordingEventHandler().onPacket(packet);
+        PacketListener packetListener = ReplayModRecording.instance.getConnectionEventHandler().getPacketListener();
+        if (packetListener != null) {
+            packetListener.save(packet);
         }
     }
 }

@@ -7,6 +7,9 @@
     //#if MC >= 26.1
     //$$ "BlockableEventLoopAccessor",
     //#endif
+    //#if MC >= 26.2
+    //$$ "GuiAccessor",
+    //#endif
     "Mixin_ContextualKeyBindings",
     //#if MC>=11400
     "AbstractButtonWidgetAccessor",

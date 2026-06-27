@@ -255,11 +255,7 @@ public class GuiVideoRenderer extends GuiScreen implements Tickable {
             previewTextureDirty = false;
         }
 
-        //#if MC>=12105
-        //$$ guiRenderer.bindTexture(previewTexture.getGlTexture());
-        //#else
-        guiRenderer.bindTexture(previewTexture.getGlId());
-        //#endif
+        guiRenderer.bindTexture(previewTexture);
         renderPreviewTexture(guiRenderer, size, videoWidth, videoHeight);
     }
 

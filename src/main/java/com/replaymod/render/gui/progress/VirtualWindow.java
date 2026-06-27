@@ -1,11 +1,19 @@
 package com.replaymod.render.gui.progress;
 
-import com.replaymod.render.hooks.MinecraftClientExt;
+import com.replaymod.render.hooks.FramebufferDelegateHolder;
+import com.replaymod.render.hooks.WindowDelegateHolder;
 import com.replaymod.render.mixin.MainWindowAccessor;
 import de.johni0702.minecraft.gui.function.Closeable;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.util.Window;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+//#if MC >= 26.2
+//$$ import com.mojang.blaze3d.systems.GpuSurface;
+//$$ import com.mojang.blaze3d.systems.SurfaceException;
+//#endif
 
 //#if MC >= 26.1
 //$$ import com.mojang.blaze3d.systems.RenderSystem;
@@ -16,6 +24,7 @@ import net.minecraft.client.util.Window;
 //#endif
 
 public class VirtualWindow implements Closeable {
+    private static final Logger LOGGER = LogManager.getLogger();
     private final MinecraftClient mc;
     private final Window window;
     private final MainWindowAccessor acc;
@@ -45,14 +54,14 @@ public class VirtualWindow implements Closeable {
         );
         //#endif
 
-        MinecraftClientExt.get(mc).setWindowDelegate(this);
+        WindowDelegateHolder.get(mc).setWindowDelegate(this);
     }
 
     @Override
     public void close() {
         guiFramebuffer.delete();
 
-        MinecraftClientExt.get(mc).setWindowDelegate(null);
+        WindowDelegateHolder.get(mc).setWindowDelegate(null);
     }
 
     public void bind() {
@@ -72,7 +81,7 @@ public class VirtualWindow implements Closeable {
     }
 
     public void beginWrite() {
-        MinecraftClientExt.get(mc).setFramebufferDelegate(guiFramebuffer);
+        FramebufferDelegateHolder.get(mc).setFramebufferDelegate(guiFramebuffer);
         //#if MC<12105
         guiFramebuffer.beginWrite(true);
         //#endif
@@ -82,9 +91,49 @@ public class VirtualWindow implements Closeable {
         //#if MC<12105
         guiFramebuffer.endWrite();
         //#endif
-        MinecraftClientExt.get(mc).setFramebufferDelegate(null);
+        FramebufferDelegateHolder.get(mc).setFramebufferDelegate(null);
     }
 
+    //#if MC >= 26.2
+    //$$ private boolean surfaceIsInvalid;
+    //$$ private boolean windowSurfaceNeedsReconfiguring;
+    //$$ public void flip() {
+    //$$     if (framebufferWidth == 0 || framebufferHeight == 0) {
+    //$$         return;
+    //$$     }
+    //$$
+    //$$     GpuSurface windowSurface = mc.windowSurface();
+    //$$
+    //$$     if (windowSurfaceNeedsReconfiguring || windowSurface.isSuboptimal() && !surfaceIsInvalid) {
+    //$$         GpuSurface.PresentMode presentMode = GpuSurface.PresentMode.getSupportedVsyncMode(windowSurface.supportedPresentModes(), mc.options.enableVsync().get());
+    //$$         GpuSurface.Configuration config = new GpuSurface.Configuration(framebufferWidth, framebufferHeight, presentMode);
+    //$$         try {
+    //$$             windowSurface.configure(config);
+    //$$             this.surfaceIsInvalid = false;
+    //$$         } catch (SurfaceException e) {
+    //$$             LOGGER.warn("Couldn't configure surface to {}: {}", config, e);
+    //$$             this.surfaceIsInvalid = true;
+    //$$         }
+    //$$     }
+    //$$
+    //$$     if (surfaceIsInvalid || window.isMinimized()) {
+    //$$         return;
+    //$$     }
+    //$$
+    //$$     try {
+    //$$         windowSurface.acquireNextTexture();
+    //$$     } catch (SurfaceException e) {
+    //$$         LOGGER.warn("Couldn't acquire next surface texture with config {}: {}", windowSurface.currentConfiguration(), e);
+    //$$         this.surfaceIsInvalid = true;
+    //$$         this.windowSurfaceNeedsReconfiguring = true;
+    //$$         return;
+    //$$     }
+    //$$
+    //$$     windowSurface.blitFromTexture(RenderSystem.getDevice().createCommandEncoder(), guiFramebuffer.getColorTextureView());
+    //$$     RenderSystem.getDevice().createCommandEncoder().submit();
+    //$$     windowSurface.present();
+    //$$ }
+    //#else
     public void flip() {
         //#if MC>=12105
         //$$ guiFramebuffer.blitToScreen();
@@ -110,6 +159,7 @@ public class VirtualWindow implements Closeable {
         //#endif
         //#endif
     }
+    //#endif
 
     /**
      * Updates the size of the window's framebuffer. Must only be called while this window is bound.
@@ -127,6 +177,9 @@ public class VirtualWindow implements Closeable {
 
         framebufferWidth = newWidth;
         framebufferHeight = newHeight;
+        //#if MC >= 26.2
+        //$$ windowSurfaceNeedsReconfiguring = true;
+        //#endif
 
         //#if MC>=11400
         guiFramebuffer.resize(newWidth, newHeight

@@ -23,6 +23,11 @@ import static com.replaymod.core.versions.MCVer.resizeMainWindow;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 
+//#if MC >= 26.2
+//$$ import com.mojang.blaze3d.buffers.GpuBufferSlice;
+//$$ import com.mojang.blaze3d.systems.RenderSystem;
+//#endif
+
 //#if MC>=12105
 //#if MC<12106
 //$$ import com.mojang.blaze3d.buffers.BufferType;
@@ -97,7 +102,11 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         //#if MC>=12105
         //$$ RenderSystem.getDevice()
         //$$         .createCommandEncoder()
-        //$$         .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+                //#if MC >= 26.2
+                //$$ .clearColorAndDepthTextures(mc.gameRenderer.mainRenderTarget().getColorTexture(), new org.joml.Vector4f(), mc.gameRenderer.mainRenderTarget().getDepthTexture(), 0);
+                //#else
+                //$$ .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+                //#endif
         //#else
         GlStateManager.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
                 //#if MC>=11400 && MC<12102
@@ -116,6 +125,12 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         //#endif
         popMatrix();
 
+        //#if MC >= 26.2
+        //$$ RenderSystem.getDynamicUniforms().reset();
+        //$$ mc.levelRenderer.endFrame();
+        //$$ RenderSystem.getDevice().createCommandEncoder().submit();
+        //#endif
+
         return captureFrame(frameId, captureData);
     }
 
@@ -129,7 +144,9 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         //$$ try (GpuBuffer gpuBuffer = device.createBuffer(null, BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, getFrameWidth() * getFrameHeight() * 4)) {
         //#endif
         //$$     device.createCommandEncoder().copyTextureToBuffer(frameBuffer().getColorAttachment(), gpuBuffer, 0, () -> {}, 0);
-            //#if MC>=12106
+            //#if MC >= 26.2
+            //$$ try (GpuBufferSlice.MappedView view = gpuBuffer.map(true, false)) {
+            //#elseif MC>=12106
             //$$ try (GpuBuffer.MappedView view = device.createCommandEncoder().mapBuffer(gpuBuffer, true, false)) {
             //#else
             //$$ try (GpuBuffer.ReadView view = device.createCommandEncoder().readBuffer(gpuBuffer)) {
