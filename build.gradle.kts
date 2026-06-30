@@ -99,6 +99,7 @@ dependencies {
             12110 -> "0.135.0+1.21.10"
             12111 -> "0.139.5+1.21.11"
             26_01_00 -> "0.144.3+26.1"
+            26_02_00 -> "0.152.2+26.2"
             else -> throw UnsupportedOperationException()
         }
         val fabricApiModules = mutableListOf(
@@ -184,6 +185,7 @@ dependencies {
 
     if (platform.isFabric) {
         val modMenuVersion = when {
+            mcVersion >= 26_02_00 -> "20.0.0-beta.4"
             mcVersion >= 26_01_00 -> "18.0.0-alpha.8"
             mcVersion >= 12111 -> "17.0.0-alpha.1"
             mcVersion >= 12110 -> "16.0.0-rc.1"
@@ -221,6 +223,7 @@ dependencies {
     }
 
     val irisVersion = when {
+        mcVersion >= 26_02_00 -> "1.11.1+26.2-fabric"
         mcVersion >= 26_01_00 -> "1.10.8+26.1-fabric"
         mcVersion >= 12000 -> "1.7.2+1.20.1"
         mcVersion >= 11600 -> "1.18.x-v1.2.0"

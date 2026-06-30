@@ -8,6 +8,8 @@ import com.replaymod.replaystudio.protocol.PacketTypeRegistry;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector2f;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.gui.screen.Overlay;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.util.math.MatrixStack;
@@ -251,6 +253,90 @@ public class MCVer {
     public static MinecraftClient getMinecraft() {
         return MinecraftClient.getInstance();
     }
+
+    public static Screen getCurrentScreen(MinecraftClient mc) {
+        //#if MC>=260200
+        //$$ return mc.gui.screen();
+        //#else
+        return mc.currentScreen;
+        //#endif
+    }
+
+    public static void setCurrentScreen(MinecraftClient mc, Screen screen) {
+        //#if MC>=260200
+        //$$ mc.gui.setScreen(screen);
+        //#else
+        mc.currentScreen = screen;
+        //#endif
+    }
+
+    public static Overlay getOverlay(MinecraftClient mc) {
+        //#if MC>=260200
+        //$$ return mc.gui.overlay();
+        //#else
+        return mc.getOverlay();
+        //#endif
+    }
+
+    public static Framebuffer getMainRenderTarget(MinecraftClient mc) {
+        //#if MC>=260200
+        //$$ return mc.gameRenderer.mainRenderTarget();
+        //#else
+        return mc.getFramebuffer();
+        //#endif
+    }
+
+    public static boolean isHudHidden(MinecraftClient mc) {
+        //#if MC>=260200
+        //$$ return mc.gui.hud.isHidden();
+        //#else
+        return mc.options.hudHidden;
+        //#endif
+    }
+
+    public static void setHudHidden(MinecraftClient mc, boolean hidden) {
+        //#if MC>=260200
+        //$$ if (mc.gui.hud.isHidden() != hidden) {
+        //$$     mc.gui.hud.toggle();
+        //$$ }
+        //#else
+        mc.options.hudHidden = hidden;
+        //#endif
+    }
+
+    public static void clearChat(MinecraftClient mc) {
+        //#if MC>=260200
+        //$$ mc.gui.hud.getChat().clearMessages(false);
+        //#elseif MC>=11100
+        //$$ mc.inGameHud.getChatHud().clear(false);
+        //#else
+        //$$ mc.ingameGUI.getChatGUI().clearChatMessages();
+        //#endif
+    }
+
+    //#if MC>=11600
+    public static void addChatMessage(MinecraftClient mc, Text text) {
+        //#if MC>=260200
+        //$$ mc.gui.hud.getChat().addClientSystemMessage(text);
+        //#else
+        mc.inGameHud.getChatHud().addMessage(text);
+        //#endif
+    }
+    //#endif
+
+    //#if MC>=12105
+    //$$ public static void clearColorAndDepthTextures(Framebuffer frameBuffer) {
+        //#if MC>=260200
+        //$$ com.mojang.blaze3d.systems.RenderSystem.getDevice()
+        //$$         .createCommandEncoder()
+        //$$         .clearColorAndDepthTextures(frameBuffer.getColorTexture(), new org.joml.Vector4f(0, 0, 0, 0), frameBuffer.getDepthTexture(), 1);
+        //#else
+        //$$ com.mojang.blaze3d.systems.RenderSystem.getDevice()
+        //$$         .createCommandEncoder()
+        //$$         .clearColorAndDepthTextures(frameBuffer.getColorAttachment(), 0, frameBuffer.getDepthAttachment(), 1);
+        //#endif
+    //$$ }
+    //#endif
 
     public static void addButton(
             Screen screen,

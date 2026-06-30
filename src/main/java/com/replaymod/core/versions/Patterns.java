@@ -12,7 +12,9 @@ import net.minecraft.client.options.KeyBinding;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.texture.TextureManager;
 import net.minecraft.client.world.ClientWorld;
+//#if MC<12100
 import net.minecraft.client.render.Tessellator;
+//#endif
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.entity.player.PlayerInventory;
@@ -456,6 +458,9 @@ class Patterns {
     //$$ @Pattern private static void BufferBuilder_addPosTexCol() {}
     //#endif
 
+    //#if MC>=12100
+    //$$ @Pattern private static void Tessellator_getInstance() {}
+    //#else
     @Pattern
     private static Tessellator Tessellator_getInstance() {
         //#if MC>=10800
@@ -464,6 +469,7 @@ class Patterns {
         //$$ return Tessellator.instance;
         //#endif
     }
+    //#endif
 
     @Pattern
     private static EntityRenderDispatcher getEntityRenderDispatcher(MinecraftClient mc) {

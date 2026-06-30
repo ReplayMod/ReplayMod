@@ -473,14 +473,14 @@ public class VideoRenderer implements RenderInfo {
     private void executeTaskQueue() {
         //#if MC>=11400
         while (true) {
-            while (mc.getOverlay() != null) {
+            while (getOverlay(mc) != null) {
                 drawGui();
                 ((MinecraftMethodAccessor) mc).replayModExecuteTaskQueue();
 
                 //#if MC>=12109
                 //$$ // The SplashOverlay now only closes on `tick`, but there are no ticks while we're waiting,
                 //$$ // so we need to manually tick it to not get stuck.
-                //$$ Overlay overlay = mc.getOverlay();
+                //$$ Overlay overlay = getOverlay(mc);
                 //$$ if (overlay != null) {
                 //$$     overlay.tick();
                 //$$ }
@@ -512,7 +512,7 @@ public class VideoRenderer implements RenderInfo {
         //$$ }
         //#endif
 
-        mc.currentScreen = gui.toMinecraft();
+        setCurrentScreen(mc, gui.toMinecraft());
     }
 
     private void tick() {
@@ -543,9 +543,7 @@ public class VideoRenderer implements RenderInfo {
 
             pushMatrix();
             //#if MC>=12105
-            //$$ RenderSystem.getDevice()
-            //$$         .createCommandEncoder()
-            //$$         .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+            //$$ clearColorAndDepthTextures(getMainRenderTarget(mc));
             //#else
             GlStateManager.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
                     //#if MC>=11400 && MC<12102
@@ -560,9 +558,7 @@ public class VideoRenderer implements RenderInfo {
 
             //#if MC>=11500
             //#if MC>=12105
-            //$$ RenderSystem.getDevice()
-            //$$         .createCommandEncoder()
-            //$$         .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+            //$$ clearColorAndDepthTextures(getMainRenderTarget(mc));
             //#else
             //#if MC>=12102
             //$$ RenderSystem.clear(256);
@@ -667,14 +663,16 @@ public class VideoRenderer implements RenderInfo {
             //$$ windowRenderState.guiScale = window.getGuiScale();
             //$$ windowRenderState.appropriateLineWidth = window.getAppropriateLineWidth();
             //$$ windowRenderState.isMinimized = window.isMinimized();
+            //#if MC<260200
             //$$ windowRenderState.isResized = false;
             //#endif
+            //#endif
 
-            if (mc.getOverlay() != null) {
-                Screen orgScreen = mc.currentScreen;
+            if (getOverlay(mc) != null) {
+                Screen orgScreen = getCurrentScreen(mc);
                 try {
-                    mc.currentScreen = gui.toMinecraft();
-                    mc.getOverlay().render(
+                    setCurrentScreen(mc, gui.toMinecraft());
+                    getOverlay(mc).render(
                             //#if MC>=12000
                             //$$ drawContext,
                             //#elseif MC>=11600
@@ -682,7 +680,7 @@ public class VideoRenderer implements RenderInfo {
                             //#endif
                             mouseX, mouseY, 0);
                 } finally {
-                    mc.currentScreen = orgScreen;
+                    setCurrentScreen(mc, orgScreen);
                 }
             } else {
                 gui.toMinecraft().tick();
@@ -702,7 +700,11 @@ public class VideoRenderer implements RenderInfo {
             //$$ var orgFog = RenderSystem.getShaderFog();
             //$$ var orgProjBuf = RenderSystem.getProjectionMatrixBuffer();
             //$$ var orgProjType = RenderSystem.getProjectionType();
+            //#if MC>=260200
+            //$$ gameRenderer.getGuiRenderer().render();
+            //#else
             //$$ gameRenderer.getGuiRenderer().render(gameRenderer.getFogRenderer().getFogBuffer(FogRenderer.FogType.NONE));
+            //#endif
             //$$ RenderSystem.setShaderFog(orgFog);
             //$$ RenderSystem.setProjectionMatrix(orgProjBuf, orgProjType);
             //#elseif MC>=12000

@@ -101,7 +101,11 @@ public abstract class Mixin_BlockOnChunkRebuilds implements ForceChunkLoadingHoo
             // MC will only allow one buffer resize per frame (presumably to avoid lag spikes), so we'll simply call
             // the method as often as there are buffers (there's only a fixed amount of 3, one per ChunkSectionLayer)
             for (int i = 0; i < chunkUberBuffers.size(); i++) {
+                //#if MC>=260200
+                //$$ uploadTerrainBuffersToGpu();
+                //#else
                 uploadGlobalGeomBuffersToGPU();
+                //#endif
             }
         } finally {
             copyLock.unlock();
@@ -113,7 +117,11 @@ public abstract class Mixin_BlockOnChunkRebuilds implements ForceChunkLoadingHoo
     private ReentrantLock copyLock;
 
     @Shadow
+    //#if MC>=260200
+    //$$ public abstract void uploadTerrainBuffersToGpu();
+    //#else
     public abstract void uploadGlobalGeomBuffersToGPU();
+    //#endif
 
     @Shadow
     @Final

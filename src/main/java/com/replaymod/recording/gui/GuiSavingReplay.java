@@ -66,7 +66,7 @@ public class GuiSavingReplay {
 
     public void close() {
         core.getBackgroundProcesses().removeProcess(panel);
-        AbstractGuiScreen<?> currentScreen = GuiScreen.from(mc.currentScreen);
+        AbstractGuiScreen<?> currentScreen = GuiScreen.from(com.replaymod.core.versions.MCVer.getCurrentScreen(mc));
         if (currentScreen instanceof GuiReplayViewer) {
             ((GuiReplayViewer) currentScreen).list.load();
         }
@@ -148,7 +148,7 @@ public class GuiSavingReplay {
             } catch (IOException e) {
                 logger.error("Deleting replay file:", e);
                 CrashReport crashReport = CrashReport.create(e, "Deleting replay file");
-                core.runLater(() -> Utils.error(logger, VanillaGuiScreen.wrap(mc.currentScreen), crashReport, () -> {}));
+                core.runLater(() -> Utils.error(logger, VanillaGuiScreen.wrap(com.replaymod.core.versions.MCVer.getCurrentScreen(mc)), crashReport, () -> {}));
             }
             return;
         }
@@ -163,7 +163,7 @@ public class GuiSavingReplay {
         } catch (IOException e) {
             logger.error("Renaming replay file:", e);
             CrashReport crashReport = CrashReport.create(e, "Renaming replay file");
-            core.runLater(() -> Utils.error(logger, VanillaGuiScreen.wrap(mc.currentScreen), crashReport, () -> {}));
+            core.runLater(() -> Utils.error(logger, VanillaGuiScreen.wrap(com.replaymod.core.versions.MCVer.getCurrentScreen(mc)), crashReport, () -> {}));
         }
     }
 }

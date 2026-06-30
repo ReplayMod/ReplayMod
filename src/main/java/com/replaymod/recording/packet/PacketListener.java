@@ -314,7 +314,7 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
                 } catch (Exception e) {
                     logger.error("Saving replay file:", e);
                     CrashReport crashReport = CrashReport.create(e, "Saving replay file");
-                    core.runLater(() -> Utils.error(logger, VanillaGuiScreen.wrap(mc.currentScreen), crashReport, guiSavingReplay::close));
+                    core.runLater(() -> Utils.error(logger, VanillaGuiScreen.wrap(com.replaymod.core.versions.MCVer.getCurrentScreen(mc)), crashReport, guiSavingReplay::close));
                     return;
                 }
             }
@@ -527,7 +527,11 @@ public class PacketListener extends ChannelInboundHandlerAdapter {
             }
 
             //#if MC>=12002
+            //#if MC>=260200
+            //$$ if (msg instanceof net.minecraft.network.protocol.game.ClientboundAddEntityPacket packet && packet.getType() == net.minecraft.world.entity.EntityTypes.PLAYER) {
+            //#else
             //$$ if (msg instanceof EntitySpawnS2CPacket packet && packet.getEntityType() == EntityType.PLAYER) {
+            //#endif
             //$$     UUID uuid = packet.getUuid();
             //#else
             if (msg instanceof PlayerSpawnS2CPacket) {

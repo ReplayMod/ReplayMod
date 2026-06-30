@@ -302,11 +302,7 @@ public class ReplayHandler {
     private void setup() {
         Preconditions.checkState(mc.isOnThread(), "Must be called from Minecraft thread.");
 
-        //#if MC>=11100
-        mc.inGameHud.getChatHud().clear(false);
-        //#else
-        //$$ mc.ingameGUI.getChatGUI().clearChatMessages();
-        //#endif
+        clearChat(mc);
 
         //#if MC>=10800
         ClientConnection networkManager = new ClientConnection(NetworkSide.CLIENTBOUND) {
@@ -707,10 +703,10 @@ public class ReplayHandler {
                         replaySender.sendPacketsTill(targetTime);
                         targetTime += 500;
                     //#if MC>=12109
-                    //$$ } while (mc.player == null || mc.currentScreen instanceof LevelLoadingScreen);
-                    //#else
-                    } while (mc.player == null || mc.currentScreen instanceof DownloadingTerrainScreen);
-                    //#endif
+                    //$$ } while (mc.player == null || getCurrentScreen(mc) instanceof LevelLoadingScreen);
+                //#else
+                    } while (mc.player == null || getCurrentScreen(mc) instanceof DownloadingTerrainScreen);
+                //#endif
                     replaySender.setAsyncMode(true);
 
                     for (int i = 0; i < Math.min(diff / 50, 3); i++) {
@@ -741,9 +737,7 @@ public class ReplayHandler {
                 // Perform the rendering using OpenGL
                 pushMatrix();
                 //#if MC>=12105
-                //$$ RenderSystem.getDevice()
-                //$$         .createCommandEncoder()
-                //$$         .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+                //$$ clearColorAndDepthTextures(getMainRenderTarget(mc));
                 //#else
                 GlStateManager.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
                         //#if MC>=11400 && MC<12102
@@ -833,7 +827,11 @@ public class ReplayHandler {
                 //$$ var orgFog = RenderSystem.getShaderFog();
                 //$$ var orgProjBuf = RenderSystem.getProjectionMatrixBuffer();
                 //$$ var orgProjType = RenderSystem.getProjectionType();
+                //#if MC>=260200
+                //$$ gameRenderer.getGuiRenderer().render();
+                //#else
                 //$$ gameRenderer.getGuiRenderer().render(gameRenderer.getFogRenderer().getFogBuffer(FogRenderer.FogType.NONE));
+                //#endif
                 //$$ RenderSystem.setShaderFog(orgFog);
                 //$$ RenderSystem.setProjectionMatrix(orgProjBuf, orgProjType);
                 //#elseif MC>=12000
@@ -857,13 +855,19 @@ public class ReplayHandler {
                 popMatrix();
                 pushMatrix();
                 //#if MC>=12105
+                //#if MC>=260200
+                //$$ mc.renderFrame(false);
+                //#else
                 //$$ mc.getFramebuffer().blitToScreen();
+                //#endif
                 //#else
                 mc.getFramebuffer().draw(mc.getWindow().getFramebufferWidth(), mc.getWindow().getFramebufferHeight());
                 //#endif
                 popMatrix();
 
-                //#if MC >= 26.1
+                //#if MC>=260200
+                //$$ // MC 26.2 presents through Minecraft.renderFrame above.
+                //#elseif MC >= 26.1
                 //$$ RenderSystem.flipFrame(null);
                 //#elseif MC>=12102
                 //$$ mc.getWindow().swapBuffers(null);
@@ -882,9 +886,9 @@ public class ReplayHandler {
                     replaySender.sendPacketsTill(targetTime);
                     targetTime += 500;
                 //#if MC>=12109
-                //$$ } while (mc.player == null || mc.currentScreen instanceof LevelLoadingScreen);
+                //$$ } while (mc.player == null || getCurrentScreen(mc) instanceof LevelLoadingScreen);
                 //#else
-                } while (mc.player == null || mc.currentScreen instanceof DownloadingTerrainScreen);
+                } while (mc.player == null || getCurrentScreen(mc) instanceof DownloadingTerrainScreen);
                 //#endif
                 replaySender.setAsyncMode(true);
                 replaySender.setReplaySpeed(0);
