@@ -158,7 +158,7 @@ public class GuiReplayOverlay extends AbstractGuiOverlay<GuiReplayOverlay> {
     @Override
     public void draw(GuiRenderer renderer, ReadableDimension size, RenderInfo renderInfo) {
         // Do not render overlay if all hud, or this one specifically, is hidden and we're not in some popup
-        if ((getMinecraft().options.hudHidden || hidden) && isAllowUserInput()) {
+        if ((com.replaymod.core.versions.MCVer.isHudHidden(getMinecraft()) || hidden) && isAllowUserInput()) {
             // Note that this only applies to when the mouse is visible, otherwise
             // the draw method isn't called in the first place
             return;

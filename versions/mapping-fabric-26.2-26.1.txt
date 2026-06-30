@@ -1,0 +1,6 @@
+net.minecraft.client.Minecraft setScreenAndShow() setScreen()
+net.minecraft.client.renderer.GameRenderer mainCamera() getMainCamera()
+net.minecraft.client.renderer.GameRenderer mainRenderTarget() getMainRenderTarget()
+net.minecraft.client.renderer.GameRenderer featureRenderDispatcher() getFeatureRenderDispatcher()
+net.minecraft.client.renderer.GameRenderer gameRenderState() getGameRenderState()
+com.mojang.blaze3d.buffers.GpuBufferSlice$MappedView com.mojang.blaze3d.buffers.GpuBuffer$MappedView

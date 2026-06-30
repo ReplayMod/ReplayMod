@@ -91,7 +91,7 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
 
         if (mc.world != null && mc.player != null) {
             GameRendererAccessor gameRenderer = (GameRendererAccessor) mc.gameRenderer;
-            Screen orgScreen = mc.currentScreen;
+            Screen orgScreen = MCVer.getCurrentScreen(mc);
             boolean orgPauseOnLostFocus = mc.options.pauseOnLostFocus;
             //#if MC >= 26.1
             //#elseif MC>=12106
@@ -100,7 +100,7 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
             boolean orgRenderHand = gameRenderer.getRenderHand();
             //#endif
             try {
-                mc.currentScreen = null; // do not want to render the current screen (that'd just be the progress gui)
+                MCVer.setCurrentScreen(mc, null); // do not want to render the current screen (that'd just be the progress gui)
                 mc.options.pauseOnLostFocus = false; // do not want the pause menu to open if the window is unfocused
                 if (omnidirectional) {
                     // makes no sense, we wouldn't even know where to put it
@@ -115,7 +115,11 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
                     //#endif
                 }
 
-                //#if MC >= 26.1
+                //#if MC>=260200
+                //$$ mc.gameRenderer.update(mc.getDeltaTracker());
+                //$$ mc.gameRenderer.extract(mc.getDeltaTracker(), true);
+                //$$ mc.gameRenderer.render(mc.getDeltaTracker(), true);
+                //#elseif MC >= 26.1
                 //$$ mc.gameRenderer.update(mc.getDeltaTracker(), true);
                 //$$ mc.gameRenderer.extract(mc.getDeltaTracker(), true);
                 //$$ mc.gameRenderer.render(mc.getDeltaTracker(), true);
@@ -132,7 +136,7 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
                 //#endif
                 //#endif
             } finally {
-                mc.currentScreen = orgScreen;
+                MCVer.setCurrentScreen(mc, orgScreen);
                 mc.options.pauseOnLostFocus = orgPauseOnLostFocus;
                 //#if MC >= 26.1
                 //$$ mc.gameRenderer.getMainCamera().disablePanoramicMode();

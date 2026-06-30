@@ -71,16 +71,14 @@ public class NoGuiScreenshot {
                 int frameWidth = mc.getWindow().getFramebufferWidth();
                 int frameHeight = mc.getWindow().getFramebufferHeight();
 
-                final boolean guiHidden = mc.options.hudHidden;
+                final boolean guiHidden = com.replaymod.core.versions.MCVer.isHudHidden(mc);
                 try {
-                    mc.options.hudHidden = true;
+                    com.replaymod.core.versions.MCVer.setHudHidden(mc, true);
 
                     // Render frame without GUI
                     pushMatrix();
                     //#if MC>=12105
-                    //$$ RenderSystem.getDevice()
-                    //$$         .createCommandEncoder()
-                    //$$         .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+                    //$$ com.replaymod.core.versions.MCVer.clearColorAndDepthTextures(com.replaymod.core.versions.MCVer.getMainRenderTarget(mc));
                     //#else
                     GlStateManager.clear(
                             16640
@@ -129,7 +127,7 @@ public class NoGuiScreenshot {
                     return;
                 } finally {
                     // Reset GUI settings
-                    mc.options.hudHidden = guiHidden;
+                    com.replaymod.core.versions.MCVer.setHudHidden(mc, guiHidden);
                 }
 
                 // The frame without GUI has been rendered
@@ -144,8 +142,10 @@ public class NoGuiScreenshot {
                     //$$ try (GpuBuffer gpuBuffer = device.createBuffer(null, BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, frameWidth * frameHeight * 4)) {
                     //#endif
                     //$$     CommandEncoder cmd = device.createCommandEncoder();
-                    //$$     cmd.copyTextureToBuffer(mc.getFramebuffer().getColorAttachment(), gpuBuffer, 0, () -> {}, 0);
-                        //#if MC>=12106
+                    //$$     cmd.copyTextureToBuffer(com.replaymod.core.versions.MCVer.getMainRenderTarget(mc).getColorAttachment(), gpuBuffer, 0, () -> {}, 0);
+                        //#if MC>=260200
+                        //$$ try (com.mojang.blaze3d.buffers.GpuBufferSlice.MappedView readView = gpuBuffer.map(true, false)) {
+                        //#elseif MC>=12106
                         //$$ try (GpuBuffer.MappedView readView = cmd.mapBuffer(gpuBuffer, true, false)) {
                         //#else
                         //$$ try (GpuBuffer.ReadView readView = cmd.readBuffer(gpuBuffer)) {

@@ -106,7 +106,7 @@ public class RestoreReplayGui extends AbstractGuiScreen<RestoreReplayGui> {
             } catch (IOException e) {
                 LOGGER.error("Recovering replay file:", e);
                 CrashReport crashReport = CrashReport.create(e, "Recovering replay file");
-                core.runLater(() -> Utils.error(LOGGER, VanillaGuiScreen.wrap(getMinecraft().currentScreen), crashReport, () -> {}));
+                core.runLater(() -> Utils.error(LOGGER, VanillaGuiScreen.wrap(com.replaymod.core.versions.MCVer.getCurrentScreen(getMinecraft())), crashReport, () -> {}));
             } finally {
                 core.runLater(() -> core.getBackgroundProcesses().removeProcess(savingProcess));
             }

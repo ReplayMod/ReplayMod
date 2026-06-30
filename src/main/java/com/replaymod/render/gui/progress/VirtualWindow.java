@@ -2,6 +2,7 @@ package com.replaymod.render.gui.progress;
 
 import com.replaymod.render.hooks.MinecraftClientExt;
 import com.replaymod.render.mixin.MainWindowAccessor;
+import com.replaymod.core.versions.MCVer;
 import de.johni0702.minecraft.gui.function.Closeable;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
@@ -87,12 +88,18 @@ public class VirtualWindow implements Closeable {
 
     public void flip() {
         //#if MC>=12105
+        //#if MC>=260200
+        //$$ mc.renderFrame(false);
+        //#else
         //$$ guiFramebuffer.blitToScreen();
+        //#endif
         //#else
         guiFramebuffer.draw(framebufferWidth, framebufferHeight);
         //#endif
 
-        //#if MC >= 26.1
+        //#if MC>=260200
+        //$$ // MC 26.2 presents through Minecraft.renderFrame above.
+        //#elseif MC >= 26.1
         //$$ RenderSystem.flipFrame(null);
         //#elseif MC>=12102
         //$$ window.swapBuffers(null);
@@ -139,11 +146,11 @@ public class VirtualWindow implements Closeable {
         //#endif
 
         applyScaleFactor();
-        if (mc.currentScreen != null) {
+        if (MCVer.getCurrentScreen(mc) != null) {
             //#if MC>=12111
-            //$$ mc.currentScreen.resize(window.getScaledWidth(), window.getScaledHeight());
+            //$$ MCVer.getCurrentScreen(mc).resize(window.getScaledWidth(), window.getScaledHeight());
             //#else
-            mc.currentScreen.resize(mc, window.getScaledWidth(), window.getScaledHeight());
+            MCVer.getCurrentScreen(mc).resize(mc, window.getScaledWidth(), window.getScaledHeight());
             //#endif
         }
     }

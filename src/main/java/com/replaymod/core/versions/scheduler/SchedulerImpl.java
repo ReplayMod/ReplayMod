@@ -35,7 +35,7 @@ public class SchedulerImpl implements  Scheduler {
         runLater(new Runnable() {
             @Override
             public void run() {
-                if (mc.getOverlay() != null) {
+                if (com.replaymod.core.versions.MCVer.getOverlay(mc) != null) {
                     // delay until after resources have been loaded
                     runLater(this);
                     return;

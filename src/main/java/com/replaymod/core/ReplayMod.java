@@ -14,6 +14,7 @@ import com.replaymod.recording.ReplayModRecording;
 import com.replaymod.render.ReplayModRender;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replaystudio.lib.viaversion.api.protocol.version.ProtocolVersion;
+import com.replaymod.replaystudio.protocol.ProtocolVersionCompat;
 import com.replaymod.replaystudio.studio.ReplayStudio;
 import com.replaymod.replaystudio.util.I18n;
 import com.replaymod.simplepathing.ReplayModSimplePathing;
@@ -93,6 +94,7 @@ public class ReplayMod implements Module, Scheduler {
         I18n.setI18n(net.minecraft.client.resource.language.I18n::translate);
 
         // Check Minecraft protocol version for compatibility
+        ProtocolVersionCompat.registerExtraProtocols();
         if (!ProtocolVersion.isRegistered(MCVer.getProtocolVersion()) && !Boolean.parseBoolean(System.getProperty("replaymod.skipversioncheck", "false"))) {
             minimalMode = true;
         }
@@ -289,7 +291,7 @@ public class ReplayMod implements Module, Scheduler {
             //#endif
             // Send message to chat GUI
             // The ingame GUI is initialized at startup, therefore this is possible before the client is connected
-            mc.inGameHud.getChatHud().addMessage(text);
+            MCVer.addChatMessage(mc, text);
         }
     }
 

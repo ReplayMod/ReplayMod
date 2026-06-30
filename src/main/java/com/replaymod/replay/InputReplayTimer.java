@@ -59,7 +59,7 @@ public class InputReplayTimer {
         // tick speed may vary or there may not be any ticks at all (when the replay is paused)
         if (mod.getReplayHandler() != null && mc.world != null && mc.player != null) {
             //#if MC>=11400
-            if (mc.currentScreen == null || ((ScreenExt) mc.currentScreen).doesPassEvents()) {
+            if (MCVer.getCurrentScreen(mc) == null || ((ScreenExt) MCVer.getCurrentScreen(mc)).doesPassEvents()) {
                 GLFW.glfwPollEvents();
                 MCVer.processKeyBinds();
             }
@@ -101,18 +101,18 @@ public class InputReplayTimer {
             //$$ // As of 1.18.2, this screen always stays open for at least two seconds, and requires ticking to close.
             //$$ // Thanks, but we'll have none of that (at least while in a replay).
             //#if MC>=12109
-            //$$ if (mc.currentScreen instanceof LevelLoadingScreen) {
+            //$$ if (MCVer.getCurrentScreen(mc) instanceof LevelLoadingScreen) {
             //#else
-            //$$ if (mc.currentScreen instanceof DownloadingTerrainScreen) {
+            //$$ if (MCVer.getCurrentScreen(mc) instanceof DownloadingTerrainScreen) {
             //#endif
-            //$$     mc.currentScreen.close();
+            //$$     MCVer.getCurrentScreen(mc).close();
             //$$ }
             //#endif
 
             //#if MC>=12109
             //$$ // The SplashOverlay now only closes on `tick`, but there are no ticks while the replay is paused.
             //$$ // so we need to manually tick it to not get stuck.
-            //$$ Overlay overlay = mc.getOverlay();
+            //$$ Overlay overlay = MCVer.getOverlay(mc);
             //$$ if (overlay != null) {
             //$$     overlay.tick();
             //$$ }
