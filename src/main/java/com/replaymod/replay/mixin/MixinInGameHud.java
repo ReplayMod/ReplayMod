@@ -3,14 +3,22 @@ package com.replaymod.replay.mixin;
 
 import com.replaymod.replay.events.RenderHotbarCallback;
 import com.replaymod.replay.events.RenderSpectatorCrosshairCallback;
+//#if MC>=260200
+//$$ import net.minecraft.client.gui.Hud;
+//#else
 import net.minecraft.client.gui.hud.InGameHud;
+//#endif
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+//#if MC>=260200
+//$$ @Mixin(Hud.class)
+//#else
 @Mixin(InGameHud.class)
+//#endif
 public class MixinInGameHud {
     @Inject(method = "shouldRenderSpectatorCrosshair", at = @At("HEAD"), cancellable = true)
     private void shouldRenderSpectatorCrosshair(CallbackInfoReturnable<Boolean> ci) {
