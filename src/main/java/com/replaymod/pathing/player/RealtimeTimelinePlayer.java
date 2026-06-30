@@ -44,7 +44,7 @@ public class RealtimeTimelinePlayer extends AbstractTimelinePlayer {
         }
 
         //#if MC>=11400
-        if (MinecraftClient.getInstance().getOverlay() != null) {
+        if (com.replaymod.core.versions.MCVer.getOverlay(MinecraftClient.getInstance()) != null) {
             if (!loadingResources) {
                 timeBeforeResourceLoading = getTimePassed();
                 loadingResources = true;

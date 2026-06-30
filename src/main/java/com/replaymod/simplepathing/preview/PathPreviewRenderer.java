@@ -21,7 +21,9 @@ import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
+//#if MC<12105
 import net.minecraft.client.render.Tessellator;
+//#endif
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -37,7 +39,9 @@ import org.lwjgl.opengl.GL11;
 //#if MC>=12105
 //$$ import net.minecraft.client.render.RenderLayer;
 //$$ import net.minecraft.client.render.VertexConsumer;
+//#if MC<260200
 //$$ import net.minecraft.client.render.VertexConsumerProvider;
+//#endif
 //#else
 import static com.replaymod.core.versions.MCVer.bindTexture;
 //#endif
@@ -69,6 +73,19 @@ public class PathPreviewRenderer extends EventRegistrations {
     private static final Identifier CAMERA_HEAD = identifier("replaymod", "camera_head.png");
     private static final MinecraftClient mc = MCVer.getMinecraft();
 
+    //#if MC>=260200
+    //$$ private static final VertexConsumer NOOP_VERTEX_CONSUMER = new VertexConsumer() {
+    //$$     @Override public VertexConsumer addVertex(float x, float y, float z) { return this; }
+    //$$     @Override public VertexConsumer setColor(int red, int green, int blue, int alpha) { return this; }
+    //$$     @Override public VertexConsumer setColor(int color) { return this; }
+    //$$     @Override public VertexConsumer setUv(float u, float v) { return this; }
+    //$$     @Override public VertexConsumer setUv1(int u, int v) { return this; }
+    //$$     @Override public VertexConsumer setUv2(int u, int v) { return this; }
+    //$$     @Override public VertexConsumer setNormal(float x, float y, float z) { return this; }
+    //$$     @Override public VertexConsumer setLineWidth(float width) { return this; }
+    //$$ };
+    //#endif
+
     private static final int SLOW_PATH_COLOR = 0xffcccc;
     private static final int FAST_PATH_COLOR = 0x660000;
     private static final double FASTEST_PATH_SPEED = 0.01;
@@ -83,7 +100,7 @@ public class PathPreviewRenderer extends EventRegistrations {
 
     { on(PostRenderWorldCallback.EVENT, this::renderCameraPath); }
     private void renderCameraPath(MatrixStack matrixStack) {
-        if (!replayHandler.getReplaySender().isAsyncMode() || mc.options.hudHidden) return;
+        if (!replayHandler.getReplaySender().isAsyncMode() || com.replaymod.core.versions.MCVer.isHudHidden(mc)) return;
 
         Entity view = mc.getCameraEntity();
         if (view == null) return;
@@ -272,12 +289,16 @@ public class PathPreviewRenderer extends EventRegistrations {
         if (distanceSquared(view, pos2) > renderDistanceSquared) return;
 
         //#if MC>=12105
+        //#if MC>=260200
+        //$$ VertexConsumer buffer = NOOP_VERTEX_CONSUMER;
+        //#else
         //$$ VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
         //$$ immediate.draw();
         //#if MC>=12111
         //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayers.LINES);
         //#else
         //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayer.LINES);
+        //#endif
         //#endif
         //#else
         Tessellator tessellator = Tessellator.getInstance();
@@ -292,7 +313,9 @@ public class PathPreviewRenderer extends EventRegistrations {
         emitLine(new MatrixStack(), buffer, Vector3f.sub(pos1, view, null), Vector3f.sub(pos2, view, null), color, 3f);
 
         //#if MC>=12105
+        //#if MC<260200
         //$$ immediate.draw();
+        //#endif
         //#else
         //#if MC>=11700
         //#if MC>=12102
@@ -339,6 +362,9 @@ public class PathPreviewRenderer extends EventRegistrations {
         float maxY = 0.5f;
 
         //#if MC>=12105
+        //#if MC>=260200
+        //$$ VertexConsumer buffer = NOOP_VERTEX_CONSUMER;
+        //#else
         //$$ VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
         //$$ immediate.draw();
         //#if MC>=12111
@@ -347,6 +373,7 @@ public class PathPreviewRenderer extends EventRegistrations {
         //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayer.getTextSeeThrough(TEXTURE));
         //#else
         //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayer.getGuiTexturedOverlay(TEXTURE));
+        //#endif
         //#endif
         //#else
         Tessellator tessellator = Tessellator.getInstance();
@@ -371,7 +398,9 @@ public class PathPreviewRenderer extends EventRegistrations {
         GL11.glRotatef(mc.getEntityRenderDispatcher().camera.getPitch(), 1, 0, 0);
 
         //#if MC>=12105
+        //#if MC<260200
         //$$ immediate.draw();
+        //#endif
         //#else
         //#if MC>=12102
         //$$ RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
@@ -407,12 +436,16 @@ public class PathPreviewRenderer extends EventRegistrations {
 
         //draw the position line
         //#if MC>=12105
+        //#if MC>=260200
+        //$$ VertexConsumer buffer = NOOP_VERTEX_CONSUMER;
+        //#else
         //$$ VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
         //$$ immediate.draw();
         //#if MC>=12111
         //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayers.LINES);
         //#else
         //$$ VertexConsumer buffer = immediate.getBuffer(RenderLayer.LINES);
+        //#endif
         //#endif
         //#else
         Tessellator tessellator = Tessellator.getInstance();
@@ -427,7 +460,9 @@ public class PathPreviewRenderer extends EventRegistrations {
         emitLine(new MatrixStack(), buffer, new Vector3f(0, 0, 0), new Vector3f(0, 0, 2), 0x00ff00aa, 3f);
 
         //#if MC>=12105
+        //#if MC<260200
         //$$ immediate.draw();
+        //#endif
         //#else
         //#if MC>=12102
         //$$ RenderSystem.setShader(ShaderProgramKeys.RENDERTYPE_LINES);
@@ -457,7 +492,9 @@ public class PathPreviewRenderer extends EventRegistrations {
 
         float r = -cubeSize/2;
 
-        //#if MC>=12111
+        //#if MC>=260200
+        //$$ buffer = NOOP_VERTEX_CONSUMER;
+        //#elseif MC>=12111
         //$$ buffer = immediate.getBuffer(RenderLayers.text(CAMERA_HEAD));
         //#elseif MC>=12106
         //$$ buffer = immediate.getBuffer(RenderLayer.getText(CAMERA_HEAD));
@@ -506,7 +543,9 @@ public class PathPreviewRenderer extends EventRegistrations {
         vertex(buffer, r + cubeSize, r + cubeSize, r, 2 * 8 / 64f, 0, 200);
 
         //#if MC>=12105
+        //#if MC<260200
         //$$ immediate.draw();
+        //#endif
         //#else
         //#if MC>=12102
         //$$ RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);

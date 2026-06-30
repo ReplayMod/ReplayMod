@@ -708,6 +708,9 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
                     //$$ packet.doLimitedCrafting(),
                     //$$ withSpectatorMode(packet.commonPlayerSpawnInfo())
                     //#if MC>=12006
+                    //#if MC>=260200
+                    //$$ , packet.onlineMode()
+                    //#endif
                     //$$ , packet.enforcesSecureChat()
                     //#endif
                     //#else
@@ -864,9 +867,9 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
 
             ReplayMod.instance.runLater(() -> {
                 //#if MC>=12109
-                //$$ if (mc.currentScreen instanceof LevelLoadingScreen) {
+                //$$ if (com.replaymod.core.versions.MCVer.getCurrentScreen(mc) instanceof LevelLoadingScreen) {
                 //#else
-                if (mc.currentScreen instanceof DownloadingTerrainScreen) {
+                if (com.replaymod.core.versions.MCVer.getCurrentScreen(mc) instanceof DownloadingTerrainScreen) {
                 //#endif
                     // Close the world loading screen manually in case we swallow the packet
                     mc.openScreen(null);
@@ -1233,7 +1236,11 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
             if(p instanceof EntitySpawnS2CPacket) {
                 EntitySpawnS2CPacket pso = (EntitySpawnS2CPacket)p;
                 //#if MC>=11400
+                //#if MC>=260200
+                //$$ if (pso.getType() == net.minecraft.world.entity.EntityTypes.FIREWORK_ROCKET) return null;
+                //#else
                 if (pso.getEntityTypeId() == EntityType.FIREWORK_ROCKET) return null;
+                //#endif
                 //#else
                 //$$ int type = pso.getType();
                 //$$ if(type == 76) { // Firework rocket

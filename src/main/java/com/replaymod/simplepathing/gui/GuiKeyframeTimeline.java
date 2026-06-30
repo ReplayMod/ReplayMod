@@ -21,7 +21,9 @@ import de.johni0702.minecraft.gui.function.Click;
 import de.johni0702.minecraft.gui.function.Draggable;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector2f;
 import net.minecraft.client.render.BufferBuilder;
+//#if MC<12105
 import net.minecraft.client.render.Tessellator;
+//#endif
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import org.apache.commons.lang3.tuple.Pair;
@@ -52,7 +54,11 @@ import static de.johni0702.minecraft.gui.versions.MCVer.setScissorDisabled;
 //$$ import net.minecraft.client.util.ClosableFactory;
 //$$ import net.minecraft.client.util.Pool;
 //$$ import net.minecraft.client.render.RenderLayer;
+//#if MC>=260200
+//$$ import net.minecraft.client.renderer.SubmitNodeCollector;
+//#else
 //$$ import net.minecraft.client.render.VertexConsumerProvider;
+//#endif
 //$$ import org.jetbrains.annotations.Nullable;
 //$$ import java.util.ArrayList;
 //$$ import java.util.List;
@@ -61,7 +67,9 @@ import static de.johni0702.minecraft.gui.versions.MCVer.setScissorDisabled;
 //#if MC>=12105
 //$$ import net.minecraft.client.render.RenderLayer;
 //$$ import net.minecraft.client.render.VertexConsumer;
+//#if MC<260200
 //$$ import net.minecraft.client.render.VertexConsumerProvider;
+//#endif
 //#endif
 
 //#if MC>=12102
@@ -191,7 +199,8 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
 
                     final int color = 0xff0000ff;
                     final float lineWidth = 2f;
-                    //#if MC>=12105
+                    //#if MC>=12106
+                    //#elseif MC>=12105
                     //$$ VertexConsumerProvider.Immediate immediate = getMinecraft().getBufferBuilders().getEntityVertexConsumers();
                     //$$ immediate.draw();
                     //#if MC>=12111
@@ -277,7 +286,11 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
         //$$     TimeTimelineLinesRenderer linesRenderer = pool.acquire(TimeTimelineLinesRenderer.FACTORY);
         //$$     pushScissorState();
         //$$     setScissorDisabled();
+        //#if MC>=260200
+        //$$     linesRenderer.prepare(linesRenderState, ((DrawContextAccessor) renderer.getContext()).getState(), mc.gameRenderer.featureRenderDispatcher(), scale);
+        //#else
         //$$     linesRenderer.render(linesRenderState, ((DrawContextAccessor) renderer.getContext()).getState(), scale);
+        //#endif
         //$$     popScissorState();
         //$$     pool.release(TimeTimelineLinesRenderer.FACTORY, linesRenderer); // Note: Assumes we only render one per frame
         //$$ }
@@ -331,7 +344,11 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     //$$     private static ClosableFactory<TimeTimelineLinesRenderer> FACTORY = new ClosableFactory<>() {
     //$$         @Override
     //$$         public TimeTimelineLinesRenderer create() {
+    //#if MC>=260200
+    //$$             return new TimeTimelineLinesRenderer();
+    //#else
     //$$             return new TimeTimelineLinesRenderer(MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers());
+    //#endif
     //$$         }
     //$$
     //$$         @Override
@@ -340,9 +357,14 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     //$$         }
     //$$     };
     //$$
+    //#if MC>=260200
+    //$$     protected TimeTimelineLinesRenderer() {
+    //$$     }
+    //#else
     //$$     protected TimeTimelineLinesRenderer(VertexConsumerProvider.Immediate immediate) {
     //$$         super(immediate);
     //$$     }
+    //#endif
     //$$
     //$$     @Override
     //$$     public Class<TimeTimelineLinesRenderState> getElementClass() {
@@ -350,6 +372,18 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     //$$     }
     //$$
     //$$     @Override
+    //#if MC>=260200
+    //$$     protected void renderToTexture(TimeTimelineLinesRenderState state, PoseStack matrixStack, SubmitNodeCollector submitNodeCollector) {
+    //$$         matrixStack.translate(-state.x2 / 2f, -state.y2, 100);
+    //$$         for (Pair<Vector2f, Vector2f> line : state.lines) {
+    //#if MC>=12111
+    //$$             submitNodeCollector.submitCustomGeometry(matrixStack, RenderTypes.LINES, (pose, buffer) -> emitLine(matrixStack, buffer, line.getLeft(), line.getRight(), state.color, state.lineWidth));
+    //#else
+    //$$             submitNodeCollector.submitCustomGeometry(matrixStack, RenderLayer.LINES, (pose, buffer) -> emitLine(matrixStack, buffer, line.getLeft(), line.getRight(), state.color, state.lineWidth));
+    //#endif
+    //$$         }
+    //$$     }
+    //#else
     //$$     protected void render(TimeTimelineLinesRenderState state, MatrixStack matrixStack) {
     //$$         matrixStack.translate(-state.x2 / 2f, -state.y2, 100);
     //$$         for (Pair<Vector2f, Vector2f> line : state.lines) {
@@ -360,6 +394,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     //#endif
     //$$         }
     //$$     }
+    //#endif
     //$$
     //$$     @Override
     //$$     protected String getName() {

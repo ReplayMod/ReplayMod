@@ -102,7 +102,9 @@ public abstract class PboOpenGlFrameCapturer<F extends Frame, D extends Enum<D> 
         if (framesDone > 1) {
             // Read pbo to memory
             //#if MC>=12105
-            //#if MC>=12106
+            //#if MC>=260200
+            //$$ try (com.mojang.blaze3d.buffers.GpuBufferSlice.MappedView view = pbo.map(true, false)) {
+            //#elseif MC>=12106
             //$$ try (GpuBuffer.MappedView view = RenderSystem.getDevice().createCommandEncoder().mapBuffer(pbo, true, false)) {
             //#else
             //$$ try (GpuBuffer.ReadView view = RenderSystem.getDevice().createCommandEncoder().readBuffer(pbo)) {

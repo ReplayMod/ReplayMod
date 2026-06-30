@@ -58,9 +58,13 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
     @Shadow private Frustum capturedFrustum;
     //#endif
 
+    //#if MC<260200
     @Shadow @Final private MinecraftClient client;
+    //#endif
 
+    //#if MC < 26.1
     @Shadow protected abstract void applyFrustum(Frustum par1);
+    //#endif
 
     //#if MC >= 26.1
     //$$ @WrapMethod(method = "update")
@@ -82,7 +86,9 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
             return;
         }
 
+        //#if MC<260200
         assert this.client.player != null;
+        //#endif
 
         ChunkRenderingDataPreparer renderingData = this.field_45615;
         ChunkRenderingDataPreparerAccessor renderingDataAcc = (ChunkRenderingDataPreparerAccessor) renderingData;
@@ -125,6 +131,10 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
 
             // Schedule all chunks which need rebuilding (we schedule even important rebuilds because we wait for
             // all of them anyway and this way we can take advantage of threading)
+            //#if MC>=260200
+            //$$ // MC 26.2 no longer exposes dirty section iteration/rebuild through the old ViewArea API here.
+            //$$ // Vanilla's update has already scheduled rebuilds; below we still block until pending uploads finish.
+            //#else
             for (ChunkBuilder.BuiltChunk builtChunk : renderingDataAcc.builtChunkStorage().chunks) {
                 if (!builtChunk.needsRebuild()) {
                     continue;
@@ -140,6 +150,7 @@ public abstract class Mixin_ForceChunkLoading implements IForceChunkLoading {
                 }
                 builtChunk.cancelRebuild();
             }
+            //#endif
 
             // Upload all chunks
             if (((ForceChunkLoadingHook.IBlockOnChunkRebuilds) this.field_45614).uploadEverythingBlocking()) {

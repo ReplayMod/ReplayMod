@@ -22,7 +22,7 @@ public class GuiBackgroundProcesses extends EventRegistrations {
 
     { on(InitScreenCallback.EVENT, (screen, buttons) -> onGuiInit(screen)); }
     private void onGuiInit(net.minecraft.client.gui.screen.Screen guiScreen) {
-        if (guiScreen != getMinecraft().currentScreen) return; // people tend to construct GuiScreens without opening them
+        if (guiScreen != com.replaymod.core.versions.MCVer.getCurrentScreen(getMinecraft())) return; // people tend to construct GuiScreens without opening them
 
         VanillaGuiScreen vanillaGui;
         // TODO Workaround for #473 and #501 where another mod opens a new gui in response to the MCGuiScreen.init we

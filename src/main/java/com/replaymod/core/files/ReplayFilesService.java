@@ -99,7 +99,7 @@ public class ReplayFilesService {
                         Files.delete(noRecoverMarker);
                         continue;
                     }
-                    new RestoreReplayGui(core, GuiScreen.wrap(core.getMinecraft().currentScreen), original.toFile()).display();
+                    new RestoreReplayGui(core, GuiScreen.wrap(com.replaymod.core.versions.MCVer.getCurrentScreen(core.getMinecraft())), original.toFile()).display();
                 }
             }
         } catch (IOException e) {

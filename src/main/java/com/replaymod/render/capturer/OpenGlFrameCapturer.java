@@ -72,7 +72,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
 
     protected Framebuffer frameBuffer() {
         if (frameBuffer == null) {
-            frameBuffer = mc.getFramebuffer();
+            frameBuffer = MCVer.getMainRenderTarget(mc);
         }
         return frameBuffer;
     }
@@ -95,9 +95,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         //#endif
 
         //#if MC>=12105
-        //$$ RenderSystem.getDevice()
-        //$$         .createCommandEncoder()
-        //$$         .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+        //$$ MCVer.clearColorAndDepthTextures(frameBuffer());
         //#else
         GlStateManager.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
                 //#if MC>=11400 && MC<12102
@@ -129,7 +127,9 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         //$$ try (GpuBuffer gpuBuffer = device.createBuffer(null, BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, getFrameWidth() * getFrameHeight() * 4)) {
         //#endif
         //$$     device.createCommandEncoder().copyTextureToBuffer(frameBuffer().getColorAttachment(), gpuBuffer, 0, () -> {}, 0);
-            //#if MC>=12106
+            //#if MC>=260200
+            //$$ try (com.mojang.blaze3d.buffers.GpuBufferSlice.MappedView view = gpuBuffer.map(true, false)) {
+            //#elseif MC>=12106
             //$$ try (GpuBuffer.MappedView view = device.createCommandEncoder().mapBuffer(gpuBuffer, true, false)) {
             //#else
             //$$ try (GpuBuffer.ReadView view = device.createCommandEncoder().readBuffer(gpuBuffer)) {

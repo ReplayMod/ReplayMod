@@ -289,7 +289,7 @@ public class ReplayMod implements Module, Scheduler {
             //#endif
             // Send message to chat GUI
             // The ingame GUI is initialized at startup, therefore this is possible before the client is connected
-            mc.inGameHud.getChatHud().addMessage(text);
+            MCVer.addChatMessage(mc, text);
         }
     }
 

@@ -5,6 +5,9 @@ import com.replaymod.render.hooks.EntityRendererHandler;
 import net.minecraft.client.Camera;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+//#if MC>=260200
+//$$ import org.joml.Vector3fc;
+//#endif
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -31,15 +34,27 @@ import static org.joml.Math.PI_f;
 public abstract class Mixin_Omnidirectional_Rotation {
     @Shadow
     @Final
+    //#if MC>=260200
+    //$$ private static Vector3fc FORWARDS;
+    //#else
     private static Vector3f FORWARDS;
+    //#endif
 
     @Shadow
     @Final
+    //#if MC>=260200
+    //$$ private static Vector3fc UP;
+    //#else
     private static Vector3f UP;
+    //#endif
 
     @Shadow
     @Final
+    //#if MC>=260200
+    //$$ private static Vector3fc LEFT;
+    //#else
     private static Vector3f LEFT;
+    //#endif
 
     @Shadow
     @Final
