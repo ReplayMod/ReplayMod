@@ -53,7 +53,11 @@ public abstract class Mixin_ChromaKeyColorSky {
                 //#if MC>=12105
                 //$$ RenderSystem.getDevice().createCommandEncoder().clearColorTexture(
                 //$$         MinecraftClient.getInstance().getFramebuffer().getColorAttachment(),
-                //$$         (0xff << 24) | (color.getRed() << 16) | (color.getGreen() << 8) | color.getBlue()
+                        //#if MC >= 26.2
+                        //$$ new org.joml.Vector4f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, 1f)
+                        //#else
+                        //$$ (0xff << 24) | (color.getRed() << 16) | (color.getGreen() << 8) | color.getBlue()
+                        //#endif
                 //$$ );
                 //#else
                 GlStateManager.clearColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, 1);

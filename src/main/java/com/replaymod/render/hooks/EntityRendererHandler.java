@@ -99,6 +99,9 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
             //#else
             boolean orgRenderHand = gameRenderer.getRenderHand();
             //#endif
+            //#if MC >= 26.2
+            //$$ boolean orgHudIsHidden = mc.gui.hud.isHidden();
+            //#endif
             try {
                 mc.currentScreen = null; // do not want to render the current screen (that'd just be the progress gui)
                 mc.options.pauseOnLostFocus = false; // do not want the pause menu to open if the window is unfocused
@@ -114,9 +117,16 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
                     gameRenderer.setRenderHand(false);
                     //#endif
                 }
+                //#if MC >= 26.2
+                //$$ if (!orgHudIsHidden) mc.gui.hud.toggle();
+                //#endif
 
                 //#if MC >= 26.1
+                //#if MC >= 26.2
+                //$$ mc.gameRenderer.update(mc.getDeltaTracker());
+                //#else
                 //$$ mc.gameRenderer.update(mc.getDeltaTracker(), true);
+                //#endif
                 //$$ mc.gameRenderer.extract(mc.getDeltaTracker(), true);
                 //$$ mc.gameRenderer.render(mc.getDeltaTracker(), true);
                 //#elseif MC>=12100
@@ -142,6 +152,9 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
                 //$$ mc.gameRenderer.setRenderingPanorama(orgRenderHand);
                 //#else
                 gameRenderer.setRenderHand(orgRenderHand);
+                //#endif
+                //#if MC >= 26.2
+                //$$ if (!orgHudIsHidden) mc.gui.hud.toggle();
                 //#endif
             }
         }

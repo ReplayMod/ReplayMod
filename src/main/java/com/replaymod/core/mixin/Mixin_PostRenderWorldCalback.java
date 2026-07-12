@@ -9,6 +9,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+//#if MC >= 26.2
+//$$ import net.minecraft.client.renderer.SubmitNodeStorage;
+//$$ import org.spongepowered.asm.mixin.Final;
+//$$ import org.spongepowered.asm.mixin.Shadow;
+//#endif
+
 //#if MC>=11500
 import com.llamalad7.mixinextras.sugar.Local;
 //#endif
@@ -29,7 +35,15 @@ public class Mixin_PostRenderWorldCalback {
     //$$     MatrixStack matrixStack = new MatrixStack();
     //#endif
     //#endif
+        //#if MC >= 26.2
+        //$$ PostRenderWorldCallback.EVENT.invoker().postRenderWorld(matrixStack, this.submitNodeStorage);
+        //#else
         PostRenderWorldCallback.EVENT.invoker().postRenderWorld(matrixStack);
+        //#endif
     }
+
+    //#if MC >= 26.2
+    //$$ @Shadow @Final private SubmitNodeStorage submitNodeStorage;
+    //#endif
 }
 //#endif

@@ -11,6 +11,11 @@ import net.minecraft.client.util.ScreenshotUtils;
 import static com.replaymod.core.versions.MCVer.popMatrix;
 import static com.replaymod.core.versions.MCVer.pushMatrix;
 
+//#if MC >= 26.2
+//$$ import com.mojang.blaze3d.buffers.GpuBufferSlice;
+//$$ import com.mojang.blaze3d.buffers.GpuFence;
+//#endif
+
 //#if MC>=12105
 //#if MC<12106
 //$$ import com.mojang.blaze3d.buffers.BufferType;
@@ -73,14 +78,22 @@ public class NoGuiScreenshot {
 
                 final boolean guiHidden = mc.options.hudHidden;
                 try {
+                    //#if MC >= 26.2
+                    //$$ if (!guiHidden) mc.gui.hud.toggle();
+                    //#else
                     mc.options.hudHidden = true;
+                    //#endif
 
                     // Render frame without GUI
                     pushMatrix();
                     //#if MC>=12105
                     //$$ RenderSystem.getDevice()
                     //$$         .createCommandEncoder()
-                    //$$         .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+                            //#if MC >= 26.2
+                            //$$ .clearColorAndDepthTextures(mc.gameRenderer.mainRenderTarget().getColorTexture(), new org.joml.Vector4f(), mc.gameRenderer.mainRenderTarget().getDepthTexture(), 0);
+                            //#else
+                            //$$ .clearColorAndDepthTextures(mc.getFramebuffer().getColorAttachment(), 0, mc.getFramebuffer().getDepthAttachment(), 1);
+                            //#endif
                     //#else
                     GlStateManager.clear(
                             16640
@@ -129,7 +142,11 @@ public class NoGuiScreenshot {
                     return;
                 } finally {
                     // Reset GUI settings
+                    //#if MC >= 26.2
+                    //$$ if (!guiHidden) mc.gui.hud.toggle();
+                    //#else
                     mc.options.hudHidden = guiHidden;
+                    //#endif
                 }
 
                 // The frame without GUI has been rendered
@@ -145,7 +162,14 @@ public class NoGuiScreenshot {
                     //#endif
                     //$$     CommandEncoder cmd = device.createCommandEncoder();
                     //$$     cmd.copyTextureToBuffer(mc.getFramebuffer().getColorAttachment(), gpuBuffer, 0, () -> {}, 0);
-                        //#if MC>=12106
+                        //#if MC >= 26.2
+                        //$$ GpuFence fence = cmd.createFence();
+                        //$$ cmd.submit();
+                        //$$ fence.awaitCompletion(Long.MAX_VALUE);
+                        //#endif
+                        //#if MC >= 26.2
+                        //$$ try (GpuBufferSlice.MappedView readView = gpuBuffer.map(true, false)) {
+                        //#elseif MC>=12106
                         //$$ try (GpuBuffer.MappedView readView = cmd.mapBuffer(gpuBuffer, true, false)) {
                         //#else
                         //$$ try (GpuBuffer.ReadView readView = cmd.readBuffer(gpuBuffer)) {

@@ -1,6 +1,7 @@
 package com.replaymod.recording.mixin;
 
 import com.replaymod.core.versions.MCVer;
+import com.replaymod.recording.ReplayModRecording;
 import com.replaymod.recording.handler.RecordingEventHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
@@ -32,10 +33,6 @@ public abstract class MixinNetHandlerPlayClient {
     private Map<UUID, PlayerListEntry> playerListEntries;
     //#endif
 
-    public RecordingEventHandler getRecordingEventHandler() {
-        return ((RecordingEventHandler.RecordingEventSender) mcStatic.worldRenderer).getRecordingEventHandler();
-    }
-
     /**
      * Record the own player entity joining the world.
      * We cannot use the {@link net.minecraftforge.event.entity.EntityJoinWorldEvent} because the entity id
@@ -53,7 +50,7 @@ public abstract class MixinNetHandlerPlayClient {
         if (!mcStatic.isOnThread()) return;
         if (mcStatic.player == null) return;
 
-        RecordingEventHandler handler = getRecordingEventHandler();
+        RecordingEventHandler handler = ReplayModRecording.instance.getConnectionEventHandler().getRecordingEventHandler();
         //#if MC>=11903
         //$$ if (handler != null && packet.getActions().contains(PlayerListS2CPacket.Action.ADD_PLAYER)) {
         //#else
@@ -71,7 +68,7 @@ public abstract class MixinNetHandlerPlayClient {
     //#else
     //$$ @Inject(method = "handleJoinGame", at=@At("RETURN"))
     //$$ public void recordOwnJoin(S01PacketJoinGame packet, CallbackInfo ci) {
-    //$$     RecordingEventHandler handler = getRecordingEventHandler();
+    //$$     RecordingEventHandler handler = ReplayModRecording.instance.getConnectionEventHandler().getRecordingEventHandler();
     //$$     if (handler != null) {
     //$$         handler.spawnRecordingPlayer();
     //$$     }
@@ -91,7 +88,7 @@ public abstract class MixinNetHandlerPlayClient {
     //$$ @Inject(method = "handleRespawn", at=@At("RETURN"))
     //#endif
     public void recordOwnRespawn(PlayerRespawnS2CPacket packet, CallbackInfo ci) {
-        RecordingEventHandler handler = getRecordingEventHandler();
+        RecordingEventHandler handler = ReplayModRecording.instance.getConnectionEventHandler().getRecordingEventHandler();
         if (handler != null) {
             handler.spawnRecordingPlayer();
         }

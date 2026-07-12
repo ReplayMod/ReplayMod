@@ -1,6 +1,7 @@
 package com.replaymod.recording.mixin;
 
 //#if MC>=10904
+import com.replaymod.recording.ReplayModRecording;
 import com.replaymod.recording.handler.RecordingEventHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
@@ -26,7 +27,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 
 @Mixin(ClientWorld.class)
-public abstract class MixinWorldClient extends World implements RecordingEventHandler.RecordingEventSender {
+public abstract class MixinWorldClient extends World {
     @Shadow
     private MinecraftClient client;
 
@@ -45,10 +46,6 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
         //#else
         //$$ super(null, null, null, null, false);
         //#endif
-    }
-
-    private RecordingEventHandler replayModRecording_getRecordingEventHandler() {
-        return ((RecordingEventHandler.RecordingEventSender) this.client.worldRenderer).getRecordingEventHandler();
     }
 
     // Sounds that are emitted by thePlayer no longer take the long way over the server
@@ -95,7 +92,7 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
             //#endif
             CallbackInfo ci) {
         if (player == this.client.player) {
-            RecordingEventHandler handler = replayModRecording_getRecordingEventHandler();
+            RecordingEventHandler handler = ReplayModRecording.instance.getConnectionEventHandler().getRecordingEventHandler();
             if (handler != null) {
                 // Sent to all other players in ServerWorldEventHandler#playSoundToAllNearExcept
                 handler.onPacket(new PlaySoundS2CPacket(
@@ -130,7 +127,7 @@ public abstract class MixinWorldClient extends World implements RecordingEventHa
     //#endif
         if (player == this.client.player) {
             // We caused this event, the server won't send it to us
-            RecordingEventHandler handler = replayModRecording_getRecordingEventHandler();
+            RecordingEventHandler handler = ReplayModRecording.instance.getConnectionEventHandler().getRecordingEventHandler();
             if (handler != null) {
                 handler.onClientEffect(type, pos, data);
             }

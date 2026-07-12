@@ -6,13 +6,15 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.replaymod.core.mixin.MinecraftAccessor;
 import com.replaymod.gradle.remap.Pattern;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.gui.hud.InGameHud;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.options.KeyBinding;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.texture.TextureManager;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.entity.player.PlayerInventory;
@@ -40,6 +42,16 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 
+//#if MC >= 26.2
+//#else
+import net.minecraft.client.render.Tessellator;
+//#endif
+
+//#if MC >= 1.21.5
+//$$ import com.mojang.blaze3d.buffers.GpuBuffer;
+//$$ import com.mojang.blaze3d.systems.RenderSystem;
+//#endif
+
 //#if MC>=11700
 //#else
 import org.lwjgl.opengl.GL11;
@@ -54,6 +66,7 @@ import net.minecraft.util.math.Quaternion;
 //#endif
 
 //#if MC>=11400
+import net.minecraft.client.gui.screen.Overlay;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.util.Window;
 import net.minecraft.util.registry.Registry;
@@ -456,6 +469,9 @@ class Patterns {
     //$$ @Pattern private static void BufferBuilder_addPosTexCol() {}
     //#endif
 
+    //#if MC >= 26.2
+    //$$ @Pattern private static void Tessellator_getInstance() {}
+    //#else
     @Pattern
     private static Tessellator Tessellator_getInstance() {
         //#if MC>=10800
@@ -464,6 +480,7 @@ class Patterns {
         //$$ return Tessellator.instance;
         //#endif
     }
+    //#endif
 
     @Pattern
     private static EntityRenderDispatcher getEntityRenderDispatcher(MinecraftClient mc) {
@@ -1018,6 +1035,73 @@ class Patterns {
         //$$ return packet.reason();
         //#else
         return packet.getReason();
+        //#endif
+    }
+
+    @Pattern
+    public Screen currentlScreen(MinecraftClient mc) {
+        //#if MC >= 26.2
+        //$$ return mc.gui.screen();
+        //#else
+        return mc.currentScreen;
+        //#endifmc.gui.setScreen(screen);
+    }
+
+    @Pattern
+    public void currentScreen(MinecraftClient mc, Screen screen) {
+        //#if MC >= 26.2
+        //$$ ((com.replaymod.core.mixin.GuiAccessor) mc.gui).replaymod$setScreen(screen);
+        //#else
+        mc.currentScreen = screen;
+        //#endif
+    }
+
+    @Pattern
+    public void setScreen(MinecraftClient mc, Screen screen) {
+        //#if MC >= 26.2
+        //$$ mc.gui.setScreen(screen);
+        //#else
+        mc.openScreen(screen);
+        //#endif
+    }
+
+    //#if MC >= 1.14
+    @Pattern
+    public Overlay getOverlay(MinecraftClient mc) {
+        //#if MC >= 26.2
+        //$$ return mc.gui.overlay();
+        //#else
+        return mc.getOverlay();
+        //#endif
+    }
+    //#else
+    //$$ @Pattern public void getOverlay() {}
+    //#endif
+
+    @Pattern
+    public InGameHud getInGameHud(MinecraftClient mc) {
+        //#if MC >= 26.2
+        //$$ return mc.gui.hud;
+        //#else
+        return mc.inGameHud;
+        //#endif
+    }
+
+    @Pattern
+    public Framebuffer getMainFramebuffer(MinecraftClient mc) {
+        //#if MC >= 26.2
+        //$$ return mc.gameRenderer.mainRenderTarget();
+        //#else
+        return mc.getFramebuffer();
+        //#endif
+    }
+
+    @Pattern
+    public boolean isHudHidden(MinecraftClient mc) {
+        //#if MC >= 26.2
+        //$$ return mc.gui.hud.isHidden();
+        //#else
+        return mc.options.hudHidden;
         //#endif
     }
 }

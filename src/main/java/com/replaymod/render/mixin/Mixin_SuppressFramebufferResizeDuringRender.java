@@ -1,7 +1,7 @@
 package com.replaymod.render.mixin;
 
 import com.replaymod.render.gui.progress.VirtualWindow;
-import com.replaymod.render.hooks.MinecraftClientExt;
+import com.replaymod.render.hooks.WindowDelegateHolder;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.Window;
 import org.spongepowered.asm.mixin.Final;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftClient.class)
-public abstract class Mixin_SuppressFramebufferResizeDuringRender implements MinecraftClientExt {
+public abstract class Mixin_SuppressFramebufferResizeDuringRender implements WindowDelegateHolder {
 
     @Unique
     private VirtualWindow windowDelegate;

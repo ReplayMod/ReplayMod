@@ -1,6 +1,8 @@
 net.minecraft.client.Minecraft delayCrash() setCrashReportSupplier()
 net.minecraft.client.gui.components.ChatComponent addClientSystemMessage() addMessage()
 net.minecraft.client.renderer.state.gui.GuiRenderState reset() clear()
+net.minecraft.client.renderer.state.gui.ScreenArea net.minecraft.client.gui.render.state.GuiElementRenderState
+net.minecraft.client.renderer.state.gui.ScreenArea bounds() comp_4274()
 net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState net.minecraft.client.gui.render.state.special.SpecialGuiElementRenderState
 net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState x0() x1()
 net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState x1() x2()

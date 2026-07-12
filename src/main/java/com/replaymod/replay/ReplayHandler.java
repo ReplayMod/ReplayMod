@@ -738,6 +738,12 @@ public class ReplayHandler {
                 // Make sure that the replaysender changes into sync mode
                 replaySender.setSyncModeAndWait();
 
+                //#if MC >= 26.2
+                //$$ net.minecraft.client.gui.screens.Screen orgScreen = mc.gui.screen();
+                //$$ mc.gui.setScreen(guiScreen.toMinecraft());
+                //$$ mc.renderFrame(false);
+                //$$ mc.gui.setScreen(orgScreen);
+                //#else
                 // Perform the rendering using OpenGL
                 pushMatrix();
                 //#if MC>=12105
@@ -874,6 +880,7 @@ public class ReplayHandler {
                 //$$ mc.window.setFullscreen(true);
                 //#else
                 //$$ Display.update();
+                //#endif
                 //#endif
                 //#endif
 

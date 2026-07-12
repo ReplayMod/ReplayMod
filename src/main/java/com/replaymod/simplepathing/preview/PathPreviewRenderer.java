@@ -21,7 +21,6 @@ import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import de.johni0702.minecraft.gui.utils.lwjgl.vector.Vector3f;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -30,6 +29,12 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.opengl.GL11;
 
+//#if MC >= 26.2
+//$$ import net.minecraft.client.renderer.SubmitNodeStorage;
+//#else
+import net.minecraft.client.render.Tessellator;
+//#endif
+
 //#if MC>=12111
 //$$ import net.minecraft.client.render.RenderLayers;
 //#endif
@@ -37,7 +42,9 @@ import org.lwjgl.opengl.GL11;
 //#if MC>=12105
 //$$ import net.minecraft.client.render.RenderLayer;
 //$$ import net.minecraft.client.render.VertexConsumer;
+//#if MC < 26.2
 //$$ import net.minecraft.client.render.VertexConsumerProvider;
+//#endif
 //#else
 import static com.replaymod.core.versions.MCVer.bindTexture;
 //#endif
@@ -76,13 +83,22 @@ public class PathPreviewRenderer extends EventRegistrations {
     private final ReplayModSimplePathing mod;
     private final ReplayHandler replayHandler;
 
+    //#if MC >= 26.2
+    //$$ private SubmitNodeStorage submitNodeStorage;
+    //#endif
+
     public PathPreviewRenderer(ReplayModSimplePathing mod, ReplayHandler replayHandler) {
         this.mod = mod;
         this.replayHandler = replayHandler;
     }
 
     { on(PostRenderWorldCallback.EVENT, this::renderCameraPath); }
+    //#if MC >= 26.2
+    //$$ private void renderCameraPath(PoseStack matrixStack, SubmitNodeStorage submitNodeStorage) {
+    //$$     this.submitNodeStorage = submitNodeStorage;
+    //#else
     private void renderCameraPath(MatrixStack matrixStack) {
+    //#endif
         if (!replayHandler.getReplaySender().isAsyncMode() || mc.options.hudHidden) return;
 
         Entity view = mc.getCameraEntity();
@@ -118,13 +134,16 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#if MC<11700
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
         //#endif
+        //#if MC < 26.2
         pushMatrix();
+        //#endif
         try {
             //#if MC<11700
             GL11.glDisable(GL11.GL_LIGHTING);
             GL11.glDisable(GL11.GL_TEXTURE_2D);
             //#endif
 
+            //#if MC < 26.2
             //#if MC>=11700
             //#if MC>=12006
             //$$ RenderSystem.getModelViewStack().mul(matrixStack.peek().getPositionMatrix());
@@ -136,6 +155,7 @@ public class PathPreviewRenderer extends EventRegistrations {
             //#endif
             //#elseif MC>=11500
             RenderSystem.multMatrix(matrixStack.peek().getModel());
+            //#endif
             //#endif
 
             for (PathSegment segment : path.getSegments()) {
@@ -161,7 +181,7 @@ public class PathPreviewRenderer extends EventRegistrations {
                             if (loc != null) {
                                 Vector3f pos = loc2Vec(loc);
                                 if (prevPos != null) {
-                                    drawConnection(viewPos, prevPos, pos, 0x0000ffff, renderDistanceSquared);
+                                    drawConnection(matrixStack, viewPos, prevPos, pos, 0x0000ffff, renderDistanceSquared);
                                 }
                                 prevPos = pos;
                                 continue;
@@ -176,7 +196,7 @@ public class PathPreviewRenderer extends EventRegistrations {
                                 double speed = Math.min(distance / (diff / steps), FASTEST_PATH_SPEED);
                                 double speedFraction = speed / FASTEST_PATH_SPEED;
                                 int color = interpolateColor(SLOW_PATH_COLOR, FAST_PATH_COLOR, speedFraction);
-                                drawConnection(viewPos, prevPos, pos, (color << 8) | 0xff, renderDistanceSquared);
+                                drawConnection(matrixStack, viewPos, prevPos, pos, (color << 8) | 0xff, renderDistanceSquared);
                             }
                             prevPos = pos;
                             continue;
@@ -201,7 +221,7 @@ public class PathPreviewRenderer extends EventRegistrations {
                     .map(p -> Pair.of(p.getLeft(), p.getRight().get()))
                     .filter(p -> distanceSquared(p.getRight(), viewPos) < renderDistanceSquared)
                     .sorted(new KeyframeComparator(viewPos)) // Need to render the furthest first
-                    .forEachOrdered(p -> drawPoint(viewPos, p.getRight(), p.getLeft()));
+                    .forEachOrdered(p -> drawPoint(matrixStack, viewPos, p.getRight(), p.getLeft()));
 
             //#if MC<12105
             GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -217,7 +237,7 @@ public class PathPreviewRenderer extends EventRegistrations {
                     if (replayTime.isPresent()) {
                         Location loc = entityTracker.getEntityPositionAtTimestamp(entityId.get(), replayTime.get());
                         if (loc != null) {
-                            drawCamera(viewPos, loc2Vec(loc), new Vector3f(loc.getYaw(), loc.getPitch(), 0f));
+                            drawCamera(matrixStack, viewPos, loc2Vec(loc), new Vector3f(loc.getYaw(), loc.getPitch(), 0f));
                         }
                     }
                 }
@@ -226,11 +246,13 @@ public class PathPreviewRenderer extends EventRegistrations {
                 Optional<Vector3f> cameraPos = path.getValue(CameraProperties.POSITION, time).map(this::tripleD2Vec);
                 Optional<Vector3f> cameraRot = path.getValue(CameraProperties.ROTATION, time).map(this::tripleF2Vec);
                 if (cameraPos.isPresent() && cameraRot.isPresent()) {
-                    drawCamera(viewPos, cameraPos.get(), cameraRot.get());
+                    drawCamera(matrixStack, viewPos, cameraPos.get(), cameraRot.get());
                 }
             }
         } finally {
+            //#if MC < 26.2
             popMatrix();
+            //#endif
             //#if MC<12105
             //#if MC>=11700
             //$$ GL11.glDisable(GL11.GL_BLEND);
@@ -267,10 +289,14 @@ public class PathPreviewRenderer extends EventRegistrations {
         return Vector3f.sub(p1, p2, null).lengthSquared();
     }
 
-    private void drawConnection(Vector3f view, Vector3f pos1, Vector3f pos2, int color, int renderDistanceSquared) {
+    private void drawConnection(MatrixStack stack, Vector3f view, Vector3f pos1, Vector3f pos2, int color, int renderDistanceSquared) {
         if (distanceSquared(view, pos1) > renderDistanceSquared) return;
         if (distanceSquared(view, pos2) > renderDistanceSquared) return;
 
+        //#if MC >= 26.2
+        //$$ submitNodeStorage.order(1).submitCustomGeometry(stack, RenderTypes.LINES, (pose, buffer) -> {
+        //#else
+        MatrixStack pose = new MatrixStack();
         //#if MC>=12105
         //$$ VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
         //$$ immediate.draw();
@@ -288,10 +314,13 @@ public class PathPreviewRenderer extends EventRegistrations {
         buffer.begin(GL11.GL_LINES, VertexFormats.POSITION_COLOR);
         //#endif
         //#endif
+        //#endif
 
-        emitLine(new MatrixStack(), buffer, Vector3f.sub(pos1, view, null), Vector3f.sub(pos2, view, null), color, 3f);
+        emitLine(pose, buffer, Vector3f.sub(pos1, view, null), Vector3f.sub(pos2, view, null), color, 3f);
 
-        //#if MC>=12105
+        //#if MC >= 26.2
+        //$$ });
+        //#elseif MC>=12105
         //$$ immediate.draw();
         //#else
         //#if MC>=11700
@@ -315,29 +344,42 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#endif
     }
 
-    private void drawPoint(Vector3f view, Vector3f pos, Keyframe keyframe) {
+    private void drawPoint(MatrixStack stack, Vector3f view, Vector3f pos, Keyframe keyframe) {
+
+        //#if MC >= 26.2
+        //$$ stack.pushPose();
+        //#else
+        pushMatrix();
+        //#endif
+
+        Vector3f t = Vector3f.sub(pos, view, null);
+        //#if MC >= 26.2
+        //$$ stack.translate(t.x, t.y, t.z);
+        //$$ stack.last().rotate(MCVer.quaternion(-mc.getEntityRenderDispatcher().camera.yRot(), new org.joml.Vector3f(0, 1, 0)));
+        //$$ stack.last().rotate(MCVer.quaternion(mc.getEntityRenderDispatcher().camera.xRot(), new org.joml.Vector3f(1, 0, 0)));
+        //#else
+        GL11.glTranslatef(t.x, t.y, t.z);
+        GL11.glRotatef(-mc.getEntityRenderDispatcher().camera.getYaw(), 0, 1, 0);
+        GL11.glRotatef(mc.getEntityRenderDispatcher().camera.getPitch(), 1, 0, 0);
+        //#endif
 
         //#if MC<12105
         bindTexture(TEXTURE);
         //#endif
 
-        float posX = 80f / ReplayMod.TEXTURE_SIZE;
-        float posY = 0f;
         float size = 10f / ReplayMod.TEXTURE_SIZE;
-
-        if (mod.isSelected(keyframe)) {
-            posY += size;
-        }
-
-        if (keyframe.getValue(SpectatorProperty.PROPERTY).isPresent()) {
-            posX += size;
-        }
+        float posX = 80f / ReplayMod.TEXTURE_SIZE + (keyframe.getValue(SpectatorProperty.PROPERTY).isPresent() ? size : 0);
+        float posY = 0f + (mod.isSelected(keyframe) ? size : 0);
 
         float minX = -0.5f;
         float minY = -0.5f;
         float maxX = 0.5f;
         float maxY = 0.5f;
 
+        //#if MC >= 26.2
+        //$$ submitNodeStorage.order(2).submitCustomGeometry(stack, RenderTypes.textSeeThrough(TEXTURE), (pose, buffer) -> {
+        //#else
+        MatrixStack pose = stack;
         //#if MC>=12105
         //$$ VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
         //$$ immediate.draw();
@@ -357,20 +399,16 @@ public class PathPreviewRenderer extends EventRegistrations {
         buffer.begin(GL11.GL_QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         //#endif
         //#endif
+        //#endif
 
-        vertex(buffer, minX, minY, 0, posX + size, posY + size, 255);
-        vertex(buffer, minX, maxY, 0, posX + size, posY, 255);
-        vertex(buffer, maxX, maxY, 0, posX, posY, 255);
-        vertex(buffer, maxX, minY, 0, posX, posY + size, 255);
+        vertex(buffer, pose, minX, minY, 0, posX + size, posY + size, 255);
+        vertex(buffer, pose, minX, maxY, 0, posX + size, posY, 255);
+        vertex(buffer, pose, maxX, maxY, 0, posX, posY, 255);
+        vertex(buffer, pose, maxX, minY, 0, posX, posY + size, 255);
 
-        pushMatrix();
-
-        Vector3f t = Vector3f.sub(pos, view, null);
-        GL11.glTranslatef(t.x, t.y, t.z);
-        GL11.glRotatef(-mc.getEntityRenderDispatcher().camera.getYaw(), 0, 1, 0);
-        GL11.glRotatef(mc.getEntityRenderDispatcher().camera.getPitch(), 1, 0, 0);
-
-        //#if MC>=12105
+        //#if MC >= 26.2
+        //$$ });
+        //#elseif MC>=12105
         //$$ immediate.draw();
         //#else
         //#if MC>=12102
@@ -388,24 +426,43 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#endif
         //#endif
 
+        //#if MC >= 26.2
+        //$$ stack.popPose();
+        //#else
         popMatrix();
+        //#endif
     }
 
-    private void drawCamera(Vector3f view, Vector3f pos, Vector3f rot) {
+    private void drawCamera(MatrixStack stack, Vector3f view, Vector3f pos, Vector3f rot) {
 
         //#if MC<12105
         bindTexture(CAMERA_HEAD);
         //#endif
 
+        //#if MC >= 26.2
+        //$$ stack.pushPose();
+        //#else
         pushMatrix();
+        //#endif
 
         Vector3f t = Vector3f.sub(pos, view, null);
+        //#if MC >= 26.2
+        //$$ stack.translate(t.x, t.y, t.z);
+        //$$ stack.last().rotate(MCVer.quaternion(-rot.x, new org.joml.Vector3f(0, 1, 0)));
+        //$$ stack.last().rotate(MCVer.quaternion(rot.y, new org.joml.Vector3f(1, 0, 0)));
+        //$$ stack.last().rotate(MCVer.quaternion(rot.z, new org.joml.Vector3f(0, 0, 1)));
+        //#else
         GL11.glTranslatef(t.x, t.y, t.z);
         GL11.glRotatef(-rot.x, 0, 1, 0); // Yaw
         GL11.glRotatef(rot.y, 1, 0, 0); // Pitch
         GL11.glRotatef(rot.z, 0, 0, 1); // Roll
+        //#endif
 
         //draw the position line
+        //#if MC >= 26.2
+        //$$ submitNodeStorage.order(3).submitCustomGeometry(stack, RenderTypes.LINES, (pose, buffer) -> {
+        //#else
+        MatrixStack pose = new MatrixStack();
         //#if MC>=12105
         //$$ VertexConsumerProvider.Immediate immediate = mc.getBufferBuilders().getEntityVertexConsumers();
         //$$ immediate.draw();
@@ -423,10 +480,13 @@ public class PathPreviewRenderer extends EventRegistrations {
         buffer.begin(GL11.GL_LINES, VertexFormats.POSITION_COLOR);
         //#endif
         //#endif
+        //#endif
 
-        emitLine(new MatrixStack(), buffer, new Vector3f(0, 0, 0), new Vector3f(0, 0, 2), 0x00ff00aa, 3f);
+        emitLine(pose, buffer, new Vector3f(0, 0, 0), new Vector3f(0, 0, 2), 0x00ff00aa, 3f);
 
-        //#if MC>=12105
+        //#if MC >= 26.2
+        //$$ });
+        //#elseif MC>=12105
         //$$ immediate.draw();
         //#else
         //#if MC>=12102
@@ -457,6 +517,9 @@ public class PathPreviewRenderer extends EventRegistrations {
 
         float r = -cubeSize/2;
 
+        //#if MC >= 26.2
+        //$$ submitNodeStorage.order(2).submitCustomGeometry(stack, RenderTypes.text(CAMERA_HEAD), (pose, buffer) -> {
+        //#else
         //#if MC>=12111
         //$$ buffer = immediate.getBuffer(RenderLayers.text(CAMERA_HEAD));
         //#elseif MC>=12106
@@ -468,44 +531,47 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#else
         buffer.begin(GL11.GL_QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         //#endif
+        //#endif
 
         //back
-        vertex(buffer, r, r + cubeSize, r, 3 * 8 / 64f, 8 / 64f, 200);
-        vertex(buffer, r + cubeSize, r + cubeSize, r, 4*8/64f, 8/64f, 200);
-        vertex(buffer, r + cubeSize, r, r, 4*8/64f, 2*8/64f, 200);
-        vertex(buffer, r, r, r, 3*8/64f, 2*8/64f, 200);
+        vertex(buffer, pose, r, r + cubeSize, r, 3 * 8 / 64f, 8 / 64f, 200);
+        vertex(buffer, pose, r + cubeSize, r + cubeSize, r, 4*8/64f, 8/64f, 200);
+        vertex(buffer, pose, r + cubeSize, r, r, 4*8/64f, 2*8/64f, 200);
+        vertex(buffer, pose, r, r, r, 3*8/64f, 2*8/64f, 200);
 
         //front
-        vertex(buffer, r + cubeSize, r, r + cubeSize, 2 * 8 / 64f, 2*8/64f, 200);
-        vertex(buffer, r + cubeSize, r + cubeSize, r + cubeSize, 2 * 8 / 64f, 8/64f, 200);
-        vertex(buffer, r, r + cubeSize, r + cubeSize, 8 / 64f, 8 / 64f, 200);
-        vertex(buffer, r, r, r + cubeSize, 8 / 64f, 2*8/64f, 200);
+        vertex(buffer, pose, r + cubeSize, r, r + cubeSize, 2 * 8 / 64f, 2*8/64f, 200);
+        vertex(buffer, pose, r + cubeSize, r + cubeSize, r + cubeSize, 2 * 8 / 64f, 8/64f, 200);
+        vertex(buffer, pose, r, r + cubeSize, r + cubeSize, 8 / 64f, 8 / 64f, 200);
+        vertex(buffer, pose, r, r, r + cubeSize, 8 / 64f, 2*8/64f, 200);
 
         //left
-        vertex(buffer, r + cubeSize, r + cubeSize, r, 0, 8/64f, 200);
-        vertex(buffer, r + cubeSize, r + cubeSize, r + cubeSize, 8/64f, 8/64f, 200);
-        vertex(buffer, r + cubeSize, r, r + cubeSize, 8/64f, 2*8/64f, 200);
-        vertex(buffer, r+cubeSize, r, r, 0, 2*8/64f, 200);
+        vertex(buffer, pose, r + cubeSize, r + cubeSize, r, 0, 8/64f, 200);
+        vertex(buffer, pose, r + cubeSize, r + cubeSize, r + cubeSize, 8/64f, 8/64f, 200);
+        vertex(buffer, pose, r + cubeSize, r, r + cubeSize, 8/64f, 2*8/64f, 200);
+        vertex(buffer, pose, r+cubeSize, r, r, 0, 2*8/64f, 200);
 
         //right
-        vertex(buffer, r, r + cubeSize, r + cubeSize, 2*8/64f, 8/64f, 200);
-        vertex(buffer, r, r + cubeSize, r, 3*8/64f, 8/64f, 200);
-        vertex(buffer, r, r, r, 3*8/64f, 2*8/64f, 200);
-        vertex(buffer, r, r, r + cubeSize, 2 * 8 / 64f, 2 * 8 / 64f, 200);
+        vertex(buffer, pose, r, r + cubeSize, r + cubeSize, 2*8/64f, 8/64f, 200);
+        vertex(buffer, pose, r, r + cubeSize, r, 3*8/64f, 8/64f, 200);
+        vertex(buffer, pose, r, r, r, 3*8/64f, 2*8/64f, 200);
+        vertex(buffer, pose, r, r, r + cubeSize, 2 * 8 / 64f, 2 * 8 / 64f, 200);
 
         //bottom
-        vertex(buffer, r + cubeSize, r, r, 3*8/64f, 0, 200);
-        vertex(buffer, r + cubeSize, r, r + cubeSize, 3*8/64f, 8/64f, 200);
-        vertex(buffer, r, r, r + cubeSize, 2*8/64f, 8/64f, 200);
-        vertex(buffer, r, r, r, 2 * 8 / 64f, 0, 200);
+        vertex(buffer, pose, r + cubeSize, r, r, 3*8/64f, 0, 200);
+        vertex(buffer, pose, r + cubeSize, r, r + cubeSize, 3*8/64f, 8/64f, 200);
+        vertex(buffer, pose, r, r, r + cubeSize, 2*8/64f, 8/64f, 200);
+        vertex(buffer, pose, r, r, r, 2 * 8 / 64f, 0, 200);
 
         //top
-        vertex(buffer, r, r + cubeSize, r, 8/64f, 0, 200);
-        vertex(buffer, r, r + cubeSize, r + cubeSize, 8/64f, 8/64f, 200);
-        vertex(buffer, r + cubeSize, r + cubeSize, r + cubeSize, 2*8/64f, 8/64f, 200);
-        vertex(buffer, r + cubeSize, r + cubeSize, r, 2 * 8 / 64f, 0, 200);
+        vertex(buffer, pose, r, r + cubeSize, r, 8/64f, 0, 200);
+        vertex(buffer, pose, r, r + cubeSize, r + cubeSize, 8/64f, 8/64f, 200);
+        vertex(buffer, pose, r + cubeSize, r + cubeSize, r + cubeSize, 2*8/64f, 8/64f, 200);
+        vertex(buffer, pose, r + cubeSize, r + cubeSize, r, 2 * 8 / 64f, 0, 200);
 
-        //#if MC>=12105
+        //#if MC >= 26.2
+        //$$ });
+        //#elseif MC>=12105
         //$$ immediate.draw();
         //#else
         //#if MC>=12102
@@ -523,15 +589,23 @@ public class PathPreviewRenderer extends EventRegistrations {
         //#endif
         //#endif
 
+        //#if MC >= 26.2
+        //$$ stack.popPose();
+        //#else
         popMatrix();
+        //#endif
     }
 
-    //#if MC>=12105
-    //$$ private void vertex(VertexConsumer buffer, float x, float y, float z, float u, float v, int alpha) {
+    //#if MC >= 26.2
+    //$$ private void vertex(VertexConsumer buffer, PoseStack.Pose pose, float x, float y, float z, float u, float v, int alpha) {
+    //#elseif MC>=12105
+    //$$ private void vertex(VertexConsumer buffer, MatrixStack stack, float x, float y, float z, float u, float v, int alpha) {
     //#else
-    private void vertex(BufferBuilder buffer, float x, float y, float z, float u, float v, int alpha) {
+    private void vertex(BufferBuilder buffer, MatrixStack stack, float x, float y, float z, float u, float v, int alpha) {
     //#endif
-        //#if MC>=12106
+        //#if MC >= 26.2
+        //$$ buffer.addVertex(pose, x, y, z).setColor(255, 255, 255, alpha).setUv(u, v).setUv2(240, 240);
+        //#elseif MC>=12106
         //$$ buffer.vertex(x, y, z).color(255, 255, 255, alpha).texture(u, v).light(240, 240);
         //#else
         buffer.vertex(x, y, z).texture(u, v).color(255, 255, 255, alpha).next();

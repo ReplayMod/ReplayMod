@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import static com.replaymod.core.versions.MCVer.*;
 
 @Mixin(PlayerControllerMP.class)
-public abstract class MixinPlayerControllerMP implements RecordingEventHandler.RecordingEventSender {
+public abstract class MixinPlayerControllerMP {
 
     @Final @Shadow
     private Minecraft mc;

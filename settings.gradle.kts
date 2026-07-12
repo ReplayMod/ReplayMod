@@ -11,7 +11,7 @@ pluginManagement {
         maven("https://repo.essential.gg/repository/maven-public")
     }
     plugins {
-        id("gg.essential.multi-version.root") version "0.7.0-alpha.4"
+        id("gg.essential.multi-version.root") version "0.7.2"
         id("com.gradleup.shadow") version "9.4.1"
     }
 }
@@ -47,6 +47,7 @@ val jGuiVersions = listOf(
         "1.21.10",
         "1.21.11",
         "26.1",
+        "26.2",
 )
 val replayModVersions = listOf(
         // "1.7.10",
@@ -84,6 +85,7 @@ val replayModVersions = listOf(
         "1.21.10",
         "1.21.11",
         "26.1",
+        "26.2",
 )
 
 rootProject.buildFileName = "root.gradle.kts"

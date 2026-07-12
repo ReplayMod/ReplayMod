@@ -7,18 +7,26 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-//#if MC>=11400
+//#if MC >= 26.2
+//$$ import net.minecraft.client.Screenshot;
+//#elseif MC>=11400
 import net.minecraft.client.Keyboard;
 //#else
 //$$ import net.minecraft.client.Minecraft;
 //#endif
 
-//#if MC>=11400
+//#if MC >= 26.2
+//$$ @Mixin(Screenshot.class)
+//#elseif MC>=11400
 @Mixin(Keyboard.class)
 //#else
 //$$ @Mixin(Minecraft.class)
 //#endif
 public abstract class MixinKeyboardListener {
+    //#if MC >= 26.2
+    //$$ @Inject(method = "grab(Lnet/minecraft/client/Minecraft;Z)V", at = @At("HEAD"), cancellable = true)
+    //$$ static
+    //#else
     @Inject(
             //#if MC>=11400
             method = "onKey",
@@ -41,6 +49,7 @@ public abstract class MixinKeyboardListener {
             ),
             cancellable = true
     )
+    //#endif
     private void takeScreenshot(CallbackInfo ci) {
         if (ReplayModReplay.instance.getReplayHandler() != null) {
             AdvancedScreenshots.take();

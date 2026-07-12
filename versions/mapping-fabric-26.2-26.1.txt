@@ -1,0 +1,7 @@
+net.minecraft.client.gui.Hud net.minecraft.client.gui.Gui
+net.minecraft.client.gui.Gui __new__
+net.minecraft.client.gui.Gui hud:Lnet/minecraft/client/gui/Hud; net.minecraft.client.Minecraft gui
+net.minecraft.client.renderer.GameRenderer mainCamera() getMainCamera()
+net.minecraft.client.renderer.LevelRenderer submitHitOutline() renderHitOutline()
+net.minecraft.client.renderer.LevelRenderer render() renderLevel()
+net.minecraft.client.renderer.chunk.SectionRenderDispatcher uploadTerrainBuffersToGpu() uploadGlobalGeomBuffersToGPU()
