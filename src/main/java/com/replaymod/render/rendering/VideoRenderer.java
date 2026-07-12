@@ -321,6 +321,12 @@ public class VideoRenderer implements RenderInfo {
             tick();
         }
 
+        //#if MC >= 26.1
+        //$$ if (mc.level != null) {
+        //$$     mc.level.update();
+        //$$ }
+        //#endif
+
         // change Minecraft's display size back
         guiWindow.unbind();
 
