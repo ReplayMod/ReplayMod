@@ -28,7 +28,11 @@ If you see a success message in the console, you've sucessfully installed **FFmp
 ### Mac OSX [mac]
 On OSX, you can install **FFmpeg** with **[Homebrew](http://brew.sh/)** using `brew install ffmpeg`.
 
-Alternatively, you can download the latest static build from <https://ffmpeg.org/> and copy the ffmpeg executable to `/usr/local/bin`.
+Alternatively, you can download the latest static build from <https://ffmpeg.org/> and copy the ffmpeg executable to `/usr/local/bin`:
+
+1. Use <code>CMD &#8984;</code>+`Space` to open Spotlight.
+2. Search for `Terminal` and open it.
+3. Type in `open /usr/local/bin` and press `Enter`.
 
 ### Linux [linux]
 On Linux, you can install **FFmpeg** using your system's package manager, for example using `apt install ffmpeg`.
