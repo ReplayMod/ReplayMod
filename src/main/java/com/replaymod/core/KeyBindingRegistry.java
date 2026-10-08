@@ -69,13 +69,19 @@ public class KeyBindingRegistry extends EventRegistrations {
         Binding binding = bindings.get(name);
         if (binding == null) {
             //#if FABRIC>=1
+            //#if MC<26.3
             if (keyCode == 0) {
                 keyCode = -1;
             }
+            //#endif
             Identifier id = identifier(MOD_ID, name.substring(LangResourcePack.LEGACY_KEY_PREFIX.length()));
             //#if MC>=11600
             String key = String.format("key.%s.%s", id.getNamespace(), id.getPath());
+            //#if MC>=26.3
+            //$$ KeyMapping keyBinding = new KeyMapping(key, com.mojang.blaze3d.platform.InputConstants.Type.KEYBOARD, keyCode, CATEGORY);
+            //#else
             KeyBinding keyBinding = new KeyBinding(key, InputUtil.Type.KEYSYM, keyCode, CATEGORY);
+            //#endif
             KeyBindingHelper.registerKeyBinding(keyBinding);
             //#else
             //$$ FabricKeyBinding fabricKeyBinding = FabricKeyBinding.Builder.create(id, InputUtil.Type.KEYSYM, keyCode, CATEGORY).build();

@@ -58,6 +58,8 @@ public class ReplayModMixinConfigPlugin implements IMixinConfigPlugin {
         if (mixinClassName.endsWith("_NoOF")) return !hasOF;
         //#if FABRIC
         if (mixinClassName.endsWith("_Iris")) return hasIris;
+        if (mixinClassName.endsWith("_VoiceChat")) return FabricLoader.getInstance().isModLoaded("voicechat");
+        if (mixinClassName.endsWith("_EmmaBridge")) return FabricLoader.getInstance().isModLoaded("emma-bridge");
         //#endif
         return true;
     }

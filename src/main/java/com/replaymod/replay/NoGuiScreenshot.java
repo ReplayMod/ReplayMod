@@ -107,7 +107,9 @@ public class NoGuiScreenshot {
                     GlStateManager.enableTexture();
                     //#endif
 
-                    //#if MC>=12100
+                    //#if MC>=26.3
+                    //$$ mc.gameRenderer.renderLevel();
+                    //#elseif MC>=12100
                     //$$ mc.gameRenderer.renderWorld(RenderTickCounter.ONE);
                     //#else
                     float tickDelta = mc.getTickDelta();

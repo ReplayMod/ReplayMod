@@ -128,7 +128,11 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
                 //$$ mc.gameRenderer.update(mc.getDeltaTracker(), true);
                 //#endif
                 //$$ mc.gameRenderer.extract(mc.getDeltaTracker(), true);
+                //#if MC >= 26.3
+                //$$ mc.gameRenderer.render();
+                //#else
                 //$$ mc.gameRenderer.render(mc.getDeltaTracker(), true);
+                //#endif
                 //#elseif MC>=12100
                 //$$ mc.gameRenderer.render(mc.getRenderTickCounter(), true);
                 //#elseif MC>=11400

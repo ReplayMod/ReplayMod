@@ -61,7 +61,11 @@ import net.minecraft.text.TranslatableText;
 
 //#if MC>=11400
 import net.minecraft.client.util.InputUtil;
+//#if MC>=26.3
+//$$ import com.mojang.blaze3d.platform.InputConstants;
+//#else
 import org.lwjgl.glfw.GLFW;
+//#endif
 //#else
 //$$ import net.minecraft.client.resources.ResourcePackRepository;
 //$$ import net.minecraftforge.fml.client.FMLClientHandler;
@@ -153,12 +157,28 @@ public class MCVer {
         );
     }
 
+    /**
+     * Set to true while {@link #resizeMainWindow} is artificially changing the window framebuffer size
+     * (usually to the video resolution during rendering). Resize handlers must not treat such synthetic
+     * resizes like real window resizes, otherwise e.g. the virtual GUI window would adopt the video size.
+     */
+    public static boolean syntheticFramebufferResize;
+
     public static void resizeMainWindow(MinecraftClient mc, int width, int height) {
         //#if MC>=11400
         Window window = mc.getWindow();
         MainWindowAccessor mainWindow = (MainWindowAccessor) (Object) window;
-        //noinspection ConstantConditions
-        mainWindow.invokeOnFramebufferSizeChanged(window.getHandle(), width, height);
+        syntheticFramebufferResize = true;
+        try {
+            //#if MC>=26.3
+            //$$ mainWindow.invokeOnFramebufferResize(width, height);
+            //#else
+            //noinspection ConstantConditions
+            mainWindow.invokeOnFramebufferSizeChanged(window.getHandle(), width, height);
+            //#endif
+        } finally {
+            syntheticFramebufferResize = false;
+        }
         //#else
         //$$ if (width != mc.displayWidth || height != mc.displayHeight) {
         //$$     mc.resize(width, height);
@@ -363,7 +383,9 @@ public class MCVer {
     //#endif
 
     public static void openFile(File file) {
-        //#if MC>=11400
+        //#if MC>=26.3
+        //$$ com.mojang.blaze3d.Blaze3D.openPath(file.toPath());
+        //#elseif MC>=11400
         Util.getOperatingSystem().open(file);
         //#else
         //$$ String path = file.getAbsolutePath();
@@ -393,7 +415,9 @@ public class MCVer {
     }
 
     public static void openURL(URI url) {
-        //#if MC>=11400
+        //#if MC>=26.3
+        //$$ com.mojang.blaze3d.Blaze3D.openUri(url);
+        //#elseif MC>=11400
         Util.getOperatingSystem().open(url);
         //#else
         //$$ try {
@@ -555,7 +579,53 @@ public class MCVer {
     //#endif
 
     public static abstract class Keyboard {
-        //#if MC>=11400
+        //#if MC>=26.3
+        //$$ public static final int KEY_LCONTROL = InputConstants.KEY_LCONTROL;
+        //$$ public static final int KEY_RCONTROL = InputConstants.KEY_RCONTROL;
+        //$$ public static final int KEY_LSUPER = InputConstants.KEY_LGUI;
+        //$$ public static final int KEY_RSUPER = InputConstants.KEY_RGUI;
+        //$$ public static final int LEFT_CTRL = Util.getPlatform() == Util.OS.OSX ? KEY_LSUPER : KEY_LCONTROL;
+        //$$ public static final int RIGHT_CTRL = Util.getPlatform() == Util.OS.OSX ? KEY_RSUPER : KEY_RCONTROL;
+        //$$ public static final int KEY_LSHIFT = InputConstants.KEY_LSHIFT;
+        //$$ public static final int KEY_ESCAPE = InputConstants.KEY_ESCAPE;
+        //$$ public static final int KEY_HOME = InputConstants.KEY_HOME;
+        //$$ public static final int KEY_END = InputConstants.KEY_END;
+        //$$ public static final int KEY_UP = InputConstants.KEY_UP;
+        //$$ public static final int KEY_DOWN = InputConstants.KEY_DOWN;
+        //$$ public static final int KEY_LEFT = InputConstants.KEY_LEFT;
+        //$$ public static final int KEY_RIGHT = InputConstants.KEY_RIGHT;
+        //$$ public static final int KEY_BACK = InputConstants.KEY_BACKSPACE;
+        //$$ public static final int KEY_DELETE = InputConstants.KEY_DELETE;
+        //$$ public static final int KEY_RETURN = InputConstants.KEY_RETURN;
+        //$$ public static final int KEY_TAB = InputConstants.KEY_TAB;
+        //$$ public static final int KEY_F1 = InputConstants.KEY_F1;
+        //$$ public static final int KEY_A = InputConstants.KEY_A;
+        //$$ public static final int KEY_B = InputConstants.KEY_B;
+        //$$ public static final int KEY_C = InputConstants.KEY_C;
+        //$$ public static final int KEY_D = InputConstants.KEY_D;
+        //$$ public static final int KEY_E = InputConstants.KEY_E;
+        //$$ public static final int KEY_F = InputConstants.KEY_F;
+        //$$ public static final int KEY_G = InputConstants.KEY_G;
+        //$$ public static final int KEY_H = InputConstants.KEY_H;
+        //$$ public static final int KEY_I = InputConstants.KEY_I;
+        //$$ public static final int KEY_J = InputConstants.KEY_J;
+        //$$ public static final int KEY_K = InputConstants.KEY_K;
+        //$$ public static final int KEY_L = InputConstants.KEY_L;
+        //$$ public static final int KEY_M = InputConstants.KEY_M;
+        //$$ public static final int KEY_N = InputConstants.KEY_N;
+        //$$ public static final int KEY_O = InputConstants.KEY_O;
+        //$$ public static final int KEY_P = InputConstants.KEY_P;
+        //$$ public static final int KEY_Q = InputConstants.KEY_Q;
+        //$$ public static final int KEY_R = InputConstants.KEY_R;
+        //$$ public static final int KEY_S = InputConstants.KEY_S;
+        //$$ public static final int KEY_T = InputConstants.KEY_T;
+        //$$ public static final int KEY_U = InputConstants.KEY_U;
+        //$$ public static final int KEY_V = InputConstants.KEY_V;
+        //$$ public static final int KEY_W = InputConstants.KEY_W;
+        //$$ public static final int KEY_X = InputConstants.KEY_X;
+        //$$ public static final int KEY_Y = InputConstants.KEY_Y;
+        //$$ public static final int KEY_Z = InputConstants.KEY_Z;
+        //#elseif MC>=11400
         public static final int KEY_LCONTROL = GLFW.GLFW_KEY_LEFT_CONTROL;
         public static final int KEY_RCONTROL = GLFW.GLFW_KEY_RIGHT_CONTROL;
         public static final int KEY_LSUPER = GLFW.GLFW_KEY_LEFT_SUPER;
@@ -645,7 +715,9 @@ public class MCVer {
         //#endif
 
         public static boolean isKeyDown(int keyCode) {
-            //#if MC>=12109
+            //#if MC>=26.3
+            //$$ return InputConstants.isKeyDown(keyCode);
+            //#elseif MC>=12109
             //$$ return InputUtil.isKeyPressed(getMinecraft().getWindow(), keyCode);
             //#elseif MC>=11500
             return InputUtil.isKeyPressed(getMinecraft().getWindow().getHandle(), keyCode);

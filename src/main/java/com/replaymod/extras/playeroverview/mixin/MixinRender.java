@@ -35,6 +35,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MixinRender {
     //#if MC>=10800
     @Inject(method = "shouldRender", at=@At("HEAD"), cancellable = true)
+    //#if MC>=26.3
+    //$$ public void replayModExtras_isPlayerHidden(Entity entity, @Coerce Object camera, double camX, double camY, double camZ, float partialTick, CallbackInfoReturnable<Boolean> ci) {
+    //$$     ReplayModExtras.instance.get(PlayerOverview.class).ifPresent(playerOverview -> {
+    //$$         if (entity instanceof Player) {
+    //$$             Player player = (Player) entity;
+    //$$             if (playerOverview.isHidden(player.getUUID())) {
+    //$$                 ci.setReturnValue(false);
+    //$$             }
+    //$$         }
+    //$$     });
+    //$$ }
+    //#else
     public void replayModExtras_isPlayerHidden(Entity entity, @Coerce Object camera, double camX, double camY, double camZ, CallbackInfoReturnable<Boolean> ci) {
         ReplayModExtras.instance.get(PlayerOverview.class).ifPresent(playerOverview -> {
             if (entity instanceof PlayerEntity) {
@@ -45,6 +57,7 @@ public abstract class MixinRender {
             }
         });
     }
+    //#endif
     //#else
     //$$ @Inject(method = "doRenderShadowAndFire", at=@At("HEAD"), cancellable = true)
     //$$ private void replayModExtras_isPlayerHidden(Entity entity, double x, double y, double z, float yaw, float time, CallbackInfo ci) {

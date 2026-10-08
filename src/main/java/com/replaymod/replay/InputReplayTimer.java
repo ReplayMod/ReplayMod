@@ -19,8 +19,9 @@ import net.minecraft.client.MinecraftClient;
 //#endif
 //#endif
 
-//#if MC>=11400
+//#if MC>=11400 && MC<26.3
 import org.lwjgl.glfw.GLFW;
+//#elseif MC>=26.3
 //#else
 //$$ import net.minecraft.client.settings.KeyBinding;
 //$$ import net.minecraftforge.client.ForgeHooksClient;
@@ -60,7 +61,11 @@ public class InputReplayTimer {
         if (mod.getReplayHandler() != null && mc.world != null && mc.player != null) {
             //#if MC>=11400
             if (mc.currentScreen == null || ((ScreenExt) mc.currentScreen).doesPassEvents()) {
+                //#if MC>=26.3
+                //$$ com.mojang.blaze3d.systems.RenderSystem.pollEvents(((com.replaymod.core.mixin.MinecraftAccessor) mc).getSdlEventHandler());
+                //#else
                 GLFW.glfwPollEvents();
+                //#endif
                 MCVer.processKeyBinds();
             }
             mc.keyboard.pollDebugCrash();

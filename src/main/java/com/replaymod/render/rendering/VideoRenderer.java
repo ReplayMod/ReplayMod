@@ -31,14 +31,15 @@ import com.replaymod.replaystudio.pathing.path.Timeline;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.MinecraftClient;
-import com.mojang.blaze3d.platform.GLX;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.util.Window;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.sound.SoundCategory;
+//#if MC<26.3
 import org.lwjgl.glfw.GLFW;
+//#endif
 
 //#if MC >= 26.1
 //$$ import net.minecraft.client.renderer.state.WindowRenderState;
@@ -540,10 +541,16 @@ public class VideoRenderer implements RenderInfo {
     public boolean drawGui() {
         Window window = mc.getWindow();
         do {
+            //#if MC>=26.3
+            //$$ if (window.shouldClose() || ((com.replaymod.core.mixin.BlockableEventLoopAccessor) mc).getDelayedCrash() != null) {
+            //#else
             if (GLFW.glfwWindowShouldClose(window.getHandle()) || ((MinecraftAccessor) mc).getCrashReporter() != null) {
+            //#endif
                 return false;
             }
-            //#if MC >= 26.1
+            //#if MC >= 26.3
+            //$$ RenderSystem.pollEvents(((MinecraftAccessor) mc).getSdlEventHandler());
+            //#elseif MC >= 26.1
             //$$ RenderSystem.pollEvents();
             //#endif
 
@@ -674,7 +681,11 @@ public class VideoRenderer implements RenderInfo {
             //$$ DrawContext drawContext = new DrawContext(mc, mc.getBufferBuilders().getEntityVertexConsumers());
             //#endif
 
-            //#if MC >= 26.1
+            //#if MC >= 26.3
+            //$$ // Use Minecraft's extraction path so GUI scaling mods also refresh their render state.
+            //$$ // In particular, a fractional scale must not remain at the video frame's resolution.
+            //$$ gameRenderer.invokeExtractWindow();
+            //#elseif MC >= 26.1
             //$$ WindowRenderState windowRenderState = gameRenderer.getGameRenderState().windowRenderState;
             //$$ windowRenderState.width = window.getWidth();
             //$$ windowRenderState.height = window.getHeight();

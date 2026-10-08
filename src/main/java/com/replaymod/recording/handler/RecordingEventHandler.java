@@ -195,7 +195,9 @@ public class RecordingEventHandler extends EventRegistrations {
 
             Packet packet = null;
             if (force || Math.abs(dx) > maxRelDist || Math.abs(dy) > maxRelDist || Math.abs(dz) > maxRelDist) {
-                //#if MC>=12102
+                //#if MC>=26.3
+                //$$ packet = new net.minecraft.network.protocol.game.ClientboundEntityPositionSyncPacket(player.getId(), net.minecraft.world.entity.PositionPath.of(player.position()), player.getYRot(), player.getXRot(), player.onGround());
+                //#elseif MC>=12102
                 //$$ packet = new EntityPositionSyncS2CPacket(player.getId(), PlayerPosition.fromEntity(player), player.isOnGround());
                 //#elseif MC>=10800
                 packet = new EntityPositionS2CPacket(player);
@@ -229,7 +231,9 @@ public class RecordingEventHandler extends EventRegistrations {
                 //$$ packet = new SPacketEntity.S17PacketEntityLookMove(
                 //#endif
                         player.getEntityId(),
-                        //#if MC>=10904
+                        //#if MC>=26.3
+                        //$$ new net.minecraft.network.protocol.game.VecDelta.Linear((short) dx, (short) dy, (short) dz),
+                        //#elseif MC>=10904
                         (short) dx, (short) dy, (short) dz,
                         //#else
                         //$$ (byte) dx, (byte) dy, (byte) dz,
@@ -271,6 +275,14 @@ public class RecordingEventHandler extends EventRegistrations {
 
             //Animation Packets
             //Swing Animation
+            //#if MC>=26.3
+            //$$ if (player.isSwinging() && player.getSwingAnimation(0) == 0f) {
+            //$$     packetListener.save(new net.minecraft.network.protocol.game.ClientboundAnimatePacket(
+            //$$             player,
+            //$$             player.getCurrentSwing().hand() == InteractionHand.MAIN_HAND ? 0 : 3
+            //$$     ));
+            //$$ }
+            //#else
             if (player.handSwinging && player.handSwingTicks == 0) {
                 packetListener.save(new EntityAnimationS2CPacket(
                         player,
@@ -281,6 +293,7 @@ public class RecordingEventHandler extends EventRegistrations {
                         //#endif
                 ));
             }
+            //#endif
 
 			/*
         //Potion Effect Handling

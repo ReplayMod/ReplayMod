@@ -1,0 +1,446 @@
+diff --git a/root.gradle.kts b/root.gradle.kts
+index b261aba..44b44c1 100644
+--- a/root.gradle.kts
++++ b/root.gradle.kts
+@@ -20,6 +20,7 @@ license {
+ preprocess {
+     strictExtraMappings.set(true)
+ 
++    val mc26_03_00 = createNode("26.3", 26_03_00, "yarn")
+     val mc26_02_00 = createNode("26.2", 26_02_00, "yarn")
+     val mc26_01_00 = createNode("26.1", 26_01_00, "yarn")
+     val mc12111 = createNode("1.21.11", 12111, "yarn")
+@@ -52,6 +53,7 @@ preprocess {
+     val mc10800 = createNode("1.8", 10800, "srg")
+     val mc10710 = createNode("1.7.10", 10710, "srg")
+ 
++    mc26_03_00.link(mc26_02_00, file("versions/mapping-fabric-26.3-26.2.txt"))
+     mc26_02_00.link(mc26_01_00)
+     mc26_01_00.link(mc12111, file("versions/mapping-fabric-26.1-1.21.11.txt"))
+     mc12111.link(mc12110)
+diff --git a/src/main/java/de/johni0702/minecraft/gui/function/Click.java b/src/main/java/de/johni0702/minecraft/gui/function/Click.java
+index a3dabc8..71f082d 100644
+--- a/src/main/java/de/johni0702/minecraft/gui/function/Click.java
++++ b/src/main/java/de/johni0702/minecraft/gui/function/Click.java
+@@ -52,10 +52,37 @@ public class Click implements InputWithModifiers, ReadablePoint {
+ 
+     //#if MC>=12109
+     //$$ public Click(net.minecraft.client.gui.Click click) {
++    //#if MC>=26.3
++    //$$     this(click.x(), click.y(), fromNativeButton(click.button()), click.modifiers());
++    //#else
+     //$$     this(click.x(), click.y(), click.button(), click.modifiers());
++    //#endif
+     //$$ }
+     //$$ public net.minecraft.client.gui.Click toMC() {
++    //#if MC>=26.3
++    //$$     return new net.minecraft.client.input.MouseButtonEvent(x, y, new net.minecraft.client.input.MouseButtonInfo(toNativeButton(button), modifiers));
++    //#else
+     //$$     return new net.minecraft.client.gui.Click(x, y, new net.minecraft.client.input.MouseInput(button, modifiers));
++    //#endif
++    //$$ }
++    //#endif
++
++    //#if MC>=26.3
++    //$$ private static int fromNativeButton(int nativeButton) {
++    //$$     switch (nativeButton) {
++    //$$         case 1: return 0; // left
++    //$$         case 3: return 1; // right
++    //$$         case 2: return 2; // middle
++    //$$         default: return nativeButton - 1;
++    //$$     }
++    //$$ }
++    //$$ private static int toNativeButton(int guiButton) {
++    //$$     switch (guiButton) {
++    //$$         case 0: return 1;
++    //$$         case 1: return 3;
++    //$$         case 2: return 2;
++    //$$         default: return guiButton + 1;
++    //$$     }
+     //$$ }
+     //#endif
+ 
+diff --git a/src/main/java/de/johni0702/minecraft/gui/function/InputWithModifiers.java b/src/main/java/de/johni0702/minecraft/gui/function/InputWithModifiers.java
+index 85f0d89..8ca39dc 100644
+--- a/src/main/java/de/johni0702/minecraft/gui/function/InputWithModifiers.java
++++ b/src/main/java/de/johni0702/minecraft/gui/function/InputWithModifiers.java
+@@ -8,8 +8,12 @@ import net.minecraft.client.gui.screen.Screen;
+ //#endif
+ 
+ //#if MC>=11300
++//#if MC>=26.3
++//$$ import com.mojang.blaze3d.platform.InputConstants;
++//#else
+ import org.lwjgl.glfw.GLFW;
+ //#endif
++//#endif
+ 
+ public interface InputWithModifiers {
+     int modifiers();
+@@ -24,7 +28,11 @@ public interface InputWithModifiers {
+         return (modifiers() & _ALT_MOD) != 0;
+     }
+ 
+-    //#if MC>=11300
++    //#if MC>=26.3
++    //$$ int _CTRL_MOD = Util.getPlatform() == Util.OS.OSX ? InputConstants.MOD_SUPER : InputConstants.MOD_CONTROL;
++    //$$ int _SHIFT_MOD = InputConstants.MOD_SHIFT;
++    //$$ int _ALT_MOD = InputConstants.MOD_ALT;
++    //#elseif MC>=11300
+     int _CTRL_MOD = Util.getOperatingSystem() == Util.OperatingSystem.OSX ? GLFW.GLFW_MOD_SUPER : GLFW.GLFW_MOD_CONTROL;
+     int _SHIFT_MOD = GLFW.GLFW_MOD_SHIFT;
+     int _ALT_MOD = GLFW.GLFW_MOD_ALT;
+diff --git a/src/main/java/de/johni0702/minecraft/gui/function/KeyInput.java b/src/main/java/de/johni0702/minecraft/gui/function/KeyInput.java
+index 28d12f0..963cc58 100644
+--- a/src/main/java/de/johni0702/minecraft/gui/function/KeyInput.java
++++ b/src/main/java/de/johni0702/minecraft/gui/function/KeyInput.java
+@@ -43,7 +43,11 @@ public class KeyInput implements InputWithModifiers {
+ 
+     //#if MC>=12109
+     //$$ public KeyInput(net.minecraft.client.input.KeyInput mc) {
++    //#if MC>=26.3
++    //$$     this(mc.key(), mc.keycode(), mc.modifiers());
++    //#else
+     //$$     this(mc.key(), mc.scancode(), mc.modifiers());
++    //#endif
+     //$$ }
+     //$$ public net.minecraft.client.input.KeyInput toMC() {
+     //$$     return new net.minecraft.client.input.KeyInput(key, scancode, modifiers);
+diff --git a/src/main/java/de/johni0702/minecraft/gui/versions/MCVer.java b/src/main/java/de/johni0702/minecraft/gui/versions/MCVer.java
+index 8c019ad..b341428 100644
+--- a/src/main/java/de/johni0702/minecraft/gui/versions/MCVer.java
++++ b/src/main/java/de/johni0702/minecraft/gui/versions/MCVer.java
+@@ -25,7 +25,11 @@ import net.minecraft.text.LiteralText;
+ 
+ //#if MC>=11400
+ import net.minecraft.client.util.Window;
++//#if MC>=26.3
++//$$ import com.mojang.blaze3d.platform.InputConstants;
++//#else
+ import org.lwjgl.glfw.GLFW;
++//#endif
+ //#else
+ //$$ import net.minecraft.client.gui.GuiScreen;
+ //$$ import net.minecraft.client.gui.ScaledResolution;
+@@ -253,6 +257,23 @@ public class MCVer {
+ 
+     //#if MC>=11400
+     public static abstract class Keyboard {
++        //#if MC>=26.3
++        //$$ public static final int KEY_ESCAPE = InputConstants.KEY_ESCAPE;
++        //$$ public static final int KEY_HOME = InputConstants.KEY_HOME;
++        //$$ public static final int KEY_END = InputConstants.KEY_END;
++        //$$ public static final int KEY_UP = InputConstants.KEY_UP;
++        //$$ public static final int KEY_DOWN = InputConstants.KEY_DOWN;
++        //$$ public static final int KEY_LEFT = InputConstants.KEY_LEFT;
++        //$$ public static final int KEY_RIGHT = InputConstants.KEY_RIGHT;
++        //$$ public static final int KEY_BACK = InputConstants.KEY_BACKSPACE;
++        //$$ public static final int KEY_DELETE = InputConstants.KEY_DELETE;
++        //$$ public static final int KEY_RETURN = InputConstants.KEY_RETURN;
++        //$$ public static final int KEY_TAB = InputConstants.KEY_TAB;
++        //$$ public static final int KEY_A = InputConstants.KEY_A;
++        //$$ public static final int KEY_C = InputConstants.KEY_C;
++        //$$ public static final int KEY_V = InputConstants.KEY_V;
++        //$$ public static final int KEY_X = InputConstants.KEY_X;
++        //#else
+         public static final int KEY_ESCAPE = GLFW.GLFW_KEY_ESCAPE;
+         public static final int KEY_HOME = GLFW.GLFW_KEY_HOME;
+         public static final int KEY_END = GLFW.GLFW_KEY_END;
+@@ -268,6 +289,7 @@ public class MCVer {
+         public static final int KEY_C = GLFW.GLFW_KEY_C;
+         public static final int KEY_V = GLFW.GLFW_KEY_V;
+         public static final int KEY_X = GLFW.GLFW_KEY_X;
++        //#endif
+ 
+         public static void enableRepeatEvents(boolean enabled) {
+             //#if MC>=11903
+diff --git a/versions/26.3/gradle.properties b/versions/26.3/gradle.properties
+new file mode 100644
+--- /dev/null
++++ b/versions/26.3/gradle.properties
+@@ -0,0 +1 @@
++essential.defaults.loom.fabric-loader=net.fabricmc:fabric-loader:0.19.5
+diff --git a/versions/26.3/src/main/java/de/johni0702/minecraft/gui/versions/mixin/MixinKeyboardListener.java b/versions/26.3/src/main/java/de/johni0702/minecraft/gui/versions/mixin/MixinKeyboardListener.java
+new file mode 100644
+--- /dev/null
++++ b/versions/26.3/src/main/java/de/johni0702/minecraft/gui/versions/mixin/MixinKeyboardListener.java
+@@ -0,0 +1,39 @@
++package de.johni0702.minecraft.gui.versions.mixin;
++
++import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
++import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
++import de.johni0702.minecraft.gui.function.CharInput;
++import de.johni0702.minecraft.gui.function.KeyInput;
++import de.johni0702.minecraft.gui.versions.callbacks.KeyboardCallback;
++import net.minecraft.client.KeyboardHandler;
++import net.minecraft.client.gui.screens.Screen;
++import org.spongepowered.asm.mixin.Mixin;
++import org.spongepowered.asm.mixin.injection.At;
++
++@Mixin(KeyboardHandler.class)
++public class MixinKeyboardListener {
++    @WrapOperation(method = "keyPress", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;keyPressed(Lnet/minecraft/client/input/KeyEvent;)Z"))
++    private boolean keyPressed(Screen screen, net.minecraft.client.input.KeyEvent mcKeyInput, Operation<Boolean> original) {
++        if (KeyboardCallback.EVENT.invoker().keyPressed(new KeyInput(mcKeyInput))) {
++            return true;
++        }
++        return original.call(screen, mcKeyInput);
++    }
++
++    @WrapOperation(method = "keyPress", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;keyReleased(Lnet/minecraft/client/input/KeyEvent;)Z"))
++    private boolean keyReleased(Screen screen, net.minecraft.client.input.KeyEvent mcKeyInput, Operation<Boolean> original) {
++        if (KeyboardCallback.EVENT.invoker().keyReleased(new KeyInput(mcKeyInput))) {
++            return true;
++        }
++        return original.call(screen, mcKeyInput);
++    }
++
++    @WrapOperation(method = "charTyped", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;charTyped(Lnet/minecraft/client/input/CharacterEvent;)Z"))
++    private boolean charTyped(Screen screen, net.minecraft.client.input.CharacterEvent mcCharInput, Operation<Boolean> original) {
++        if (KeyboardCallback.EVENT.invoker().charTyped(new CharInput(mcCharInput))) {
++            return true;
++        }
++        return original.call(screen, mcCharInput);
++    }
++}
++
+diff --git a/versions/26.3/src/main/java/de/johni0702/minecraft/gui/versions/mixin/MixinMouseListener.java b/versions/26.3/src/main/java/de/johni0702/minecraft/gui/versions/mixin/MixinMouseListener.java
+new file mode 100644
+--- /dev/null
++++ b/versions/26.3/src/main/java/de/johni0702/minecraft/gui/versions/mixin/MixinMouseListener.java
+@@ -0,0 +1,46 @@
++package de.johni0702.minecraft.gui.versions.mixin;
++
++import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
++import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
++import de.johni0702.minecraft.gui.versions.callbacks.MouseCallback;
++import net.minecraft.client.MouseHandler;
++import net.minecraft.client.input.MouseButtonEvent;
++import net.minecraft.client.gui.screens.Screen;
++import org.spongepowered.asm.mixin.Mixin;
++import org.spongepowered.asm.mixin.injection.At;
++
++@Mixin(MouseHandler.class)
++public abstract class MixinMouseListener {
++    @WrapOperation(method = "onButton", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;mouseClicked(Lnet/minecraft/client/input/MouseButtonEvent;Z)Z"))
++    private boolean mouseDown(Screen screen, MouseButtonEvent click, boolean doubled, Operation<Boolean> original) {
++        if (MouseCallback.EVENT.invoker().mouseDown(new de.johni0702.minecraft.gui.function.Click(click))) {
++            return true;
++        }
++        return original.call(screen, click, doubled);
++    }
++
++    @WrapOperation(method = "onButton", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;mouseReleased(Lnet/minecraft/client/input/MouseButtonEvent;)Z"))
++    private boolean mouseUp(Screen screen, MouseButtonEvent click, Operation<Boolean> original) {
++        if (MouseCallback.EVENT.invoker().mouseUp(new de.johni0702.minecraft.gui.function.Click(click))) {
++            return true;
++        }
++        return original.call(screen, click);
++    }
++
++    @WrapOperation(method = "handleAccumulatedMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;mouseDragged(Lnet/minecraft/client/input/MouseButtonEvent;DD)Z"))
++    private boolean mouseDrag(Screen screen, MouseButtonEvent click, double dx, double dy, Operation<Boolean> original) {
++        if (MouseCallback.EVENT.invoker().mouseDrag(new de.johni0702.minecraft.gui.function.Click(click), dx, dy)) {
++            return true;
++        }
++        return original.call(screen, click, dx, dy);
++    }
++
++    @WrapOperation(method = "onScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;mouseScrolled(DDDD)Z"))
++    private boolean mouseScroll(Screen screen, double x, double y, double horizontal, double vertical, Operation<Boolean> original) {
++        if (MouseCallback.EVENT.invoker().mouseScroll(x, y, horizontal, vertical)) {
++            return true;
++        }
++        return original.call(screen, x, y, horizontal, vertical);
++    }
++}
++
+diff --git a/versions/mapping-fabric-26.3-26.2.txt b/versions/mapping-fabric-26.3-26.2.txt
+new file mode 100644
+--- /dev/null
++++ b/versions/mapping-fabric-26.3-26.2.txt
+@@ -0,0 +1,184 @@
++com.mojang.renderpearl.api.GpuFormat com.mojang.blaze3d.GpuFormat
++com.mojang.renderpearl.api.GpuFormat$ComponentType com.mojang.blaze3d.GpuFormat$ComponentType
++com.mojang.renderpearl.api.buffers.GpuBuffer com.mojang.blaze3d.buffers.GpuBuffer
++com.mojang.renderpearl.api.buffers.GpuBuffer$Usage com.mojang.blaze3d.buffers.GpuBuffer$Usage
++com.mojang.renderpearl.api.buffers.GpuBufferSlice com.mojang.blaze3d.buffers.GpuBufferSlice
++com.mojang.renderpearl.api.buffers.GpuBufferSlice$MappedView com.mojang.blaze3d.buffers.GpuBufferSlice$MappedView
++com.mojang.renderpearl.api.buffers.TransientMemory com.mojang.blaze3d.systems.TransientMemory
++com.mojang.renderpearl.api.commands.CommandEncoder com.mojang.blaze3d.systems.CommandEncoder
++com.mojang.renderpearl.api.commands.GpuFence com.mojang.blaze3d.buffers.GpuFence
++com.mojang.renderpearl.api.commands.GpuQuery com.mojang.blaze3d.systems.GpuQuery
++com.mojang.renderpearl.api.commands.GpuQueryPool com.mojang.blaze3d.systems.GpuQueryPool
++com.mojang.renderpearl.api.commands.RenderPass com.mojang.blaze3d.systems.RenderPass
++com.mojang.renderpearl.api.commands.RenderPass$Draw com.mojang.blaze3d.systems.RenderPass$Draw
++com.mojang.renderpearl.api.commands.RenderPass$RenderArea com.mojang.blaze3d.systems.RenderPass$RenderArea
++com.mojang.renderpearl.api.commands.RenderPass$UniformUploader com.mojang.blaze3d.systems.RenderPass$UniformUploader
++com.mojang.renderpearl.api.commands.RenderPassDescriptor com.mojang.blaze3d.systems.RenderPassDescriptor
++com.mojang.renderpearl.api.commands.RenderPassDescriptor$Attachment com.mojang.blaze3d.systems.RenderPassDescriptor$Attachment
++com.mojang.renderpearl.api.device.BackendCreationException com.mojang.blaze3d.systems.BackendCreationException
++com.mojang.renderpearl.api.device.BackendCreationException$Reason com.mojang.blaze3d.systems.BackendCreationException$Reason
++com.mojang.renderpearl.api.device.DeviceFeatures com.mojang.blaze3d.systems.DeviceFeatures
++com.mojang.renderpearl.api.device.DeviceInfo com.mojang.blaze3d.systems.DeviceInfo
++com.mojang.renderpearl.api.device.DeviceLimits com.mojang.blaze3d.systems.DeviceLimits
++com.mojang.renderpearl.api.device.DeviceType com.mojang.blaze3d.systems.DeviceType
++com.mojang.renderpearl.api.device.GpuBackend com.mojang.blaze3d.systems.GpuBackend
++com.mojang.renderpearl.api.device.GpuDebugOptions com.mojang.blaze3d.shaders.GpuDebugOptions
++com.mojang.renderpearl.api.device.GpuDevice com.mojang.blaze3d.systems.GpuDevice
++com.mojang.renderpearl.api.device.GpuDeviceLossException com.mojang.blaze3d.GpuDeviceLossException
++com.mojang.renderpearl.api.device.GpuOutOfMemoryException com.mojang.blaze3d.GpuOutOfMemoryException
++com.mojang.renderpearl.api.device.GpuSurface com.mojang.blaze3d.systems.GpuSurface
++com.mojang.renderpearl.api.device.GpuSurface$Configuration com.mojang.blaze3d.systems.GpuSurface$Configuration
++com.mojang.renderpearl.api.device.GpuSurface$PresentMode com.mojang.blaze3d.systems.GpuSurface$PresentMode
++com.mojang.renderpearl.api.device.HintsAndWorkarounds com.mojang.blaze3d.systems.HintsAndWorkarounds
++com.mojang.renderpearl.api.device.SurfaceException com.mojang.blaze3d.systems.SurfaceException
++com.mojang.renderpearl.api.pipeline.BindGroupLayout com.mojang.blaze3d.pipeline.BindGroupLayout
++com.mojang.renderpearl.api.pipeline.BindGroupLayout$Builder com.mojang.blaze3d.pipeline.BindGroupLayout$Builder
++com.mojang.renderpearl.api.pipeline.BindGroupLayout$UniformDescription com.mojang.blaze3d.pipeline.BindGroupLayout$UniformDescription
++com.mojang.renderpearl.api.pipeline.BlendEquation com.mojang.blaze3d.pipeline.BlendEquation
++com.mojang.renderpearl.api.pipeline.BlendFactor com.mojang.blaze3d.platform.BlendFactor
++com.mojang.renderpearl.api.pipeline.BlendFunction com.mojang.blaze3d.pipeline.BlendFunction
++com.mojang.renderpearl.api.pipeline.BlendOp com.mojang.blaze3d.platform.BlendOp
++com.mojang.renderpearl.api.pipeline.ColorTargetState com.mojang.blaze3d.pipeline.ColorTargetState
++com.mojang.renderpearl.api.pipeline.ColorTargetState$WriteMask com.mojang.blaze3d.pipeline.ColorTargetState$WriteMask
++com.mojang.renderpearl.api.pipeline.CompareOp com.mojang.blaze3d.platform.CompareOp
++com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline com.mojang.blaze3d.pipeline.CompiledRenderPipeline
++com.mojang.renderpearl.api.pipeline.DepthStencilState com.mojang.blaze3d.pipeline.DepthStencilState
++com.mojang.renderpearl.api.pipeline.IndexType com.mojang.blaze3d.IndexType
++com.mojang.renderpearl.api.pipeline.PolygonMode com.mojang.blaze3d.platform.PolygonMode
++com.mojang.renderpearl.api.pipeline.PrimitiveTopology com.mojang.blaze3d.PrimitiveTopology
++com.mojang.renderpearl.api.pipeline.RenderPipeline com.mojang.blaze3d.pipeline.RenderPipeline
++com.mojang.renderpearl.api.pipeline.RenderPipeline$Builder com.mojang.blaze3d.pipeline.RenderPipeline$Builder
++com.mojang.renderpearl.api.pipeline.RenderPipeline$Snippet com.mojang.blaze3d.pipeline.RenderPipeline$Snippet
++com.mojang.renderpearl.api.pipeline.ShaderSource com.mojang.blaze3d.shaders.ShaderSource
++com.mojang.renderpearl.api.pipeline.ShaderType com.mojang.blaze3d.shaders.ShaderType
++com.mojang.renderpearl.api.pipeline.UniformType com.mojang.blaze3d.shaders.UniformType
++com.mojang.renderpearl.api.textures.AddressMode com.mojang.blaze3d.textures.AddressMode
++com.mojang.renderpearl.api.textures.FilterMode com.mojang.blaze3d.textures.FilterMode
++com.mojang.renderpearl.api.textures.GpuSampler com.mojang.blaze3d.textures.GpuSampler
++com.mojang.renderpearl.api.textures.GpuTexture com.mojang.blaze3d.textures.GpuTexture
++com.mojang.renderpearl.api.textures.GpuTexture$Usage com.mojang.blaze3d.textures.GpuTexture$Usage
++com.mojang.renderpearl.api.textures.GpuTextureView com.mojang.blaze3d.textures.GpuTextureView
++com.mojang.renderpearl.api.vertex.VertexFormat com.mojang.blaze3d.vertex.VertexFormat
++com.mojang.renderpearl.api.vertex.VertexFormat$Builder com.mojang.blaze3d.vertex.VertexFormat$Builder
++com.mojang.renderpearl.api.vertex.VertexFormatElement com.mojang.blaze3d.vertex.VertexFormatElement
++com.mojang.renderpearl.backend.api.CommandEncoderBackend com.mojang.blaze3d.systems.CommandEncoderBackend
++com.mojang.renderpearl.backend.api.GpuDeviceBackend com.mojang.blaze3d.systems.GpuDeviceBackend
++com.mojang.renderpearl.backend.api.GpuSurfaceBackend com.mojang.blaze3d.systems.GpuSurfaceBackend
++com.mojang.renderpearl.backend.api.RenderPassBackend com.mojang.blaze3d.systems.RenderPassBackend
++com.mojang.renderpearl.backend.opengl.BufferStorage com.mojang.blaze3d.opengl.BufferStorage
++com.mojang.renderpearl.backend.opengl.BufferStorage$Immutable com.mojang.blaze3d.opengl.BufferStorage$Immutable
++com.mojang.renderpearl.backend.opengl.BufferStorage$Mutable com.mojang.blaze3d.opengl.BufferStorage$Mutable
++com.mojang.renderpearl.backend.opengl.DirectStateAccess com.mojang.blaze3d.opengl.DirectStateAccess
++com.mojang.renderpearl.backend.opengl.DirectStateAccess$Core com.mojang.blaze3d.opengl.DirectStateAccess$Core
++com.mojang.renderpearl.backend.opengl.DirectStateAccess$Emulated com.mojang.blaze3d.opengl.DirectStateAccess$Emulated
++com.mojang.renderpearl.backend.opengl.FrameBufferAttachment com.mojang.blaze3d.opengl.FrameBufferAttachment
++com.mojang.renderpearl.backend.opengl.FrameBufferCache com.mojang.blaze3d.opengl.FrameBufferCache
++com.mojang.renderpearl.backend.opengl.FrameBufferCache$CacheKey com.mojang.blaze3d.opengl.FrameBufferCache$CacheKey
++com.mojang.renderpearl.backend.opengl.GlBackend com.mojang.blaze3d.opengl.GlBackend
++com.mojang.renderpearl.backend.opengl.GlBuffer com.mojang.blaze3d.opengl.GlBuffer
++com.mojang.renderpearl.backend.opengl.GlBuffer$Direct com.mojang.blaze3d.opengl.GlBuffer$Direct
++com.mojang.renderpearl.backend.opengl.GlBuffer$Direct$1 com.mojang.blaze3d.opengl.GlBuffer$Direct$1
++com.mojang.renderpearl.backend.opengl.GlCommandEncoder com.mojang.blaze3d.opengl.GlCommandEncoder
++com.mojang.renderpearl.backend.opengl.GlConst com.mojang.blaze3d.opengl.GlConst
++com.mojang.renderpearl.backend.opengl.GlConst$1 com.mojang.blaze3d.opengl.GlConst$1
++com.mojang.renderpearl.backend.opengl.GlDebug com.mojang.blaze3d.opengl.GlDebug
++com.mojang.renderpearl.backend.opengl.GlDebug$LogEntry com.mojang.blaze3d.opengl.GlDebug$LogEntry
++com.mojang.renderpearl.backend.opengl.GlDebugLabel com.mojang.blaze3d.opengl.GlDebugLabel
++com.mojang.renderpearl.backend.opengl.GlDebugLabel$Core com.mojang.blaze3d.opengl.GlDebugLabel$Core
++com.mojang.renderpearl.backend.opengl.GlDebugLabel$Empty com.mojang.blaze3d.opengl.GlDebugLabel$Empty
++com.mojang.renderpearl.backend.opengl.GlDebugLabel$Ext com.mojang.blaze3d.opengl.GlDebugLabel$Ext
++com.mojang.renderpearl.backend.opengl.GlDevice com.mojang.blaze3d.opengl.GlDevice
++com.mojang.renderpearl.backend.opengl.GlFence com.mojang.blaze3d.opengl.GlFence
++com.mojang.renderpearl.backend.opengl.GlHeuristics com.mojang.blaze3d.opengl.GlHeuristics
++com.mojang.renderpearl.backend.opengl.GlProgram com.mojang.blaze3d.opengl.GlProgram
++com.mojang.renderpearl.backend.opengl.GlProgram$1 com.mojang.blaze3d.opengl.GlProgram$1
++com.mojang.renderpearl.backend.opengl.GlQueryPool com.mojang.blaze3d.opengl.GlQueryPool
++com.mojang.renderpearl.backend.opengl.GlRenderPass com.mojang.blaze3d.opengl.GlRenderPass
++com.mojang.renderpearl.backend.opengl.GlRenderPipeline com.mojang.blaze3d.opengl.GlRenderPipeline
++com.mojang.renderpearl.backend.opengl.GlSampler com.mojang.blaze3d.opengl.GlSampler
++com.mojang.renderpearl.backend.opengl.GlSampler$1 com.mojang.blaze3d.opengl.GlSampler$1
++com.mojang.renderpearl.backend.opengl.GlShaderModule com.mojang.blaze3d.opengl.GlShaderModule
++com.mojang.renderpearl.backend.opengl.GlStateManager com.mojang.blaze3d.opengl.GlStateManager
++com.mojang.renderpearl.backend.opengl.GlStateManager$BlendState com.mojang.blaze3d.opengl.GlStateManager$BlendState
++com.mojang.renderpearl.backend.opengl.GlStateManager$BooleanState com.mojang.blaze3d.opengl.GlStateManager$BooleanState
++com.mojang.renderpearl.backend.opengl.GlStateManager$ColorLogicState com.mojang.blaze3d.opengl.GlStateManager$ColorLogicState
++com.mojang.renderpearl.backend.opengl.GlStateManager$CullState com.mojang.blaze3d.opengl.GlStateManager$CullState
++com.mojang.renderpearl.backend.opengl.GlStateManager$DepthState com.mojang.blaze3d.opengl.GlStateManager$DepthState
++com.mojang.renderpearl.backend.opengl.GlStateManager$PolygonOffsetState com.mojang.blaze3d.opengl.GlStateManager$PolygonOffsetState
++com.mojang.renderpearl.backend.opengl.GlStateManager$ScissorState com.mojang.blaze3d.opengl.GlStateManager$ScissorState
++com.mojang.renderpearl.backend.opengl.GlStateManager$TextureState com.mojang.blaze3d.opengl.GlStateManager$TextureState
++com.mojang.renderpearl.backend.opengl.GlSurface com.mojang.blaze3d.opengl.GlSurface
++com.mojang.renderpearl.backend.opengl.GlTexture com.mojang.blaze3d.opengl.GlTexture
++com.mojang.renderpearl.backend.opengl.GlTextureView com.mojang.blaze3d.opengl.GlTextureView
++com.mojang.renderpearl.backend.opengl.GlTransientMemory com.mojang.blaze3d.opengl.GlTransientMemory
++com.mojang.renderpearl.backend.opengl.GlTransientMemory$Fallback com.mojang.blaze3d.opengl.GlTransientMemory$Fallback
++com.mojang.renderpearl.backend.opengl.GlTransientMemory$Fallback$GlAllocation com.mojang.blaze3d.opengl.GlTransientMemory$Fallback$GlAllocation
++com.mojang.renderpearl.backend.opengl.GlTransientMemory$PersistentMapping com.mojang.blaze3d.opengl.GlTransientMemory$PersistentMapping
++com.mojang.renderpearl.backend.opengl.GlTransientMemory$PersistentMapping$GlAllocation com.mojang.blaze3d.opengl.GlTransientMemory$PersistentMapping$GlAllocation
++com.mojang.renderpearl.backend.opengl.GlTransientMemory$PersistentMapping$Rotation com.mojang.blaze3d.opengl.GlTransientMemory$PersistentMapping$Rotation
++com.mojang.renderpearl.backend.opengl.GlTransientMemory$TransientGpuBuffer com.mojang.blaze3d.opengl.GlTransientMemory$TransientGpuBuffer
++com.mojang.renderpearl.backend.opengl.GlUtil com.mojang.blaze3d.opengl.GlUtil
++com.mojang.renderpearl.backend.opengl.Uniform com.mojang.blaze3d.opengl.Uniform
++com.mojang.renderpearl.backend.opengl.Uniform$Sampler com.mojang.blaze3d.opengl.Uniform$Sampler
++com.mojang.renderpearl.backend.opengl.Uniform$Ubo com.mojang.blaze3d.opengl.Uniform$Ubo
++com.mojang.renderpearl.backend.opengl.Uniform$Utb com.mojang.blaze3d.opengl.Uniform$Utb
++com.mojang.renderpearl.backend.util.TransientBlockAllocator com.mojang.blaze3d.util.TransientBlockAllocator
++com.mojang.renderpearl.backend.util.TransientBlockAllocator$Allocation com.mojang.blaze3d.util.TransientBlockAllocator$Allocation
++com.mojang.renderpearl.backend.util.TransientBlockAllocator$Allocator com.mojang.blaze3d.util.TransientBlockAllocator$Allocator
++com.mojang.renderpearl.backend.util.TransientBlockAllocator$Allocator$1 com.mojang.blaze3d.util.TransientBlockAllocator$Allocator$1
++com.mojang.renderpearl.backend.vulkan.Destroyable com.mojang.blaze3d.vulkan.Destroyable
++com.mojang.renderpearl.backend.vulkan.DestructionQueue com.mojang.blaze3d.vulkan.DestructionQueue
++com.mojang.renderpearl.backend.vulkan.DestructionQueue$Destroyer com.mojang.blaze3d.vulkan.DestructionQueue$Destroyer
++com.mojang.renderpearl.backend.vulkan.VulkanBackend com.mojang.blaze3d.vulkan.VulkanBackend
++com.mojang.renderpearl.backend.vulkan.VulkanCommandEncoder com.mojang.blaze3d.vulkan.VulkanCommandEncoder
++com.mojang.renderpearl.backend.vulkan.VulkanCommandEncoder$1 com.mojang.blaze3d.vulkan.VulkanCommandEncoder$1
++com.mojang.renderpearl.backend.vulkan.VulkanCommandPool com.mojang.blaze3d.vulkan.VulkanCommandPool
++com.mojang.renderpearl.backend.vulkan.VulkanConst com.mojang.blaze3d.vulkan.VulkanConst
++com.mojang.renderpearl.backend.vulkan.VulkanConst$1 com.mojang.blaze3d.vulkan.VulkanConst$1
++com.mojang.renderpearl.backend.vulkan.VulkanDebug com.mojang.blaze3d.vulkan.VulkanDebug
++com.mojang.renderpearl.backend.vulkan.VulkanDebug$Disabled com.mojang.blaze3d.vulkan.VulkanDebug$Disabled
++com.mojang.renderpearl.backend.vulkan.VulkanDebug$Enabled com.mojang.blaze3d.vulkan.VulkanDebug$Enabled
++com.mojang.renderpearl.backend.vulkan.VulkanDevice com.mojang.blaze3d.vulkan.VulkanDevice
++com.mojang.renderpearl.backend.vulkan.VulkanGpuBuffer com.mojang.blaze3d.vulkan.VulkanGpuBuffer
++com.mojang.renderpearl.backend.vulkan.VulkanGpuBuffer$Direct com.mojang.blaze3d.vulkan.VulkanGpuBuffer$Direct
++com.mojang.renderpearl.backend.vulkan.VulkanGpuBuffer$Direct$1 com.mojang.blaze3d.vulkan.VulkanGpuBuffer$Direct$1
++com.mojang.renderpearl.backend.vulkan.VulkanGpuSampler com.mojang.blaze3d.vulkan.VulkanGpuSampler
++com.mojang.renderpearl.backend.vulkan.VulkanGpuSurface com.mojang.blaze3d.vulkan.VulkanGpuSurface
++com.mojang.renderpearl.backend.vulkan.VulkanGpuTexture com.mojang.blaze3d.vulkan.VulkanGpuTexture
++com.mojang.renderpearl.backend.vulkan.VulkanGpuTextureView com.mojang.blaze3d.vulkan.VulkanGpuTextureView
++com.mojang.renderpearl.backend.vulkan.VulkanInstance com.mojang.blaze3d.vulkan.VulkanInstance
++com.mojang.renderpearl.backend.vulkan.VulkanPhysicalDevice com.mojang.blaze3d.vulkan.VulkanPhysicalDevice
++com.mojang.renderpearl.backend.vulkan.VulkanQueryPool com.mojang.blaze3d.vulkan.VulkanQueryPool
++com.mojang.renderpearl.backend.vulkan.VulkanQueue com.mojang.blaze3d.vulkan.VulkanQueue
++com.mojang.renderpearl.backend.vulkan.VulkanQueue$Submission com.mojang.blaze3d.vulkan.VulkanQueue$Submission
++com.mojang.renderpearl.backend.vulkan.VulkanQueue$Submission$SemaphoreOp com.mojang.blaze3d.vulkan.VulkanQueue$Submission$SemaphoreOp
++com.mojang.renderpearl.backend.vulkan.VulkanQueue$Submission$SubmitStage com.mojang.blaze3d.vulkan.VulkanQueue$Submission$SubmitStage
++com.mojang.renderpearl.backend.vulkan.VulkanRenderPass com.mojang.blaze3d.vulkan.VulkanRenderPass
++com.mojang.renderpearl.backend.vulkan.VulkanRenderPass$1 com.mojang.blaze3d.vulkan.VulkanRenderPass$1
++com.mojang.renderpearl.backend.vulkan.VulkanRenderPipeline com.mojang.blaze3d.vulkan.VulkanRenderPipeline
++com.mojang.renderpearl.backend.vulkan.VulkanTransientMemory com.mojang.blaze3d.vulkan.VulkanTransientMemory
++com.mojang.renderpearl.backend.vulkan.VulkanTransientMemory$TransientGpuBuffer com.mojang.blaze3d.vulkan.VulkanTransientMemory$TransientGpuBuffer
++com.mojang.renderpearl.backend.vulkan.VulkanTransientMemory$VulkanAllocation com.mojang.blaze3d.vulkan.VulkanTransientMemory$VulkanAllocation
++com.mojang.renderpearl.backend.vulkan.VulkanUtils com.mojang.blaze3d.vulkan.VulkanUtils
++com.mojang.renderpearl.backend.vulkan.VulkanUtils$DeviceUUID com.mojang.blaze3d.vulkan.VulkanUtils$DeviceUUID
++com.mojang.renderpearl.backend.vulkan.checkpoints.AbstractCheckpointStorage com.mojang.blaze3d.vulkan.checkpoints.AbstractCheckpointStorage
++com.mojang.renderpearl.backend.vulkan.checkpoints.AbstractCheckpointStorage$Checkpoint com.mojang.blaze3d.vulkan.checkpoints.AbstractCheckpointStorage$Checkpoint
++com.mojang.renderpearl.backend.vulkan.checkpoints.AbstractCheckpointStorage$Frame com.mojang.blaze3d.vulkan.checkpoints.AbstractCheckpointStorage$Frame
++com.mojang.renderpearl.backend.vulkan.checkpoints.AmdCheckpointExtension com.mojang.blaze3d.vulkan.checkpoints.AmdCheckpointExtension
++com.mojang.renderpearl.backend.vulkan.checkpoints.AmdCheckpointExtension$AmdCheckpointStorage com.mojang.blaze3d.vulkan.checkpoints.AmdCheckpointExtension$AmdCheckpointStorage
++com.mojang.renderpearl.backend.vulkan.checkpoints.CheckpointExtension com.mojang.blaze3d.vulkan.checkpoints.CheckpointExtension
++com.mojang.renderpearl.backend.vulkan.checkpoints.CheckpointExtension$CheckpointStorage com.mojang.blaze3d.vulkan.checkpoints.CheckpointExtension$CheckpointStorage
++com.mojang.renderpearl.backend.vulkan.checkpoints.CheckpointExtension$CheckpointType com.mojang.blaze3d.vulkan.checkpoints.CheckpointExtension$CheckpointType
++com.mojang.renderpearl.backend.vulkan.checkpoints.CheckpointExtension$QueueCheckpoints com.mojang.blaze3d.vulkan.checkpoints.CheckpointExtension$QueueCheckpoints
++com.mojang.renderpearl.backend.vulkan.checkpoints.CheckpointExtension$StageCheckpoint com.mojang.blaze3d.vulkan.checkpoints.CheckpointExtension$StageCheckpoint
++com.mojang.renderpearl.backend.vulkan.checkpoints.NoopCheckpointExtension com.mojang.blaze3d.vulkan.checkpoints.NoopCheckpointExtension
++com.mojang.renderpearl.backend.vulkan.checkpoints.NoopCheckpointExtension$NoopCheckpointStorage com.mojang.blaze3d.vulkan.checkpoints.NoopCheckpointExtension$NoopCheckpointStorage
++com.mojang.renderpearl.backend.vulkan.checkpoints.NvidiaCheckpointExtension com.mojang.blaze3d.vulkan.checkpoints.NvidiaCheckpointExtension
++com.mojang.renderpearl.backend.vulkan.checkpoints.NvidiaCheckpointExtension$NvidiaCheckpointStorage com.mojang.blaze3d.vulkan.checkpoints.NvidiaCheckpointExtension$NvidiaCheckpointStorage
++com.mojang.renderpearl.backend.vulkan.init.VulkanFeature com.mojang.blaze3d.vulkan.init.VulkanFeature
++com.mojang.renderpearl.backend.vulkan.init.VulkanPNextStruct com.mojang.blaze3d.vulkan.init.VulkanPNextStruct
++com.mojang.renderpearl.frontend.TracyGpuProfiler com.mojang.blaze3d.systems.TracyGpuProfiler
++com.mojang.renderpearl.frontend.shaders.GlslCompiler com.mojang.blaze3d.vulkan.glsl.GlslCompiler
++com.mojang.renderpearl.util.ShaderCompileException com.mojang.blaze3d.vulkan.glsl.ShaderCompileException
++net.minecraft.server.packs.AbstractPackMetadataResources net.minecraft.server.packs.AbstractPackResources
++net.minecraft.client.renderer.FirstPersonHandsAndItemsRenderer net.minecraft.client.renderer.ItemInHandRenderer

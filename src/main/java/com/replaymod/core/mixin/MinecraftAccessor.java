@@ -77,4 +77,9 @@ public interface MinecraftAccessor {
     @Accessor
     void setConnection(ClientConnection connection);
     //#endif
+
+    //#if MC>=26.3
+    //$$ @Accessor("sdlEventHandler")
+    //$$ com.mojang.blaze3d.platform.SDLEventHandler getSdlEventHandler();
+    //#endif
 }

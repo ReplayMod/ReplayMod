@@ -943,7 +943,14 @@ public class ReplayHandler {
     }
 
     private void skipTeleportInterpolation(Entity entity) {
-        //#if MC>=12105
+        //#if MC>=26.3
+        //$$ InterpolationHandler i = entity.getInterpolation();
+        //$$ if (i != null && i.hasActiveInterpolation()) {
+        //$$     net.minecraft.core.PositionAndRotation target = i.target();
+        //$$     entity.absSnapTo(target.position().x(), target.position().y(), target.position().z(), target.yRot(), target.xRot());
+        //$$     i.cancel();
+        //$$ }
+        //#elseif MC>=12105
         //$$ PositionInterpolator i = entity.getInterpolator();
         //$$ if (i != null && i.isInterpolating()) {
         //$$     entity.refreshPositionAndAngles(i.getLerpedPos(), i.getLerpedYaw(), i.getLerpedPitch());

@@ -184,6 +184,9 @@ public class CameraEntity
                 //#if MC >= 26.1
                 //$$ , mcIn.computeChatAbilities()
                 //#endif
+                //#if MC >= 26.3
+                //$$ , new net.minecraft.client.player.ItemActivation()
+                //#endif
         );
         //#if MC>=10900
         setUuid(CAMERA_UUID);
@@ -586,6 +589,15 @@ public class CameraEntity
     //#endif
 
     @Override
+    //#if MC>=26.3
+    //$$ public float getSwingAnimation(float renderPartialTicks) {
+    //$$     Entity view = this.minecraft.getCameraEntity();
+    //$$     if (view != this && view instanceof Player) {
+    //$$         return ((Player) view).getSwingAnimation(renderPartialTicks);
+    //$$     }
+    //$$     return 0;
+    //$$ }
+    //#else
     public float getHandSwingProgress(float renderPartialTicks) {
         Entity view = this.client.getCameraEntity();
         if (view != this && view instanceof PlayerEntity) {
@@ -593,6 +605,7 @@ public class CameraEntity
         }
         return 0;
     }
+    //#endif
 
     //#if MC>=10904
     @Override
@@ -778,7 +791,12 @@ public class CameraEntity
 
         //#if MC>=10904
         cameraA.setItemStackMainHand(viewPlayerA != null ? viewPlayerA.getItemStackMainHand() : empty);
+        //#if MC>=26.3
+        //$$ // 26.3 keeps the current swing in a private SwingState without a public setter, so the forced
+        //$$ // arm assignment is skipped; the item stacks above already force the correct equip state.
+        //#else
         this.preferredHand = viewPlayer != null ? viewPlayer.preferredHand : Hand.MAIN_HAND;
+        //#endif
         this.activeItemStack = viewPlayer != null ? viewPlayer.getActiveItem() : empty;
         cameraA.setActiveItemStackUseCount(viewPlayerA != null ? viewPlayerA.getActiveItemStackUseCount() : 0);
         //#else
@@ -916,6 +934,10 @@ public class CameraEntity
                 if (lastHandRendered != player) {
                     lastHandRendered = player;
 
+                    //#if MC>=26.3
+                    //$$ // 26.3 renders first person hands from a per-frame render state; the renderer no longer
+                    //$$ // stores the item/equip-progress fields this accessor used, so the forced equip is skipped.
+                    //#else
                     FirstPersonRendererAccessor acc = (FirstPersonRendererAccessor) mc.gameRenderer.firstPersonRenderer;
                     //#if MC>=10904
                     acc.setPrevEquippedProgressMainHand(1);
@@ -929,6 +951,7 @@ public class CameraEntity
                     //$$ acc.setEquippedProgress(1);
                     //$$ acc.setItemToRender(player.inventory.getCurrentItem());
                     //$$ acc.setEquippedItemSlot(player.inventory.currentItem);
+                    //#endif
                     //#endif
 
 

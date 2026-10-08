@@ -2,6 +2,24 @@
 A Minecraft mod to record game sessions and replay them afterwards from any perspective.
 
 ## Building
+The experimental Minecraft 26.3 Fabric port compiles and passed a short Windows
+smoke test with ten companion mods. This does not certify their complete feature
+or compatibility suites. Linux has not yet been tested.
+
+The port can be built on this PC with `./build-26.3.ps1`.
+It uses JDK 21 for Gradle, JDK 25 for Minecraft, JDK 8 for ReplayStudio, and JDK 16 for preprocessing older sources.
+The distributable is in `versions/26.3/build/libs/`; use the JAR without `-raw` or `-sources`.
+Minecraft 26.3, Java 25, and Fabric Loader 0.19.5 or newer are required to run it.
+
+This port adapts the source changes from [DUzzL's upstream PR #1177](https://github.com/ReplayMod/ReplayMod/pull/1177),
+with ported jGui and ReplayStudio dependencies pinned to commits in this account's
+forks. A recursive clone includes those changes. Historical dependency patches are saved in
+[`versions/26.3/dependency-patches`](versions/26.3/dependency-patches/README.md).
+The PR's author closed it after finding Linux issues,
+so a successful build alone does not establish in-game compatibility.
+Windows integration results for the Elric 26.3 mod set are recorded in
+[`versions/26.3/COMPATIBILITY.md`](versions/26.3/COMPATIBILITY.md).
+
 Make sure your sub-projects are up-to-date: `git submodule update --init --recursive`
 
 For compiling 1.7.10, you must run `./gradlew :jGui:1.7.10:setupDecompWorkspace :1.7.10:setupDecompWorkspace` once after the initial clone. This may take quite some time.

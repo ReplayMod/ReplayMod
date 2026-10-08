@@ -61,7 +61,11 @@ import net.fabricmc.loader.api.ModContainer;
  * Resource pack which on-the-fly converts pre-1.13 language files into 1.13 json format.
  * Also duplicates `replaymod.input.*` bindings to `key.replaymod.*` as convention on Fabric.
  */
+//#if MC>=26.3
+//$$ public class LangResourcePack extends net.minecraft.server.packs.AbstractPackMetadataResources implements net.minecraft.server.packs.PackResources {
+//#else
 public class LangResourcePack extends AbstractFileResourcePack {
+//#endif
     private static final Gson GSON = new Gson();
     public static final String NAME = "replaymod_lang";
     private static final Pattern JSON_FILE_PATTERN = Pattern.compile("^assets/" + ReplayMod.MOD_ID + "/lang/([a-z][a-z])_([a-z][a-z]).json$");

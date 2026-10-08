@@ -79,6 +79,10 @@ import net.minecraft.network.packet.s2c.play.ExperienceOrbSpawnS2CPacket;
 //$$ import net.minecraft.network.packet.s2c.common.ServerTransferS2CPacket;
 //#endif
 
+//#if MC>=26.3
+//$$ import java.util.Optional;
+//#endif
+
 //#if MC>=12002
 //$$ import net.minecraft.network.packet.s2c.config.ReadyS2CPacket;
 //$$ import net.minecraft.network.packet.s2c.play.CommonPlayerSpawnInfo;
@@ -1003,7 +1007,11 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
     //$$             org.dimension(),
     //$$             org.seed(),
     //$$             GameMode.SPECTATOR,
-    //$$             GameMode.SPECTATOR,
+                    //#if MC>=26.3
+                    //$$ Optional.of(GameType.SPECTATOR),
+                    //#else
+                    //$$ GameType.SPECTATOR,
+                    //#endif
     //$$             org.isDebug(),
     //$$             org.isFlat(),
     //$$             org.lastDeathLocation(),

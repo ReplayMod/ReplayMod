@@ -8,7 +8,9 @@ import com.replaymod.render.processor.GlToAbsoluteDepthProcessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
+//#if MC<26.3
 import org.lwjgl.glfw.GLFW;
+//#endif
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -62,7 +64,11 @@ public class Pipeline<R extends Frame, P extends Frame> implements Runnable {
 
         MinecraftClient mc = MCVer.getMinecraft();
         while (!capturer.isDone() && !abort) {
+            //#if MC>=26.3
+            //$$ if (mc.getWindow().shouldClose() || ((com.replaymod.core.mixin.BlockableEventLoopAccessor) mc).getDelayedCrash() != null) {
+            //#else
             if (GLFW.glfwWindowShouldClose(mc.getWindow().getHandle()) || ((MinecraftAccessor) mc).getCrashReporter() != null) {
+            //#endif
                 processService.shutdown();
                 return;
             }

@@ -1,0 +1,8 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.replaymod.compat.emma.mixin",
+  "plugin": "com.replaymod.core.ReplayModMixinConfigPlugin",
+  "compatibilityLevel": "JAVA_25",
+  "client": ["MixinClientShutdown_EmmaBridge"]
+}

@@ -95,7 +95,9 @@ public abstract class Mixin_ForceChunkLoading {
                         && dirtyState.isDirty()
                         && (section.sectionMesh.get() != CompiledSectionMesh.UNCOMPILED || this.sectionUpdateTracker.hasAllNeighbors(this.level, section.getSectionNode()))) {
                     section.compileAsync(cache.createRegion(this.level, section.getSectionNode()));
+                    //#if MC<26.3
                     section.setFadeDuration(0);
+                    //#endif
                     dirtyState.setNotDirty();
                     areWeDoneYet = false;
                 }
@@ -113,4 +115,5 @@ public abstract class Mixin_ForceChunkLoading {
             }
         }
     }
+    //#endif
 }

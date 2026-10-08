@@ -55,7 +55,9 @@ public abstract class Mixin_CreateReplayCamera {
     //#endif
 
     //#if MC>=11400
-    //#if MC>=12106
+    //#if MC>=26.3
+    //$$ @Inject(method = "createPlayer(Lnet/minecraft/client/multiplayer/ClientLevel;Lnet/minecraft/stats/StatsCounter;Lnet/minecraft/client/ClientRecipeBook;Lnet/minecraft/world/entity/player/Input;ZLnet/minecraft/client/player/ItemActivation;)Lnet/minecraft/client/player/LocalPlayer;", at=@At("HEAD"), cancellable = true)
+    //#elseif MC>=12106
     //$$ @Inject(method = "createPlayer(Lnet/minecraft/client/world/ClientWorld;Lnet/minecraft/stat/StatHandler;Lnet/minecraft/client/recipebook/ClientRecipeBook;Lnet/minecraft/util/PlayerInput;Z)Lnet/minecraft/client/network/ClientPlayerEntity;", at=@At("HEAD"), cancellable = true)
     //#elseif MC>=11602
     @Inject(method = "createPlayer(Lnet/minecraft/client/world/ClientWorld;Lnet/minecraft/stat/StatHandler;Lnet/minecraft/client/recipebook/ClientRecipeBook;ZZ)Lnet/minecraft/client/network/ClientPlayerEntity;", at=@At("HEAD"), cancellable = true)
@@ -77,6 +79,9 @@ public abstract class Mixin_CreateReplayCamera {
             boolean lastIsHoldingSneakKey,
             //#endif
             boolean lastSprinting,
+            //#endif
+            //#if MC>=26.3
+            //$$ net.minecraft.client.player.ItemActivation itemActivation,
             //#endif
             CallbackInfoReturnable<ClientPlayerEntity> ci
     ) {

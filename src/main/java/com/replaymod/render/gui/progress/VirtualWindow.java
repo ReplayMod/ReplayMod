@@ -110,13 +110,18 @@ public class VirtualWindow implements Closeable {
     //$$         try {
     //$$             windowSurface.configure(config);
     //$$             this.surfaceIsInvalid = false;
+    //$$             this.windowSurfaceNeedsReconfiguring = false;
     //$$         } catch (SurfaceException e) {
     //$$             LOGGER.warn("Couldn't configure surface to {}: {}", config, e);
     //$$             this.surfaceIsInvalid = true;
     //$$         }
     //$$     }
     //$$
+    //#if MC>=26.3
+    //$$     if (surfaceIsInvalid || window.isIconified()) {
+    //#else
     //$$     if (surfaceIsInvalid || window.isMinimized()) {
+    //#endif
     //$$         return;
     //$$     }
     //$$

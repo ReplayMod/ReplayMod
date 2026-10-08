@@ -33,6 +33,11 @@ public abstract class MixinRenderArrow extends EntityRenderer {
 
     @SuppressWarnings("unchecked")
     @Override
+    //#if MC>=26.3
+    //$$ public boolean shouldRender(Entity entity, Frustum camera, double camX, double camY, double camZ, float partialTick) {
+    //$$     return ReplayModReplay.instance.getReplayHandler() != null || super.shouldRender(entity, camera, camX, camY, camZ, partialTick);
+    //$$ }
+    //#else
     public boolean shouldRender(Entity entity,
                                 //#if MC>=11500
                                 Frustum camera,
@@ -43,5 +48,6 @@ public abstract class MixinRenderArrow extends EntityRenderer {
         // Force arrows to always render, otherwise they stop rendering when you get close to them
         return ReplayModReplay.instance.getReplayHandler() != null || super.shouldRender(entity, camera, camX, camY, camZ);
     }
+    //#endif
 }
 //#endif

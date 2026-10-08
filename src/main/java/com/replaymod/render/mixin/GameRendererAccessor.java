@@ -3,6 +3,7 @@ package com.replaymod.render.mixin;
 import net.minecraft.client.render.GameRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.gen.Invoker;
 
 //#if MC>=12106
 //$$ import net.minecraft.client.gui.render.GuiRenderer;
@@ -12,6 +13,11 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(GameRenderer.class)
 public interface GameRendererAccessor {
+    //#if MC>=26.3
+    //$$ @Invoker("extractWindow")
+    //$$ void invokeExtractWindow();
+    //#endif
+
     //#if MC<12106
     @Accessor
     boolean getRenderHand();

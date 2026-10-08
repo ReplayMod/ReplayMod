@@ -15,7 +15,10 @@ public interface KeyEventCallback {
             }
     );
 
-    //#if MC>=11400
+    //#if MC>=26.3
+    //$$ int ACTION_RELEASE = com.mojang.blaze3d.platform.InputConstants.RELEASE;
+    //$$ int ACTION_PRESS = com.mojang.blaze3d.platform.InputConstants.PRESS;
+    //#elseif MC>=11400
     int ACTION_RELEASE = org.lwjgl.glfw.GLFW.GLFW_RELEASE;
     int ACTION_PRESS = org.lwjgl.glfw.GLFW.GLFW_PRESS;
     //#else

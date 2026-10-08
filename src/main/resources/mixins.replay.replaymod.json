@@ -39,7 +39,9 @@
     //$$ "DrawContextAccessor",
     //#endif
     "EntityPlayerAccessor",
+    //#if MC<26.3
     "FirstPersonRendererAccessor",
+    //#endif
     //#if MC>=10904
     "MixinParticleManager",
     //#endif
