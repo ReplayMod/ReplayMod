@@ -1,9 +1,9 @@
 # Minecraft 26.3 Fabric build and limited compatibility test
 
-Status: compiles; short Windows smoke test passed. This is an experimental
+Status: compiles; short Windows and Linux X11/OpenGL smoke tests passed. This is an experimental
 port, not a certification of the complete companion-mod compatibility suite.
-Linux has not yet been tested; any later Linux results will be documented
-separately with their hardware, graphics backend, mod set and test scope.
+Linux results below cover one AMD/Mesa machine and are not a general Linux
+compatibility certification.
 
 Checked on 2026-10-08 using the installed Elric 26.3 companion mods. Tests ran in
 an isolated game directory with a generated creative world; the actual instance's
@@ -46,6 +46,33 @@ Build output: `build/logs/build-26.3-final-compat.log`.
 Final runtime output: `build/compat-check/integration-installed-mods-final.log`.
 Test source and evidence remain under `build/compat-check/` locally.
 
+## Linux smoke test on emmabrain
+
+Tested on 2026-10-08: Ubuntu 25.10, kernel 6.17.0-41-generic, Java 25.0.2,
+Fabric Loader 0.19.5, Radeon 8060S / Ryzen AI Max+ 395, Mesa 25.2.8,
+SDL X11 and OpenGL. Used a new isolated game directory and offline test identity;
+no existing launcher accounts, instances or worlds were changed.
+
+The same ten companion JARs and the Windows-tested ReplayMod JAR were copied
+byte for byte and verified with SHA-256. Two short runs passed: shaders disabled,
+then ComplementaryReimagined_r5.9.zip enabled. Each generated a creative world,
+recorded about nine seconds, opened the recording, checked native T and left-click
+controls, sought through playback, exported 20 H.264 frames at 640x360 / 20 fps,
+and closed with process exit code 0. FFprobe confirmed both videos and their
+first frames were visually inspected. Export sizes: 593025 bytes without shaders,
+619128 bytes with shaders.
+
+The first isolated launch needed Prism's separate Linux LWJGL component added
+to the test classpath; that was test-launcher setup, not a ReplayMod source fix.
+The shader compiler logged warnings but completed both rendering and shutdown.
+Emma Bridge logged an Emmatone default-settings write warning on first launch;
+custom AI actions and configuration persistence were not tested. Its shutdown
+worker workaround completed in both runs.
+
+No Wayland, Vulkan, other GPUs/drivers, multiplayer servers, long recordings or
+complete companion-mod feature suites were tested. Selected log markers are in
+[`test-evidence/linux-2026-10-08.txt`](test-evidence/linux-2026-10-08.txt).
+
 ## Fixes included in ReplayMod
 
 1. **SDL unbound keys:** Minecraft 26.3 expects keyboard code 0 for an unbound
@@ -66,7 +93,8 @@ Test source and evidence remain under `build/compat-check/` locally.
 These results cover startup, integrated-world recording, replay controls,
 seeking, normal video export, and shutdown with this exact mod set. They do not
 certify every custom AI action, multiplayer server protocol, cosmetic feature,
-resource pack, panoramic export mode, or Linux behavior.
+resource pack, panoramic export mode, or Linux configurations beyond the short
+X11/OpenGL test described above.
 
 Simple Voice Chat audio is not recorded by ReplayMod alone. The
 [Replay Voice Chat addon](https://github.com/henkelmax/replay-voice-chat)

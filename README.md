@@ -4,7 +4,8 @@ A Minecraft mod to record game sessions and replay them afterwards from any pers
 ## Building
 The experimental Minecraft 26.3 Fabric port compiles and passed a short Windows
 smoke test with ten companion mods. This does not certify their complete feature
-or compatibility suites. Linux has not yet been tested.
+or compatibility suites. The same short test also passed on Ubuntu 25.10 with
+AMD/Mesa, SDL X11 and OpenGL, both with shaders disabled and Complementary enabled.
 
 The port can be built on this PC with `./build-26.3.ps1`.
 It uses JDK 21 for Gradle, JDK 25 for Minecraft, JDK 8 for ReplayStudio, and JDK 16 for preprocessing older sources.
@@ -17,7 +18,7 @@ forks. A recursive clone includes those changes. Historical dependency patches a
 [`versions/26.3/dependency-patches`](versions/26.3/dependency-patches/README.md).
 The PR's author closed it after finding Linux issues,
 so a successful build alone does not establish in-game compatibility.
-Windows integration results for the Elric 26.3 mod set are recorded in
+Windows and Linux integration results for the Elric 26.3 mod set are recorded in
 [`versions/26.3/COMPATIBILITY.md`](versions/26.3/COMPATIBILITY.md).
 
 Make sure your sub-projects are up-to-date: `git submodule update --init --recursive`

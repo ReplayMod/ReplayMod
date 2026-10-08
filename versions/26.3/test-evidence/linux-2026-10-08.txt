@@ -1,0 +1,40 @@
+ReplayMod 26.3 limited Linux smoke test, 2026-10-08
+Ubuntu 25.10; kernel 6.17.0-41-generic; Java 25.0.2; Fabric Loader 0.19.5
+Radeon 8060S; Mesa 25.2.8; SDL x11; OpenGL
+ReplayMod SHA-256: aa577e771a463c510c71b4c63ad5e38337e24fe30406217322184769586e7ffc
+Same ten companion JARs as COMPATIBILITY.md; hashes verified.
+Short offline generated-world test, not a full compatibility suite.
+
+linux-no-shaders
+[22:27:40] [Render thread/INFO]: [STDOUT]: [COMPAT] Harness initialized
+[22:27:41] [Render thread/INFO]: Shaders are disabled because enableShaders is set to false in iris.properties
+[22:27:50] [Render thread/INFO]: [STDOUT]: [COMPAT] STARTUP_OK; Sodium Flawless Frames registered=true
+[22:27:55] [Render thread/INFO]: [STDOUT]: [COMPAT] WORLD_OK; recording=true
+[22:28:04] [Render thread/INFO]: [STDOUT]: [COMPAT] RECORDING_OK; disconnecting test world
+[22:28:09] [Render thread/INFO]: [STDOUT]: [COMPAT] INPUT_OK; keyboard state polling and mouse capture succeeded
+[22:28:09] [Render thread/INFO]: [STDOUT]: [COMPAT] REPLAY_KEYBOARD_OK; native T key opened the controls
+[22:28:09] [Render thread/INFO]: [STDOUT]: [COMPAT] REPLAY_BUTTONS_OK; native SDL left-click toggled play/pause twice
+[22:28:09] [Render thread/INFO]: [STDOUT]: [COMPAT] PLAYBACK_OK; duration=9284
+[22:28:13] [Render thread/INFO]: [STDOUT]: [COMPAT] EXPORT_START
+[22:28:14] [Render thread/INFO]: [STDOUT]: [COMPAT] EXPORT_OK; frames=20; bytes=593025
+[22:28:14] [Render thread/INFO]: [STDOUT]: [COMPAT] ALL_TESTS_OK
+[22:28:14] [Render thread/INFO]: Emma Bridge workers stopped and cached worlds saved
+Process exit code: 0
+FFprobe: h264, 640x360, 20 fps, 20 frames; preview visually inspected.
+
+linux-shaders
+[22:29:16] [Render thread/INFO]: [STDOUT]: [COMPAT] Harness initialized
+[22:29:17] [Render thread/INFO]: Using shaderpack: ComplementaryReimagined_r5.9.zip
+[22:29:26] [Render thread/INFO]: [STDOUT]: [COMPAT] STARTUP_OK; Sodium Flawless Frames registered=true
+[22:29:30] [Render thread/INFO]: [STDOUT]: [COMPAT] WORLD_OK; recording=true
+[22:29:39] [Render thread/INFO]: [STDOUT]: [COMPAT] RECORDING_OK; disconnecting test world
+[22:29:45] [Render thread/INFO]: [STDOUT]: [COMPAT] INPUT_OK; keyboard state polling and mouse capture succeeded
+[22:29:45] [Render thread/INFO]: [STDOUT]: [COMPAT] REPLAY_KEYBOARD_OK; native T key opened the controls
+[22:29:45] [Render thread/INFO]: [STDOUT]: [COMPAT] REPLAY_BUTTONS_OK; native SDL left-click toggled play/pause twice
+[22:29:45] [Render thread/INFO]: [STDOUT]: [COMPAT] PLAYBACK_OK; duration=9380
+[22:29:49] [Render thread/INFO]: [STDOUT]: [COMPAT] EXPORT_START
+[22:29:50] [Render thread/INFO]: [STDOUT]: [COMPAT] EXPORT_OK; frames=20; bytes=619128
+[22:29:50] [Render thread/INFO]: [STDOUT]: [COMPAT] ALL_TESTS_OK
+[22:29:50] [Render thread/INFO]: Emma Bridge workers stopped and cached worlds saved
+Process exit code: 0
+FFprobe: h264, 640x360, 20 fps, 20 frames; preview visually inspected.
