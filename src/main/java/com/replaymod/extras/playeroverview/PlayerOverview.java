@@ -1,5 +1,6 @@
 package com.replaymod.extras.playeroverview;
 
+import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.events.PreRenderHandCallback;
 import com.replaymod.core.utils.Utils;
@@ -43,7 +44,7 @@ public class PlayerOverview extends EventRegistrations implements Extra {
     public void register(final ReplayMod mod) throws Exception {
         this.module = ReplayModReplay.instance;
 
-        mod.getKeyBindingRegistry().registerKeyBinding("replaymod.input.playeroverview", Keyboard.KEY_B, new Runnable() {
+        mod.getKeyBindingRegistry().registerKeyBinding("replaymod.input.playeroverview", KeyBindingRegistry.KeyCodes.KEY_B, new Runnable() {
             @Override
             public void run() {
                 if (module.getReplayHandler() != null) {

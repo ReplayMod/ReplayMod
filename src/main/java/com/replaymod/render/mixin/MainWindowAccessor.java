@@ -15,6 +15,8 @@ public interface MainWindowAccessor {
     int getFramebufferHeight();
     @Accessor
     void setFramebufferHeight(int value);
+    //#if MC < 26.3
     @Invoker
     void invokeOnFramebufferSizeChanged(long window, int width, int height);
+    //#endif
 }

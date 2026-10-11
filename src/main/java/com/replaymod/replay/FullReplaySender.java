@@ -1003,7 +1003,11 @@ public class FullReplaySender extends ChannelInboundHandlerAdapter implements Re
     //$$             org.dimension(),
     //$$             org.seed(),
     //$$             GameMode.SPECTATOR,
-    //$$             GameMode.SPECTATOR,
+                //#if MC >= 26.3
+                //$$ java.util.Optional.empty(),
+               //#else
+                //$$ GameMode.SPECTATOR,
+                //#endif
     //$$             org.isDebug(),
     //$$             org.isFlat(),
     //$$             org.lastDeathLocation(),

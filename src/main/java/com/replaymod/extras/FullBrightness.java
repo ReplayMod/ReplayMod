@@ -1,9 +1,9 @@
 package com.replaymod.extras;
 
+import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.events.PostRenderCallback;
 import com.replaymod.core.events.PreRenderCallback;
-import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.events.ReplayOpenedCallback;
@@ -36,7 +36,7 @@ public class FullBrightness extends EventRegistrations implements Extra {
         this.module = ReplayModReplay.instance;
         this.mc = mod.getMinecraft();
 
-        mod.getKeyBindingRegistry().registerKeyBinding("replaymod.input.lighting", Keyboard.KEY_Z, new Runnable() {
+        mod.getKeyBindingRegistry().registerKeyBinding("replaymod.input.lighting", KeyBindingRegistry.KeyCodes.KEY_Z, new Runnable() {
             @Override
             public void run() {
                 active = !active;

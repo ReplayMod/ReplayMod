@@ -154,7 +154,7 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
     public boolean mouseClick(Click click) {
         Marker marker = getMarkerAt(click.x, click.y);
         if (marker != null) {
-            if (click.button == 0) { // Left click
+            if (click.button == Click.LEFT) {
                 long now = System.currentTimeMillis();
                 selectedMarker = marker;
                 if (Math.abs(lastClickTime - now) > 500) { // Single click
@@ -168,7 +168,7 @@ public class GuiMarkerTimeline extends AbstractGuiTimeline<GuiMarkerTimeline> im
                     }).open();
                 }
                 lastClickTime = now;
-            } else if (click.button == 1) { // Right click
+            } else if (click.button == Click.RIGHT) {
                 selectedMarker = null;
                 if (replayHandler != null) {
                     CameraEntity cameraEntity = replayHandler.getCameraEntity();

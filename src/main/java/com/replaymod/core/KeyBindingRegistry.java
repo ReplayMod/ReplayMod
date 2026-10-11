@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.replaymod.core.events.PreRenderCallback;
 import com.replaymod.core.mixin.KeyBindingAccessor;
+import com.replaymod.core.versions.MCVer;
 import de.johni0702.minecraft.gui.function.KeyInput;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
 import com.replaymod.core.events.KeyBindingEventCallback;
@@ -39,6 +40,10 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+//#if MC >= 26.3
+//$$ import org.lwjgl.sdl.SDLScancode;
+//#endif
+
 public class KeyBindingRegistry extends EventRegistrations {
     //#if MC>=12109
     //$$ private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(identifier(MOD_ID, "general"));
@@ -70,7 +75,7 @@ public class KeyBindingRegistry extends EventRegistrations {
         if (binding == null) {
             //#if FABRIC>=1
             if (keyCode == 0) {
-                keyCode = -1;
+                keyCode = InputUtil.UNKNOWN_KEY.getCode();
             }
             Identifier id = identifier(MOD_ID, name.substring(LangResourcePack.LEGACY_KEY_PREFIX.length()));
             //#if MC>=11600
@@ -146,7 +151,12 @@ public class KeyBindingRegistry extends EventRegistrations {
     { on(KeyEventCallback.EVENT, this::handleRaw); }
     private boolean handleRaw(KeyInput keyInput, int action) {
         if (action != KeyEventCallback.ACTION_PRESS) return false;
-        for (final Function<KeyInput, Boolean> handler : rawHandlers.get(keyInput.key)) {
+        //#if MC >= 26.3
+        //$$ int keyCode = keyInput.scancode;
+        //#else
+        int keyCode = keyInput.key;
+        //#endif
+        for (final Function<KeyInput, Boolean> handler : rawHandlers.get(keyCode)) {
             try {
                 if (handler.apply(keyInput)) {
                     return true;
@@ -154,12 +164,48 @@ public class KeyBindingRegistry extends EventRegistrations {
             } catch (Throwable cause) {
                 CrashReport crashReport = CrashReport.create(cause, "Handling Raw Key Binding");
                 CrashReportSection category = crashReport.addElement("Key Binding");
-                category.add("Key Code", () -> "" + keyInput.key);
+                category.add("Key Code", () -> "" + keyCode);
                 category.add("Handler", handler::toString);
                 throw new CrashException(crashReport);
             }
         }
         return false;
+    }
+
+    public interface KeyCodes
+        //#if MC < 26.3
+        extends MCVer.Keyboard
+        //#endif
+    {
+        //#if MC >= 26.3
+        //$$ int KEY_DELETE = SDLScancode.SDL_SCANCODE_DELETE;
+        //$$ int KEY_A = SDLScancode.SDL_SCANCODE_A;
+        //$$ int KEY_B = SDLScancode.SDL_SCANCODE_B;
+        //$$ int KEY_C = SDLScancode.SDL_SCANCODE_C;
+        //$$ int KEY_D = SDLScancode.SDL_SCANCODE_D;
+        //$$ int KEY_E = SDLScancode.SDL_SCANCODE_E;
+        //$$ int KEY_F = SDLScancode.SDL_SCANCODE_F;
+        //$$ int KEY_G = SDLScancode.SDL_SCANCODE_G;
+        //$$ int KEY_H = SDLScancode.SDL_SCANCODE_H;
+        //$$ int KEY_I = SDLScancode.SDL_SCANCODE_I;
+        //$$ int KEY_J = SDLScancode.SDL_SCANCODE_J;
+        //$$ int KEY_K = SDLScancode.SDL_SCANCODE_K;
+        //$$ int KEY_L = SDLScancode.SDL_SCANCODE_L;
+        //$$ int KEY_M = SDLScancode.SDL_SCANCODE_M;
+        //$$ int KEY_N = SDLScancode.SDL_SCANCODE_N;
+        //$$ int KEY_O = SDLScancode.SDL_SCANCODE_O;
+        //$$ int KEY_P = SDLScancode.SDL_SCANCODE_P;
+        //$$ int KEY_Q = SDLScancode.SDL_SCANCODE_Q;
+        //$$ int KEY_R = SDLScancode.SDL_SCANCODE_R;
+        //$$ int KEY_S = SDLScancode.SDL_SCANCODE_S;
+        //$$ int KEY_T = SDLScancode.SDL_SCANCODE_T;
+        //$$ int KEY_U = SDLScancode.SDL_SCANCODE_U;
+        //$$ int KEY_V = SDLScancode.SDL_SCANCODE_V;
+        //$$ int KEY_W = SDLScancode.SDL_SCANCODE_W;
+        //$$ int KEY_X = SDLScancode.SDL_SCANCODE_X;
+        //$$ int KEY_Y = SDLScancode.SDL_SCANCODE_Y;
+        //$$ int KEY_Z = SDLScancode.SDL_SCANCODE_Z;
+        //#endif
     }
 
     public class Binding {

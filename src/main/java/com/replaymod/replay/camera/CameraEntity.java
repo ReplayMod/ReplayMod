@@ -162,6 +162,9 @@ public class CameraEntity
             //$$ , RecipeBook recipeBook
             //#endif
             //#endif
+            //#if MC >= 26.3
+            //$$ , net.minecraft.client.player.ItemActivation itemActivation
+            //#endif
     ) {
         super(mcIn,
                 worldIn,
@@ -183,6 +186,9 @@ public class CameraEntity
                 //#endif
                 //#if MC >= 26.1
                 //$$ , mcIn.computeChatAbilities()
+                //#endif
+                //#if MC >= 26.3
+                //$$ , itemActivation
                 //#endif
         );
         //#if MC>=10900
@@ -594,6 +600,17 @@ public class CameraEntity
         return 0;
     }
 
+    //#if MC >= 26.3
+    //$$ @Override
+    //$$ public SwingDescription getCurrentSwing() {
+    //$$     Entity view = this.minecraft.getCameraEntity();
+    //$$     if (view != this && view instanceof Player) {
+    //$$         return ((Player) view).getCurrentSwing();
+    //$$     }
+    //$$     return super.getCurrentSwing();
+    //$$ }
+    //#endif
+
     //#if MC>=10904
     @Override
     public float getAttackCooldownProgressPerTick() {
@@ -778,7 +795,9 @@ public class CameraEntity
 
         //#if MC>=10904
         cameraA.setItemStackMainHand(viewPlayerA != null ? viewPlayerA.getItemStackMainHand() : empty);
+        //#if MC < 26.3
         this.preferredHand = viewPlayer != null ? viewPlayer.preferredHand : Hand.MAIN_HAND;
+        //#endif
         this.activeItemStack = viewPlayer != null ? viewPlayer.getActiveItem() : empty;
         cameraA.setActiveItemStackUseCount(viewPlayerA != null ? viewPlayerA.getActiveItemStackUseCount() : 0);
         //#else
@@ -911,6 +930,7 @@ public class CameraEntity
             if (view == CameraEntity.this || !(view instanceof PlayerEntity)) {
                 return true; // cancel hand rendering
             } else {
+                //#if MC < 26.3
                 PlayerEntity player = (PlayerEntity) view;
                 // When the spectated player has changed, force equip their items to prevent the equip animation
                 if (lastHandRendered != player) {
@@ -935,6 +955,7 @@ public class CameraEntity
                     mc.player.renderYaw = mc.player.lastRenderYaw = player.yaw;
                     mc.player.renderPitch = mc.player.lastRenderPitch = player.pitch;
                 }
+                //#endif
                 return false;
             }
         }

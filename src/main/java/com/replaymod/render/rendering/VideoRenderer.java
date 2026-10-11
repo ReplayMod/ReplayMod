@@ -19,7 +19,6 @@ import com.replaymod.render.events.ReplayRenderCallback;
 import com.replaymod.render.frame.BitmapFrame;
 import com.replaymod.render.gui.GuiRenderingDone;
 import com.replaymod.render.gui.GuiVideoRenderer;
-import com.replaymod.render.gui.progress.VirtualWindow;
 import com.replaymod.render.hooks.ForceChunkLoadingHook;
 import com.replaymod.render.metadata.MetadataInjector;
 import com.replaymod.render.mixin.WorldRendererAccessor;
@@ -31,14 +30,20 @@ import com.replaymod.replaystudio.pathing.path.Timeline;
 import de.johni0702.minecraft.gui.utils.lwjgl.Dimension;
 import de.johni0702.minecraft.gui.utils.lwjgl.ReadableDimension;
 import net.minecraft.client.MinecraftClient;
-import com.mojang.blaze3d.platform.GLX;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.util.Window;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.sound.SoundCategory;
+
+//#if MC >= 26.3
+//$$ import com.replaymod.core.mixin.GuiAccessor;
+//$$ import net.minecraft.client.multiplayer.ClientLevel;
+//#else
+import com.replaymod.render.gui.progress.VirtualWindow;
 import org.lwjgl.glfw.GLFW;
+//#endif
 
 //#if MC >= 26.1
 //$$ import net.minecraft.client.renderer.state.WindowRenderState;
@@ -83,6 +88,7 @@ import org.lwjgl.opengl.GL11;
 import net.minecraft.client.gui.screen.Screen;
 import java.util.concurrent.CompletableFuture;
 //#else
+//$$ import net.minecraft.client.renderer.OpenGlHelper;
 //$$ import org.lwjgl.input.Mouse;
 //$$ import org.lwjgl.opengl.Display;
 //#endif
@@ -136,7 +142,9 @@ public class VideoRenderer implements RenderInfo {
     private int framesDone;
     private int totalFrames;
 
+    //#if MC < 26.3
     private final VirtualWindow guiWindow = new VirtualWindow(mc);
+    //#endif
     private final GuiVideoRenderer gui;
     private boolean paused;
     private boolean cancelled;
@@ -273,8 +281,10 @@ public class VideoRenderer implements RenderInfo {
 
     @Override
     public float updateForNextFrame() {
+        //#if MC < 26.3
         // because the jGui lib uses Minecraft's displayWidth and displayHeight values, update these temporarily
         guiWindow.bind();
+        //#endif
 
         if (!settings.isHighPerformance() || framesDone % fps == 0) {
             while (drawGui() && paused) {
@@ -327,8 +337,10 @@ public class VideoRenderer implements RenderInfo {
         //$$ }
         //#endif
 
+        //#if MC < 26.3
         // change Minecraft's display size back
         guiWindow.unbind();
+        //#endif
 
         if (cameraPathExporter != null) {
             cameraPathExporter.recordFrame(timer.tickDelta);
@@ -424,7 +436,9 @@ public class VideoRenderer implements RenderInfo {
         // Tear down of the timeline player might only happen the next tick after it was cancelled
         timelinePlayer.onTick();
 
+        //#if MC < 26.3
         guiWindow.close();
+        //#endif
 
         // FBOs are always used in 1.14+
         //#if MC<11400
@@ -472,8 +486,10 @@ public class VideoRenderer implements RenderInfo {
             setFailure(e);
         }
 
+        //#if MC < 26.3
         // Finally, resize the Minecraft framebuffer to the actual width/height of the window
         resizeMainWindow(mc, guiWindow.getFramebufferWidth(), guiWindow.getFramebufferHeight());
+        //#endif
     }
 
     private void executeTaskQueue() {
@@ -540,13 +556,36 @@ public class VideoRenderer implements RenderInfo {
     public boolean drawGui() {
         Window window = mc.getWindow();
         do {
-            if (GLFW.glfwWindowShouldClose(window.getHandle()) || ((MinecraftAccessor) mc).getCrashReporter() != null) {
+            //#if MC >= 26.3
+            //$$ boolean shouldClose = window.shouldClose();
+            //#else
+            boolean shouldClose = GLFW.glfwWindowShouldClose(window.getHandle());
+            //#endif
+            if (shouldClose || ((MinecraftAccessor) mc).getCrashReporter() != null) {
                 return false;
             }
-            //#if MC >= 26.1
+            //#if MC >= 26.3
+            //$$ RenderSystem.pollEvents(((MinecraftAccessor) mc).getSdlEventHandler());
+            //#elseif MC >= 26.1
             //$$ RenderSystem.pollEvents();
             //#endif
 
+            //#if MC >= 26.3
+            //$$ Screen orgScreen = mc.gui.screen();
+            //$$ ClientLevel orgLevel = mc.level;
+            //$$ try {
+            //$$     ((GuiAccessor) mc.gui).replaymod$setScreen(gui.toMinecraft());
+            //$$     mc.level = null;
+            //$$
+            //$$     gui.toMinecraft().init(window.getGuiScaledWidth(), window.getGuiScaledHeight());
+            //$$     gui.toMinecraft().tick();
+            //$$
+            //$$     mc.renderFrame(false);
+            //$$ } finally {
+            //$$     ((GuiAccessor) mc.gui).replaymod$setScreen(orgScreen);
+            //$$     mc.level = orgLevel;
+            //$$ }
+            //#else
             pushMatrix();
             //#if MC>=12105
             //$$ RenderSystem.getDevice()
@@ -741,6 +780,7 @@ public class VideoRenderer implements RenderInfo {
             pushMatrix();
             guiWindow.flip();
             popMatrix();
+            //#endif
 
             //#if MC>=11400
             if (mc.mouse.isCursorLocked()) {

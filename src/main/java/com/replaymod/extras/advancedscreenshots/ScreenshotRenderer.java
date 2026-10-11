@@ -12,7 +12,9 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.Window;
 import net.minecraft.util.crash.CrashReport;
 
+//#if MC < 26.3
 import static com.replaymod.core.versions.MCVer.resizeMainWindow;
+//#endif
 
 public class ScreenshotRenderer implements RenderInfo {
 
@@ -28,9 +30,11 @@ public class ScreenshotRenderer implements RenderInfo {
 
     public boolean renderScreenshot() throws Throwable {
         try {
+            //#if MC < 26.3
             Window window = mc.getWindow();
             int widthBefore = window.getFramebufferWidth();
             int heightBefore = window.getFramebufferHeight();
+            //#endif
 
             ForceChunkLoadingHook clrg = new ForceChunkLoadingHook(mc.worldRenderer);
 
@@ -44,7 +48,9 @@ public class ScreenshotRenderer implements RenderInfo {
 
             clrg.uninstall();
 
+            //#if MC < 26.3
             resizeMainWindow(mc, widthBefore, heightBefore);
+            //#endif
             return true;
         } catch (OutOfMemoryError e) {
             e.printStackTrace();
