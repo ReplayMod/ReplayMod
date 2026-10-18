@@ -1,0 +1,14 @@
+com.mojang.blaze3d.platform.InputConstants.Type KEYBOARD KEYSYM
+
+com.mojang.renderpearl.api.buffers.GpuBuffer com.mojang.blaze3d.buffers.GpuBuffer
+com.mojang.renderpearl.api.buffers.GpuBufferSlice com.mojang.blaze3d.buffers.GpuBufferSlice
+com.mojang.renderpearl.api.commands.CommandEncoder com.mojang.blaze3d.systems.CommandEncoder
+com.mojang.renderpearl.api.commands.GpuFence com.mojang.blaze3d.buffers.GpuFence
+com.mojang.renderpearl.api.device.GpuDevice com.mojang.blaze3d.systems.GpuDevice
+com.mojang.renderpearl.api.textures.GpuTexture com.mojang.blaze3d.textures.GpuTexture
+com.mojang.renderpearl.api.vertex.VertexFormat com.mojang.blaze3d.vertex.VertexFormat
+com.mojang.renderpearl.api.vertex.VertexFormatElement com.mojang.blaze3d.vertex.VertexFormatElement
+
+net.minecraft.client.renderer.FirstPersonHandsAndItemsRenderer net.minecraft.client.renderer.ItemInHandRenderer
+net.minecraft.server.packs.AbstractPackMetadataResources net.minecraft.server.packs.AbstractPackResources
+net.minecraft.world.entity.LivingEntity getSwingAnimation() getAttackAnim()

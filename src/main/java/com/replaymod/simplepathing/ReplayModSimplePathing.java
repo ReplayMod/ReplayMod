@@ -6,7 +6,6 @@ import com.replaymod.core.ReplayMod;
 import com.replaymod.core.SettingsRegistry;
 import com.replaymod.core.events.SettingsChangedCallback;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
-import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.events.ReplayClosedCallback;
@@ -84,13 +83,13 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
     @Override
     public void registerKeyBindings(KeyBindingRegistry registry) {
         pathPreview.registerKeyBindings(registry);
-        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.keyframerepository", Keyboard.KEY_X, () -> {
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.keyframerepository", KeyBindingRegistry.KeyCodes.KEY_X, () -> {
             if (guiPathing != null) guiPathing.keyframeRepoButtonPressed();
         }, true);
-        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.clearkeyframes", Keyboard.KEY_C, () -> {
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.clearkeyframes", KeyBindingRegistry.KeyCodes.KEY_C, () -> {
             if (guiPathing != null) guiPathing.clearKeyframesButtonPressed();
         }, true);
-        keySyncTime = core.getKeyBindingRegistry().registerRepeatedKeyBinding("replaymod.input.synctimeline", Keyboard.KEY_V, () -> {
+        keySyncTime = core.getKeyBindingRegistry().registerRepeatedKeyBinding("replaymod.input.synctimeline", KeyBindingRegistry.KeyCodes.KEY_V, () -> {
             if (guiPathing != null) guiPathing.syncTimeButtonPressed();
         }, true);
         SettingsRegistry settingsRegistry = core.getSettingsRegistry();
@@ -98,15 +97,15 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
             settingsRegistry.set(Setting.AUTO_SYNC, active);
             settingsRegistry.save();
         });
-        core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_DELETE, keyInput ->
+        core.getKeyBindingRegistry().registerRaw(KeyBindingRegistry.KeyCodes.KEY_DELETE, keyInput ->
                 guiPathing != null && guiPathing.deleteButtonPressed());
-        keyPositionKeyframe = core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.positionkeyframe", Keyboard.KEY_I, () -> {
+        keyPositionKeyframe = core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.positionkeyframe", KeyBindingRegistry.KeyCodes.KEY_I, () -> {
             if (guiPathing != null) guiPathing.toggleKeyframe(SPPath.POSITION, false);
         }, true);
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.positiononlykeyframe", 0, () -> {
             if (guiPathing != null) guiPathing.toggleKeyframe(SPPath.POSITION, true);
         }, true);
-        keyTimeKeyframe = core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.timekeyframe", Keyboard.KEY_O, () -> {
+        keyTimeKeyframe = core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.timekeyframe", KeyBindingRegistry.KeyCodes.KEY_O, () -> {
             if (guiPathing != null) guiPathing.toggleKeyframe(SPPath.TIME, false);
         }, true);
         core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.bothkeyframes", 0, () -> {
@@ -115,7 +114,7 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
                 guiPathing.toggleKeyframe(SPPath.POSITION, false);
             }
         }, true);
-        core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_Z, keyInput -> {
+        core.getKeyBindingRegistry().registerRaw(KeyBindingRegistry.KeyCodes.KEY_Z, keyInput -> {
             if (keyInput.hasCtrl() && currentTimeline != null) {
                 Timeline timeline = currentTimeline.getTimeline();
                 if (keyInput.hasShift()) {
@@ -131,7 +130,7 @@ public class ReplayModSimplePathing extends EventRegistrations implements Module
             }
             return false;
         });
-        core.getKeyBindingRegistry().registerRaw(Keyboard.KEY_Y, keyInput -> {
+        core.getKeyBindingRegistry().registerRaw(KeyBindingRegistry.KeyCodes.KEY_Y, keyInput -> {
             if (keyInput.hasCtrl() && currentTimeline != null) {
                 Timeline timeline = currentTimeline.getTimeline();
                 if (timeline.peekRedoStack() != null) {

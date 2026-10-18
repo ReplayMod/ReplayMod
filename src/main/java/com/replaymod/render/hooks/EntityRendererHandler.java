@@ -65,7 +65,7 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
     }
 
     @Override
-    public void renderWorld(final float partialTicks, CaptureData data) {
+    public void renderWorld(final float partialTicks, int width, int height, CaptureData data) {
         this.data = data;
         long offsetMillis;
         if (ReplayMod.instance.getSettingsRegistry().get(Setting.FRAME_TIME_FROM_WORLD_TIME)) {
@@ -74,10 +74,10 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
             offsetMillis = renderInfo.getFramesDone() * 1_000L / settings.getFramesPerSecond();
         }
         long frameStartTimeNano = startTime + offsetMillis * 1_000_000L;
-        renderWorld(partialTicks, frameStartTimeNano);
+        renderWorld(partialTicks, width, height, frameStartTimeNano);
     }
 
-    public void renderWorld(float partialTicks, long finishTimeNano) {
+    public void renderWorld(float partialTicks, int width, int height, long finishTimeNano) {
         fakeFinishTimeNano = finishTimeNano;
         //#if MC>=11400
         PreRenderCallback.EVENT.invoker().preRender();
@@ -101,6 +101,14 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
             //#endif
             //#if MC >= 26.2
             //$$ boolean orgHudIsHidden = mc.gui.hud.isHidden();
+            //#endif
+            //#if MC >= 26.3
+            //$$ double orgChunkSectionFadeInTime = mc.options.chunkSectionFadeInTime().get();
+            //$$ mc.options.chunkSectionFadeInTime().set(0.0);
+            //$$ int orgWidth = mc.getWindow().getWidth();
+            //$$ int orgHeight = mc.getWindow().getHeight();
+            //$$ mc.getWindow().setWidth(width);
+            //$$ mc.getWindow().setHeight(height);
             //#endif
             try {
                 mc.currentScreen = null; // do not want to render the current screen (that'd just be the progress gui)
@@ -128,7 +136,11 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
                 //$$ mc.gameRenderer.update(mc.getDeltaTracker(), true);
                 //#endif
                 //$$ mc.gameRenderer.extract(mc.getDeltaTracker(), true);
+                //#if MC >= 26.3
+                //$$ mc.gameRenderer.render();
+                //#else
                 //$$ mc.gameRenderer.render(mc.getDeltaTracker(), true);
+                //#endif
                 //#elseif MC>=12100
                 //$$ mc.gameRenderer.render(mc.getRenderTickCounter(), true);
                 //#elseif MC>=11400
@@ -155,6 +167,11 @@ public class EntityRendererHandler extends EventRegistrations implements WorldRe
                 //#endif
                 //#if MC >= 26.2
                 //$$ if (!orgHudIsHidden) mc.gui.hud.toggle();
+                //#endif
+                //#if MC >= 26.3
+                //$$ mc.options.chunkSectionFadeInTime().set(orgChunkSectionFadeInTime);
+                //$$ mc.getWindow().setWidth(orgWidth);
+                //$$ mc.getWindow().setHeight(orgHeight);
                 //#endif
             }
         }

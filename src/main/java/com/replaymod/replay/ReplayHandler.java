@@ -946,7 +946,11 @@ public class ReplayHandler {
         //#if MC>=12105
         //$$ PositionInterpolator i = entity.getInterpolator();
         //$$ if (i != null && i.isInterpolating()) {
-        //$$     entity.refreshPositionAndAngles(i.getLerpedPos(), i.getLerpedYaw(), i.getLerpedPitch());
+            //#if MC >= 26.3
+            //$$ entity.snapTo(i.target().position(), i.target().yRot(), i.target().xRot());
+            //#else
+            //$$ entity.refreshPositionAndAngles(i.getLerpedPos(), i.getLerpedYaw(), i.getLerpedPitch());
+            //#endif
         //$$     i.clear();
         //$$ }
         //#elseif MC>=11400

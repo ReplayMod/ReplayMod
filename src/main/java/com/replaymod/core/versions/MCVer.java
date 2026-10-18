@@ -17,6 +17,10 @@ import net.minecraft.util.Util;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
 
+//#if MC >= 26.3
+//$$ import com.mojang.blaze3d.Blaze3D;
+//#endif
+
 //#if MC>=12105
 //$$ import net.minecraft.client.render.VertexConsumer;
 //#endif
@@ -61,7 +65,13 @@ import net.minecraft.text.TranslatableText;
 
 //#if MC>=11400
 import net.minecraft.client.util.InputUtil;
+//#if MC >= 26.3
+//$$ import org.lwjgl.sdl.SDLKeyboard;
+//$$ import org.lwjgl.sdl.SDLKeycode;
+//$$ import org.lwjgl.sdl.SDLScancode;
+//#else
 import org.lwjgl.glfw.GLFW;
+//#endif
 //#else
 //$$ import net.minecraft.client.resources.ResourcePackRepository;
 //$$ import net.minecraftforge.fml.client.FMLClientHandler;
@@ -153,6 +163,9 @@ public class MCVer {
         );
     }
 
+    //#if MC >= 26.3
+    //$$ // Now set indirectly in EntityRendererHandler via `windowRenderState`
+    //#else
     public static void resizeMainWindow(MinecraftClient mc, int width, int height) {
         //#if MC>=11400
         Window window = mc.getWindow();
@@ -165,6 +178,7 @@ public class MCVer {
         //$$ }
         //#endif
     }
+    //#endif
 
     //#if MC<10800
     //$$ public static String tryReadString(PacketBuffer buffer, int max) {
@@ -363,7 +377,9 @@ public class MCVer {
     //#endif
 
     public static void openFile(File file) {
-        //#if MC>=11400
+        //#if MC >= 26.3
+        //$$ Blaze3D.openPath(file.toPath());
+        //#elseif MC >= 1.14
         Util.getOperatingSystem().open(file);
         //#else
         //$$ String path = file.getAbsolutePath();
@@ -393,7 +409,9 @@ public class MCVer {
     }
 
     public static void openURL(URI url) {
-        //#if MC>=11400
+        //#if MC >= 26.3
+        //$$ Blaze3D.openUri(url);
+        //#elseif MC>=11400
         Util.getOperatingSystem().open(url);
         //#else
         //$$ try {
@@ -554,98 +572,148 @@ public class MCVer {
     //$$ }
     //#endif
 
-    public static abstract class Keyboard {
-        //#if MC>=11400
-        public static final int KEY_LCONTROL = GLFW.GLFW_KEY_LEFT_CONTROL;
-        public static final int KEY_RCONTROL = GLFW.GLFW_KEY_RIGHT_CONTROL;
-        public static final int KEY_LSUPER = GLFW.GLFW_KEY_LEFT_SUPER;
-        public static final int KEY_RSUPER = GLFW.GLFW_KEY_RIGHT_SUPER;
-        public static final int LEFT_CTRL = Util.getOperatingSystem() == Util.OperatingSystem.OSX ? KEY_LSUPER : KEY_LCONTROL;
-        public static final int RIGHT_CTRL = Util.getOperatingSystem() == Util.OperatingSystem.OSX ? KEY_RSUPER : KEY_RCONTROL;
-        public static final int KEY_LSHIFT = GLFW.GLFW_KEY_LEFT_SHIFT;
-        public static final int KEY_ESCAPE = GLFW.GLFW_KEY_ESCAPE;
-        public static final int KEY_HOME = GLFW.GLFW_KEY_HOME;
-        public static final int KEY_END = GLFW.GLFW_KEY_END;
-        public static final int KEY_UP = GLFW.GLFW_KEY_UP;
-        public static final int KEY_DOWN = GLFW.GLFW_KEY_DOWN;
-        public static final int KEY_LEFT = GLFW.GLFW_KEY_LEFT;
-        public static final int KEY_RIGHT = GLFW.GLFW_KEY_RIGHT;
-        public static final int KEY_BACK = GLFW.GLFW_KEY_BACKSPACE;
-        public static final int KEY_DELETE = GLFW.GLFW_KEY_DELETE;
-        public static final int KEY_RETURN = GLFW.GLFW_KEY_ENTER;
-        public static final int KEY_TAB = GLFW.GLFW_KEY_TAB;
-        public static final int KEY_F1 = GLFW.GLFW_KEY_F1;
-        public static final int KEY_A = GLFW.GLFW_KEY_A;
-        public static final int KEY_B = GLFW.GLFW_KEY_B;
-        public static final int KEY_C = GLFW.GLFW_KEY_C;
-        public static final int KEY_D = GLFW.GLFW_KEY_D;
-        public static final int KEY_E = GLFW.GLFW_KEY_E;
-        public static final int KEY_F = GLFW.GLFW_KEY_F;
-        public static final int KEY_G = GLFW.GLFW_KEY_G;
-        public static final int KEY_H = GLFW.GLFW_KEY_H;
-        public static final int KEY_I = GLFW.GLFW_KEY_I;
-        public static final int KEY_J = GLFW.GLFW_KEY_J;
-        public static final int KEY_K = GLFW.GLFW_KEY_K;
-        public static final int KEY_L = GLFW.GLFW_KEY_L;
-        public static final int KEY_M = GLFW.GLFW_KEY_M;
-        public static final int KEY_N = GLFW.GLFW_KEY_N;
-        public static final int KEY_O = GLFW.GLFW_KEY_O;
-        public static final int KEY_P = GLFW.GLFW_KEY_P;
-        public static final int KEY_Q = GLFW.GLFW_KEY_Q;
-        public static final int KEY_R = GLFW.GLFW_KEY_R;
-        public static final int KEY_S = GLFW.GLFW_KEY_S;
-        public static final int KEY_T = GLFW.GLFW_KEY_T;
-        public static final int KEY_U = GLFW.GLFW_KEY_U;
-        public static final int KEY_V = GLFW.GLFW_KEY_V;
-        public static final int KEY_W = GLFW.GLFW_KEY_W;
-        public static final int KEY_X = GLFW.GLFW_KEY_X;
-        public static final int KEY_Y = GLFW.GLFW_KEY_Y;
-        public static final int KEY_Z = GLFW.GLFW_KEY_Z;
+    public interface Keyboard {
+        //#if MC >= 26.3
+        //$$ int KEY_LCONTROL = SDLKeycode.SDLK_LCTRL;
+        //$$ int KEY_RCONTROL = SDLKeycode.SDLK_RCTRL;
+        //$$ int KEY_LSUPER = SDLKeycode.SDLK_LGUI;
+        //$$ int KEY_RSUPER = SDLKeycode.SDLK_RGUI;
+        //$$ int LEFT_CTRL = Util.getPlatform() == Util.OS.OSX ? KEY_LSUPER : KEY_LCONTROL;
+        //$$ int RIGHT_CTRL = Util.getPlatform() == Util.OS.OSX ? KEY_RSUPER : KEY_RCONTROL;
+        //$$ int KEY_LSHIFT = SDLKeycode.SDLK_LSHIFT;
+        //$$ int KEY_ESCAPE = SDLKeycode.SDLK_ESCAPE;
+        //$$ int KEY_HOME = SDLKeycode.SDLK_HOME;
+        //$$ int KEY_END = SDLKeycode.SDLK_END;
+        //$$ int KEY_UP = SDLKeycode.SDLK_UP;
+        //$$ int KEY_DOWN = SDLKeycode.SDLK_DOWN;
+        //$$ int KEY_LEFT = SDLKeycode.SDLK_LEFT;
+        //$$ int KEY_RIGHT = SDLKeycode.SDLK_RIGHT;
+        //$$ int KEY_BACK = SDLKeycode.SDLK_BACKSPACE;
+        //$$ int KEY_DELETE = SDLKeycode.SDLK_DELETE;
+        //$$ int KEY_RETURN = SDLKeycode.SDLK_RETURN;
+        //$$ int KEY_TAB = SDLKeycode.SDLK_TAB;
+        //$$ int KEY_F1 = SDLKeycode.SDLK_F1;
+        //$$ int KEY_A = SDLKeycode.SDLK_A;
+        //$$ int KEY_B = SDLKeycode.SDLK_B;
+        //$$ int KEY_C = SDLKeycode.SDLK_C;
+        //$$ int KEY_D = SDLKeycode.SDLK_D;
+        //$$ int KEY_E = SDLKeycode.SDLK_E;
+        //$$ int KEY_F = SDLKeycode.SDLK_F;
+        //$$ int KEY_G = SDLKeycode.SDLK_G;
+        //$$ int KEY_H = SDLKeycode.SDLK_H;
+        //$$ int KEY_I = SDLKeycode.SDLK_I;
+        //$$ int KEY_J = SDLKeycode.SDLK_J;
+        //$$ int KEY_K = SDLKeycode.SDLK_K;
+        //$$ int KEY_L = SDLKeycode.SDLK_L;
+        //$$ int KEY_M = SDLKeycode.SDLK_M;
+        //$$ int KEY_N = SDLKeycode.SDLK_N;
+        //$$ int KEY_O = SDLKeycode.SDLK_O;
+        //$$ int KEY_P = SDLKeycode.SDLK_P;
+        //$$ int KEY_Q = SDLKeycode.SDLK_Q;
+        //$$ int KEY_R = SDLKeycode.SDLK_R;
+        //$$ int KEY_S = SDLKeycode.SDLK_S;
+        //$$ int KEY_T = SDLKeycode.SDLK_T;
+        //$$ int KEY_U = SDLKeycode.SDLK_U;
+        //$$ int KEY_V = SDLKeycode.SDLK_V;
+        //$$ int KEY_W = SDLKeycode.SDLK_W;
+        //$$ int KEY_X = SDLKeycode.SDLK_X;
+        //$$ int KEY_Y = SDLKeycode.SDLK_Y;
+        //$$ int KEY_Z = SDLKeycode.SDLK_Z;
+        //#elseif MC >= 1.14
+        int KEY_LCONTROL = GLFW.GLFW_KEY_LEFT_CONTROL;
+        int KEY_RCONTROL = GLFW.GLFW_KEY_RIGHT_CONTROL;
+        int KEY_LSUPER = GLFW.GLFW_KEY_LEFT_SUPER;
+        int KEY_RSUPER = GLFW.GLFW_KEY_RIGHT_SUPER;
+        int LEFT_CTRL = Util.getOperatingSystem() == Util.OperatingSystem.OSX ? KEY_LSUPER : KEY_LCONTROL;
+        int RIGHT_CTRL = Util.getOperatingSystem() == Util.OperatingSystem.OSX ? KEY_RSUPER : KEY_RCONTROL;
+        int KEY_LSHIFT = GLFW.GLFW_KEY_LEFT_SHIFT;
+        int KEY_ESCAPE = GLFW.GLFW_KEY_ESCAPE;
+        int KEY_HOME = GLFW.GLFW_KEY_HOME;
+        int KEY_END = GLFW.GLFW_KEY_END;
+        int KEY_UP = GLFW.GLFW_KEY_UP;
+        int KEY_DOWN = GLFW.GLFW_KEY_DOWN;
+        int KEY_LEFT = GLFW.GLFW_KEY_LEFT;
+        int KEY_RIGHT = GLFW.GLFW_KEY_RIGHT;
+        int KEY_BACK = GLFW.GLFW_KEY_BACKSPACE;
+        int KEY_DELETE = GLFW.GLFW_KEY_DELETE;
+        int KEY_RETURN = GLFW.GLFW_KEY_ENTER;
+        int KEY_TAB = GLFW.GLFW_KEY_TAB;
+        int KEY_F1 = GLFW.GLFW_KEY_F1;
+        int KEY_A = GLFW.GLFW_KEY_A;
+        int KEY_B = GLFW.GLFW_KEY_B;
+        int KEY_C = GLFW.GLFW_KEY_C;
+        int KEY_D = GLFW.GLFW_KEY_D;
+        int KEY_E = GLFW.GLFW_KEY_E;
+        int KEY_F = GLFW.GLFW_KEY_F;
+        int KEY_G = GLFW.GLFW_KEY_G;
+        int KEY_H = GLFW.GLFW_KEY_H;
+        int KEY_I = GLFW.GLFW_KEY_I;
+        int KEY_J = GLFW.GLFW_KEY_J;
+        int KEY_K = GLFW.GLFW_KEY_K;
+        int KEY_L = GLFW.GLFW_KEY_L;
+        int KEY_M = GLFW.GLFW_KEY_M;
+        int KEY_N = GLFW.GLFW_KEY_N;
+        int KEY_O = GLFW.GLFW_KEY_O;
+        int KEY_P = GLFW.GLFW_KEY_P;
+        int KEY_Q = GLFW.GLFW_KEY_Q;
+        int KEY_R = GLFW.GLFW_KEY_R;
+        int KEY_S = GLFW.GLFW_KEY_S;
+        int KEY_T = GLFW.GLFW_KEY_T;
+        int KEY_U = GLFW.GLFW_KEY_U;
+        int KEY_V = GLFW.GLFW_KEY_V;
+        int KEY_W = GLFW.GLFW_KEY_W;
+        int KEY_X = GLFW.GLFW_KEY_X;
+        int KEY_Y = GLFW.GLFW_KEY_Y;
+        int KEY_Z = GLFW.GLFW_KEY_Z;
         //#else
-        //$$ public static final int KEY_LCONTROL = org.lwjgl.input.Keyboard.KEY_LCONTROL;
-        //$$ public static final int KEY_LSHIFT = org.lwjgl.input.Keyboard.KEY_LSHIFT;
-        //$$ public static final int KEY_ESCAPE = org.lwjgl.input.Keyboard.KEY_ESCAPE;
-        //$$ public static final int KEY_HOME = org.lwjgl.input.Keyboard.KEY_HOME;
-        //$$ public static final int KEY_END = org.lwjgl.input.Keyboard.KEY_END;
-        //$$ public static final int KEY_UP = org.lwjgl.input.Keyboard.KEY_UP;
-        //$$ public static final int KEY_DOWN = org.lwjgl.input.Keyboard.KEY_DOWN;
-        //$$ public static final int KEY_LEFT = org.lwjgl.input.Keyboard.KEY_LEFT;
-        //$$ public static final int KEY_RIGHT = org.lwjgl.input.Keyboard.KEY_RIGHT;
-        //$$ public static final int KEY_BACK = org.lwjgl.input.Keyboard.KEY_BACK;
-        //$$ public static final int KEY_DELETE = org.lwjgl.input.Keyboard.KEY_DELETE;
-        //$$ public static final int KEY_RETURN = org.lwjgl.input.Keyboard.KEY_RETURN;
-        //$$ public static final int KEY_TAB = org.lwjgl.input.Keyboard.KEY_TAB;
-        //$$ public static final int KEY_F1 = org.lwjgl.input.Keyboard.KEY_F1;
-        //$$ public static final int KEY_A = org.lwjgl.input.Keyboard.KEY_A;
-        //$$ public static final int KEY_B = org.lwjgl.input.Keyboard.KEY_B;
-        //$$ public static final int KEY_C = org.lwjgl.input.Keyboard.KEY_C;
-        //$$ public static final int KEY_D = org.lwjgl.input.Keyboard.KEY_D;
-        //$$ public static final int KEY_E = org.lwjgl.input.Keyboard.KEY_E;
-        //$$ public static final int KEY_F = org.lwjgl.input.Keyboard.KEY_F;
-        //$$ public static final int KEY_G = org.lwjgl.input.Keyboard.KEY_G;
-        //$$ public static final int KEY_H = org.lwjgl.input.Keyboard.KEY_H;
-        //$$ public static final int KEY_I = org.lwjgl.input.Keyboard.KEY_I;
-        //$$ public static final int KEY_J = org.lwjgl.input.Keyboard.KEY_J;
-        //$$ public static final int KEY_K = org.lwjgl.input.Keyboard.KEY_K;
-        //$$ public static final int KEY_L = org.lwjgl.input.Keyboard.KEY_L;
-        //$$ public static final int KEY_M = org.lwjgl.input.Keyboard.KEY_M;
-        //$$ public static final int KEY_N = org.lwjgl.input.Keyboard.KEY_N;
-        //$$ public static final int KEY_O = org.lwjgl.input.Keyboard.KEY_O;
-        //$$ public static final int KEY_P = org.lwjgl.input.Keyboard.KEY_P;
-        //$$ public static final int KEY_Q = org.lwjgl.input.Keyboard.KEY_Q;
-        //$$ public static final int KEY_R = org.lwjgl.input.Keyboard.KEY_R;
-        //$$ public static final int KEY_S = org.lwjgl.input.Keyboard.KEY_S;
-        //$$ public static final int KEY_T = org.lwjgl.input.Keyboard.KEY_T;
-        //$$ public static final int KEY_U = org.lwjgl.input.Keyboard.KEY_U;
-        //$$ public static final int KEY_V = org.lwjgl.input.Keyboard.KEY_V;
-        //$$ public static final int KEY_W = org.lwjgl.input.Keyboard.KEY_W;
-        //$$ public static final int KEY_X = org.lwjgl.input.Keyboard.KEY_X;
-        //$$ public static final int KEY_Y = org.lwjgl.input.Keyboard.KEY_Y;
-        //$$ public static final int KEY_Z = org.lwjgl.input.Keyboard.KEY_Z;
+        //$$ int KEY_LCONTROL = org.lwjgl.input.Keyboard.KEY_LCONTROL;
+        //$$ int KEY_LSHIFT = org.lwjgl.input.Keyboard.KEY_LSHIFT;
+        //$$ int KEY_ESCAPE = org.lwjgl.input.Keyboard.KEY_ESCAPE;
+        //$$ int KEY_HOME = org.lwjgl.input.Keyboard.KEY_HOME;
+        //$$ int KEY_END = org.lwjgl.input.Keyboard.KEY_END;
+        //$$ int KEY_UP = org.lwjgl.input.Keyboard.KEY_UP;
+        //$$ int KEY_DOWN = org.lwjgl.input.Keyboard.KEY_DOWN;
+        //$$ int KEY_LEFT = org.lwjgl.input.Keyboard.KEY_LEFT;
+        //$$ int KEY_RIGHT = org.lwjgl.input.Keyboard.KEY_RIGHT;
+        //$$ int KEY_BACK = org.lwjgl.input.Keyboard.KEY_BACK;
+        //$$ int KEY_DELETE = org.lwjgl.input.Keyboard.KEY_DELETE;
+        //$$ int KEY_RETURN = org.lwjgl.input.Keyboard.KEY_RETURN;
+        //$$ int KEY_TAB = org.lwjgl.input.Keyboard.KEY_TAB;
+        //$$ int KEY_F1 = org.lwjgl.input.Keyboard.KEY_F1;
+        //$$ int KEY_A = org.lwjgl.input.Keyboard.KEY_A;
+        //$$ int KEY_B = org.lwjgl.input.Keyboard.KEY_B;
+        //$$ int KEY_C = org.lwjgl.input.Keyboard.KEY_C;
+        //$$ int KEY_D = org.lwjgl.input.Keyboard.KEY_D;
+        //$$ int KEY_E = org.lwjgl.input.Keyboard.KEY_E;
+        //$$ int KEY_F = org.lwjgl.input.Keyboard.KEY_F;
+        //$$ int KEY_G = org.lwjgl.input.Keyboard.KEY_G;
+        //$$ int KEY_H = org.lwjgl.input.Keyboard.KEY_H;
+        //$$ int KEY_I = org.lwjgl.input.Keyboard.KEY_I;
+        //$$ int KEY_J = org.lwjgl.input.Keyboard.KEY_J;
+        //$$ int KEY_K = org.lwjgl.input.Keyboard.KEY_K;
+        //$$ int KEY_L = org.lwjgl.input.Keyboard.KEY_L;
+        //$$ int KEY_M = org.lwjgl.input.Keyboard.KEY_M;
+        //$$ int KEY_N = org.lwjgl.input.Keyboard.KEY_N;
+        //$$ int KEY_O = org.lwjgl.input.Keyboard.KEY_O;
+        //$$ int KEY_P = org.lwjgl.input.Keyboard.KEY_P;
+        //$$ int KEY_Q = org.lwjgl.input.Keyboard.KEY_Q;
+        //$$ int KEY_R = org.lwjgl.input.Keyboard.KEY_R;
+        //$$ int KEY_S = org.lwjgl.input.Keyboard.KEY_S;
+        //$$ int KEY_T = org.lwjgl.input.Keyboard.KEY_T;
+        //$$ int KEY_U = org.lwjgl.input.Keyboard.KEY_U;
+        //$$ int KEY_V = org.lwjgl.input.Keyboard.KEY_V;
+        //$$ int KEY_W = org.lwjgl.input.Keyboard.KEY_W;
+        //$$ int KEY_X = org.lwjgl.input.Keyboard.KEY_X;
+        //$$ int KEY_Y = org.lwjgl.input.Keyboard.KEY_Y;
+        //$$ int KEY_Z = org.lwjgl.input.Keyboard.KEY_Z;
         //#endif
 
-        public static boolean isKeyDown(int keyCode) {
-            //#if MC>=12109
+        static boolean isKeyDown(int keyCode) {
+            //#if MC >= 26.3
+            //$$ int scancode = SDLKeyboard.SDL_GetScancodeFromKey(keyCode, null);
+            //$$ if (scancode == SDLScancode.SDL_SCANCODE_UNKNOWN) return false;
+            //$$ return InputConstants.isKeyDown(scancode);
+            //#elseif MC>=12109
             //$$ return InputUtil.isKeyPressed(getMinecraft().getWindow(), keyCode);
             //#elseif MC>=11500
             return InputUtil.isKeyPressed(getMinecraft().getWindow().getHandle(), keyCode);
@@ -663,15 +731,15 @@ public class MCVer {
         }
 
         //#if MC<11400
-        //$$ public static int getEventKey() {
+        //$$ static int getEventKey() {
         //$$     return org.lwjgl.input.Keyboard.getEventKey();
         //$$ }
         //$$
-        //$$ public static boolean getEventKeyState() {
+        //$$ static boolean getEventKeyState() {
         //$$     return org.lwjgl.input.Keyboard.getEventKeyState();
         //$$ }
         //$$
-        //$$ public static String getKeyName(int code) {
+        //$$ static String getKeyName(int code) {
         //$$     return org.lwjgl.input.Keyboard.getKeyName(code);
         //$$ }
         //#endif

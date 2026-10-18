@@ -1,7 +1,7 @@
 package com.replaymod.extras;
 
+import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.ReplayMod;
-import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.ReplayModReplay;
 import com.replaymod.replay.events.ReplayOpenedCallback;
@@ -19,7 +19,7 @@ public class QuickMode extends EventRegistrations implements Extra {
     public void register(final ReplayMod mod) {
         this.module = ReplayModReplay.instance;
 
-        mod.getKeyBindingRegistry().registerKeyBinding("replaymod.input.quickmode", Keyboard.KEY_Q, () -> {
+        mod.getKeyBindingRegistry().registerKeyBinding("replaymod.input.quickmode", KeyBindingRegistry.KeyCodes.KEY_Q, () -> {
             ReplayHandler replayHandler = module.getReplayHandler();
             if (replayHandler == null) {
                 return;

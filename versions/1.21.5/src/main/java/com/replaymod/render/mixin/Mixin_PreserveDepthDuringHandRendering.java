@@ -11,7 +11,11 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(GameRenderer.class)
 public abstract class Mixin_PreserveDepthDuringHandRendering {
     @WrapWithCondition(
+            //#if MC >= 26.3
+            //$$ method = "render3dHud",
+            //#else
             method = "renderWorld",
+            //#endif
             at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/CommandEncoder;clearDepthTexture(Lcom/mojang/blaze3d/textures/GpuTexture;D)V")
     )
     private boolean replayModRender_skipClearWhenRecordingDepth(CommandEncoder instance, GpuTexture texture, double v) {

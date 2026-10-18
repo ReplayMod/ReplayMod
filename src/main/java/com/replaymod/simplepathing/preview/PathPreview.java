@@ -4,7 +4,6 @@ import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.SettingsRegistry;
 import com.replaymod.core.events.SettingsChangedCallback;
 import de.johni0702.minecraft.gui.utils.EventRegistrations;
-import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.ReplayHandler;
 import com.replaymod.replay.events.ReplayClosedCallback;
 import com.replaymod.replay.events.ReplayOpenedCallback;
@@ -38,7 +37,7 @@ public class PathPreview extends EventRegistrations {
     }
 
     public void registerKeyBindings(KeyBindingRegistry registry) {
-        registry.registerKeyBinding("replaymod.input.pathpreview", Keyboard.KEY_H, () -> {
+        registry.registerKeyBinding("replaymod.input.pathpreview", KeyBindingRegistry.KeyCodes.KEY_H, () -> {
             SettingsRegistry settings = mod.getCore().getSettingsRegistry();
             settings.set(Setting.PATH_PREVIEW, !settings.get(Setting.PATH_PREVIEW));
             settings.save();

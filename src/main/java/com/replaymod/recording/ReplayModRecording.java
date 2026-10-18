@@ -4,7 +4,6 @@ import com.replaymod.core.KeyBindingRegistry;
 import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.Restrictions;
-import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.recording.handler.ConnectionEventHandler;
 import com.replaymod.recording.handler.GuiHandler;
 import com.replaymod.recording.mixin.NetworkManagerAccessor;
@@ -58,7 +57,7 @@ public class ReplayModRecording implements Module {
 
     @Override
     public void registerKeyBindings(KeyBindingRegistry registry) {
-        registry.registerKeyBinding("replaymod.input.marker", Keyboard.KEY_M, new Runnable() {
+        registry.registerKeyBinding("replaymod.input.marker", KeyBindingRegistry.KeyCodes.KEY_M, new Runnable() {
             @Override
             public void run() {
                 PacketListener packetListener = connectionEventHandler.getPacketListener();

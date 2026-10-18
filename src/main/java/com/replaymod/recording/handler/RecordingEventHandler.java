@@ -28,6 +28,12 @@ import net.minecraft.server.integrated.IntegratedServer;
 //$$ import net.minecraftforge.event.entity.player.PlayerEvent.ItemPickupEvent;
 //#endif
 
+//#if MC >= 26.3
+//$$ import net.minecraft.network.protocol.game.ClientboundSwingAnimationPacket;
+//$$ import net.minecraft.network.protocol.game.VecDelta;
+//$$ import net.minecraft.world.entity.LivingEntity;
+//#endif
+
 //#if MC>=12102
 //$$ import net.minecraft.entity.player.PlayerPosition;
 //$$ import net.minecraft.network.packet.s2c.play.EntityPositionSyncS2CPacket;
@@ -100,6 +106,9 @@ public class RecordingEventHandler extends EventRegistrations {
     private boolean wasSleeping;
     private int lastRiding = -1;
     private Integer rotationYawHeadBefore;
+    //#if MC >= 26.3
+    //$$ private LivingEntity.SwingDescription lastSwing;
+    //#endif
 
     public RecordingEventHandler(PacketListener packetListener) {
         this.packetListener = packetListener;
@@ -195,7 +204,9 @@ public class RecordingEventHandler extends EventRegistrations {
 
             Packet packet = null;
             if (force || Math.abs(dx) > maxRelDist || Math.abs(dy) > maxRelDist || Math.abs(dz) > maxRelDist) {
-                //#if MC>=12102
+                //#if MC >= 26.3
+                //$$ packet = ClientboundEntityPositionSyncPacket.of(player);
+                //#elseif MC>=12102
                 //$$ packet = new EntityPositionSyncS2CPacket(player.getId(), PlayerPosition.fromEntity(player), player.isOnGround());
                 //#elseif MC>=10800
                 packet = new EntityPositionS2CPacket(player);
@@ -229,7 +240,9 @@ public class RecordingEventHandler extends EventRegistrations {
                 //$$ packet = new SPacketEntity.S17PacketEntityLookMove(
                 //#endif
                         player.getEntityId(),
-                        //#if MC>=10904
+                        //#if MC >= 26.3
+                        //$$ new VecDelta.Linear((short) dx, (short) dy, (short) dz),
+                        //#elseif MC>=10904
                         (short) dx, (short) dy, (short) dz,
                         //#else
                         //$$ (byte) dx, (byte) dy, (byte) dz,
@@ -271,6 +284,15 @@ public class RecordingEventHandler extends EventRegistrations {
 
             //Animation Packets
             //Swing Animation
+            //#if MC >= 26.3
+            //$$ LivingEntity.SwingDescription swing = player.getCurrentSwing();
+            //$$ if (swing != null && swing != lastSwing) {
+            //$$     lastSwing = swing;
+            //$$     packetListener.save(new ClientboundSwingAnimationPacket(
+            //$$             player, swing.hand(), swing.animation()
+            //$$     ));
+            //$$ }
+            //#else
             if (player.handSwinging && player.handSwingTicks == 0) {
                 packetListener.save(new EntityAnimationS2CPacket(
                         player,
@@ -281,6 +303,7 @@ public class RecordingEventHandler extends EventRegistrations {
                         //#endif
                 ));
             }
+            //#endif
 
 			/*
         //Potion Effect Handling

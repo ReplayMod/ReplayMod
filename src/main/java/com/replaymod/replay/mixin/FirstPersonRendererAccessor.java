@@ -7,7 +7,8 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(HeldItemRenderer.class)
 public interface FirstPersonRendererAccessor {
-    //#if MC>=10904
+    //#if MC >= 26.3
+    //#elseif MC>=10904
     @Accessor("mainHand")
     void setItemStackMainHand(ItemStack value);
     @Accessor("offHand")

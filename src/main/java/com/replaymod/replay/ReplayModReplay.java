@@ -9,7 +9,6 @@ import com.replaymod.core.Module;
 import com.replaymod.core.ReplayMod;
 import com.replaymod.core.utils.ModCompat;
 import com.replaymod.core.versions.MCVer;
-import com.replaymod.core.versions.MCVer.Keyboard;
 import com.replaymod.replay.camera.CameraController;
 import com.replaymod.replay.camera.CameraControllerRegistry;
 import com.replaymod.replay.camera.CameraEntity;
@@ -58,7 +57,7 @@ public class ReplayModReplay implements Module {
 
     @Override
     public void registerKeyBindings(KeyBindingRegistry registry) {
-        registry.registerKeyBinding("replaymod.input.marker", Keyboard.KEY_M, new Runnable() {
+        registry.registerKeyBinding("replaymod.input.marker", KeyBindingRegistry.KeyCodes.KEY_M, new Runnable() {
             @Override
             public void run() {
                 if (replayHandler != null ) {
@@ -78,7 +77,7 @@ public class ReplayModReplay implements Module {
             }
         }, true);
 
-        registry.registerKeyBinding("replaymod.input.thumbnail", Keyboard.KEY_N, new Runnable() {
+        registry.registerKeyBinding("replaymod.input.thumbnail", KeyBindingRegistry.KeyCodes.KEY_N, new Runnable() {
             @Override
             public void run() {
                 if (replayHandler != null) {
@@ -113,7 +112,7 @@ public class ReplayModReplay implements Module {
             }
         }, true);
 
-        keyPlayPause = registry.registerKeyBinding("replaymod.input.playpause", Keyboard.KEY_P, new Runnable() {
+        keyPlayPause = registry.registerKeyBinding("replaymod.input.playpause", KeyBindingRegistry.KeyCodes.KEY_P, new Runnable() {
             @Override
             public void run() {
                 if (replayHandler != null) {
@@ -122,15 +121,15 @@ public class ReplayModReplay implements Module {
             }
         }, true);
 
-        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.rollclockwise", Keyboard.KEY_L, () -> {
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.rollclockwise", KeyBindingRegistry.KeyCodes.KEY_L, () -> {
             // Noop, actual handling logic in CameraEntity#update
         }, true);
 
-        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.rollcounterclockwise", Keyboard.KEY_J, () -> {
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.rollcounterclockwise", KeyBindingRegistry.KeyCodes.KEY_J, () -> {
             // Noop, actual handling logic in CameraEntity#update
         }, true);
 
-        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.resettilt", Keyboard.KEY_K, () -> {
+        core.getKeyBindingRegistry().registerKeyBinding("replaymod.input.resettilt", KeyBindingRegistry.KeyCodes.KEY_K, () -> {
             Optional.ofNullable(replayHandler).map(ReplayHandler::getCameraEntity).ifPresent(c -> c.roll = 0);
         }, true);
     }

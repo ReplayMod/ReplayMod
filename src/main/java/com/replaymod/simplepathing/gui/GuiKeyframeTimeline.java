@@ -458,7 +458,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
             SPPath path = pathKeyframePair.getLeft();
             // Clicked on keyframe
             long keyframeTime = pathKeyframePair.getRight();
-            if (click.button == 0) { // Left click
+            if (click.button == Click.LEFT) {
                 long now = MCVer.milliTime();
                 if (lastClickedKeyframe == keyframeTime) {
                     // Clicked the same keyframe again, potentially a double click
@@ -476,7 +476,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
                 // We might be dragging
                 draggingStartX = click.x;
                 dragging = true;
-            } else if (click.button == 1) { // Right click
+            } else if (click.button == Click.RIGHT) {
                 Keyframe keyframe = gui.getMod().getCurrentTimeline().getKeyframe(path, keyframeTime);
                 for (Property property : keyframe.getProperties()) {
                     applyPropertyToGame(property, keyframe);
@@ -485,10 +485,10 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
             return true;
         } else if (time != -1) {
             // Clicked on timeline but not on any keyframe
-            if (click.button == 0) { // Left click
+            if (click.button == Click.LEFT) {
                 setCursorPosition(time);
                 gui.getMod().setSelected(null, 0);
-            } else if (click.button == 1) { // Right click
+            } else if (click.button == Click.RIGHT) {
                 if (pathKeyframePair.getLeft() != null) {
                     // Apply the value of the clicked path at the clicked position
                     Path path = gui.getMod().getCurrentTimeline().getPath(pathKeyframePair.getLeft());
@@ -521,7 +521,7 @@ public class GuiKeyframeTimeline extends AbstractGuiTimeline<GuiKeyframeTimeline
     @Override
     public boolean mouseDrag(Click click) {
         if (!dragging) {
-            if (click.button == 0) {
+            if (click.button == Click.LEFT) {
                 // Left click, the user might try to move the cursor by clicking and holding
                 int time = getTimeAt(click.x, click.y);
                 if (time != -1) {

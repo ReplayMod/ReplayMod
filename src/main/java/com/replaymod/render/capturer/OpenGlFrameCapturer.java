@@ -19,9 +19,13 @@ import java.nio.ByteBuffer;
 
 import static com.replaymod.core.versions.MCVer.popMatrix;
 import static com.replaymod.core.versions.MCVer.pushMatrix;
-import static com.replaymod.core.versions.MCVer.resizeMainWindow;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+
+//#if MC >= 26.3
+//#else
+import static com.replaymod.core.versions.MCVer.resizeMainWindow;
+//#endif
 
 //#if MC >= 26.2
 //$$ import com.mojang.blaze3d.buffers.GpuBufferSlice;
@@ -92,6 +96,7 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
     }
 
     protected OpenGlFrame renderFrame(int frameId, float partialTicks, D captureData) {
+        //#if MC < 26.3
         resizeMainWindow(mc, getFrameWidth(), getFrameHeight());
 
         pushMatrix();
@@ -117,13 +122,16 @@ public abstract class OpenGlFrameCapturer<F extends Frame, D extends CaptureData
         //#if MC<11904
         GlStateManager.enableTexture();
         //#endif
+        //#endif
 
-        worldRenderer.renderWorld(partialTicks, captureData);
+        worldRenderer.renderWorld(partialTicks, getFrameWidth(), getFrameHeight(), captureData);
 
+        //#if MC < 26.3
         //#if MC<12105
         frameBuffer().endWrite();
         //#endif
         popMatrix();
+        //#endif
 
         //#if MC >= 26.2
         //$$ RenderSystem.getDynamicUniforms().reset();

@@ -39,9 +39,17 @@ public abstract class MixinRenderArrow extends EntityRenderer {
                                 //#else
                                 //$$ VisibleRegion camera,
                                 //#endif
-                                double camX, double camY, double camZ) {
+                                double camX, double camY, double camZ
+                                //#if MC >= 26.3
+                                //$$ , float partialTicks
+                                //#endif
+    ) {
         // Force arrows to always render, otherwise they stop rendering when you get close to them
-        return ReplayModReplay.instance.getReplayHandler() != null || super.shouldRender(entity, camera, camX, camY, camZ);
+        return ReplayModReplay.instance.getReplayHandler() != null || super.shouldRender(entity, camera, camX, camY, camZ
+                //#if MC >= 26.3
+                //$$ , partialTicks
+                //#endif
+        );
     }
 }
 //#endif

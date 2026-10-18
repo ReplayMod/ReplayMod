@@ -215,6 +215,7 @@ defaultTasks("bundleJar")
 preprocess {
     strictExtraMappings.set(true)
 
+    val mc26_03_00 = createNode("26.3", 26_03_00, "yarn")
     val mc26_02_00 = createNode("26.2", 26_02_00, "yarn")
     val mc26_01_00 = createNode("26.1", 26_01_00, "yarn")
     val mc12111 = createNode("1.21.11", 12111, "yarn")
@@ -252,6 +253,7 @@ preprocess {
     val mc10800 = createNode("1.8", 10800, "srg")
     val mc10710 = createNode("1.7.10", 10710, "srg")
 
+    mc26_03_00.link(mc26_02_00, file("versions/mapping-fabric-26.3-26.2.txt"))
     mc26_02_00.link(mc26_01_00, file("versions/mapping-fabric-26.2-26.1.txt"))
     mc26_01_00.link(mc12111, file("versions/mapping-fabric-26.1-1.21.11.txt"))
     mc26_01_00.link(mc12111, file("versions/mapping-fabric-26.1-1.21.11.txt"))

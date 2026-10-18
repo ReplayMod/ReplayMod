@@ -46,7 +46,6 @@ public abstract class Mixin_ForceChunkLoading {
     @Shadow
     protected abstract void applyFrustum(Frustum frustum);
 
-    //#if MC >= 26.1
     @Inject(method = "extract", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;visibleSections()Lit/unimi/dsi/fastutil/objects/ObjectArrayList;"))
     private void forceAllChunks(
             CallbackInfo ci,
@@ -95,7 +94,11 @@ public abstract class Mixin_ForceChunkLoading {
                         && dirtyState.isDirty()
                         && (section.sectionMesh.get() != CompiledSectionMesh.UNCOMPILED || this.sectionUpdateTracker.hasAllNeighbors(this.level, section.getSectionNode()))) {
                     section.compileAsync(cache.createRegion(this.level, section.getSectionNode()));
+                    //#if MC >= 26.3
+                    //$$ // Handled by EntityRendererHandler.renderWorld
+                    //#else
                     section.setFadeDuration(0);
+                    //#endif
                     dirtyState.setNotDirty();
                     areWeDoneYet = false;
                 }
