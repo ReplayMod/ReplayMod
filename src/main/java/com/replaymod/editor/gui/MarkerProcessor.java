@@ -151,13 +151,16 @@ public class MarkerProcessor {
             PacketData nextPacket = replayInputStream.readPacket();
             Marker nextMarker = markerIterator.next();
 
+            long startDate = -1;
             while (nextPacket != null && outputFileSuffixes.hasNext()) {
                 Path outputPath = path.resolveSibling(replayName + outputFileSuffixes.next() + ".mcpr");
                 try (ReplayFile outputReplayFile = mod.files.open(null, outputPath)) {
                     long duration = 0;
                     Set<Marker> outputMarkers = new HashSet<>();
                     ReplayMetaData metaData = inputReplayFile.getMetaData();
-                    metaData.setDate(metaData.getDate() + timeOffset);
+                    if (startDate == -1) {
+                        startDate = metaData.getDate();
+                    }
 
                     try (ReplayOutputStream replayOutputStream = outputReplayFile.writePacketData()) {
                         if (cutFilter != null) {
@@ -184,6 +187,7 @@ public class MarkerProcessor {
                                     startCutOffset = nextMarker.getTime();
                                     cutFilter = new SquashFilter(dimensionTracker);
                                 } else if (MARKER_NAME_END_CUT.equals(nextMarker.getName())) {
+                                    metaData.setDate(startDate + nextMarker.getTime());
                                     timeOffset += nextMarker.getTime() - startCutOffset;
                                     if (cutFilter != null) {
                                         List<PacketData> packets = new ArrayList<>();
